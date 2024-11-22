@@ -9,10 +9,10 @@ export type ResponseDocument = Response & Document;
 @Schema({timestamps: {createdAt: 'submittedAt', updatedAt:false}})
 export class Response{
     @Prop({type: Types.ObjectId, ref: 'User', required: true})// references user
-    user_id: string;
+    user_id: Types.ObjectId;
 
     @Prop({type: Types.ObjectId, ref: 'Quiz', required: true})// references quiz
-    quiz_id: string;
+    quiz_id: Types.ObjectId;
 
     @Prop({ type:[AnswerSchema], required: true})
     answers: Answer[];
