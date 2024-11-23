@@ -7,8 +7,6 @@ export type ProgressDocument = Progress & Document;
 
 @Schema({ timestamps: true })
 export class Progress {
-  @Prop({ required: true })
-  progressId: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId; // Referencing the User ID 
