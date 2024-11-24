@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
+import { Types } from 'mongoose';
 import { Progress, ProgressDocument } from '../Models/progress.schema';
 import { Course, CourseDocument } from '../Models/course.schema';
 import { User, UserDocument } from '../Models/user.schema';
@@ -8,14 +9,29 @@ import { User, UserDocument } from '../Models/user.schema';
 //import { InstructorAnalyticsDto } from './dto/instructor-analytics.dto';
 
 type PopulatedCourse = {
+  title: any;
   _id: string; // MongoDB ObjectId as a string
   name: string; // Course name field
 };
 
-type PopulatedProgress = Progress & {
-  courseId: PopulatedCourse; // courseId will be populated with course details
-};
+// // Define Progress with populated courseId
+// type PopulatedProgress = Omit<Progress, 'courseId'> & {
+//     courseId: PopulatedCourse; // Replace ObjectId with the populated structure
+//   };
 
+// Define the structure of a populated User
+type PopulatedUser = {
+    _id: Types.ObjectId;
+    name: string; // User's name field
+    email: string; // User's email field
+  };
+  
+ // Combined Type for Progress
+type PopulatedProgress = Omit<Progress, 'courseId' | 'userId'> & {
+    courseId: PopulatedCourse;
+    userId: PopulatedUser;
+  };
+  
 @Injectable()
 export class PerformanceService {
 
@@ -28,73 +44,118 @@ export class PerformanceService {
       ) {}
     
 
-      
-
+    
     // Fetch the student dashboard
     async getStudentDashboard(studentId: string) {
-        // Perform the query with populate
-        const progressData = await this.progressModel
-          .find({ userId: studentId })
-          .populate({
-            path: 'courseId',
-            select: 'title', // Fetch only the 'name' field
-          })
-          .lean(); // Converts to plain JavaScript objects
+        const progressData = (await this.progressModel
+            .find({ userId: studentId })
+            //The populate() method replaces the courseId field (which is an ObjectId) in the Progress documents with the actual Course document it reference
+            .populate({
+                path: 'courseId',
+                select: 'title', // Fetch the 'title' field from Course
+            })) as unknown as PopulatedProgress[]; // Assert that the returned data matches the populated type
+             //Using as unknown effectively bypasses TypeScript's strict type checking, allowing you to manually cast it to the correct type.
+
+
       
-        // Map and format the data
         return progressData.map((progress) => ({
-          courseId: progress.courseId._id.toString(), // Convert ObjectId to string
-          courseName: progress.courseId.title,         // Access the name field
+          courseId: progress.courseId._id, // Access the populated courseId
+          courseName: progress.courseId.title, // Access the 'title' field from Course
           completionPercentage: progress.completionPercentage,
           lastAccessed: progress.lastAccessed,
         }));
       }
 
 
-    // Fetch instructor analytics
-  async getInstructorAnalytics(instructorId: string) {
-    // Step 1: Get all courses taught by the instructor
-    const courses = await this.courseModel.find({ instructorId });
-    const courseIds = courses.map((course) => course._id);
 
-    // Step 2: Get all progress entries for these courses
-    const progressData = await this.progressModel
-      .find({ courseId: { $in: courseIds } })
-      .populate({
-        path: 'userId', // Populate the userId to get student details
-        select: 'firstName lastName', // Fetch only student names
-      });
+///////////////////////////////////////////////////////
+    // Get instructor analytics for courses
+    async getInstructorAnalytics(instructorId: string) {
+        const courses = await this.courseModel.find({ instructor_id: instructorId });
+        
 
-    // Step 3: Aggregate analytics by course
-    const analytics = courses.map((course) => {
-      const courseProgress = progressData.filter(
-        (progress) => String(progress.courseId) === String(course._id),
-      );
+        //Ensures all asynchronous operations for all courses are executed in parallel.Returns a single promise that resolves when all promises in the array have resolved.
+        const analytics = await Promise.all(
+          courses.map(async (course) => {
+            // Query progress data
+            const progressData = (await this.progressModel
+                .find({ courseId: course._id })
+                .populate({
+                    path: 'userId',
+                    select: 'name email',
+                })
+                .populate({
+                    path: 'courseId',
+                    select: 'title',
+                })) as unknown as PopulatedProgress[];
+      
+            if (!progressData.length) {
+              return {
+                courseId: course._id,
+                courseTitle: course.title,
+                totalStudents: 0,
+                averageCompletion: 0,
+                lowPerformingStudents: [],
+              };
+            }
+      
+            // Calculate analytics
+            const lowPerformingStudents = progressData
+              .filter((p) => p.completionPercentage < 50)
+              .map((p) => ({
+                studentId: p.userId._id,
+                studentName: p.userId.name,
+                email: p.userId.email,
+                completionPercentage: p.completionPercentage,
+              }));
+      
+            const averageCompletion =
+              progressData.reduce((sum, p) => sum + p.completionPercentage, 0) /
+              progressData.length;
+      
+            return {
+              courseId: course._id,
+              courseTitle: course.title,
+              totalStudents: progressData.length,
+              averageCompletion: parseFloat(averageCompletion.toFixed(2)),
+              lowPerformingStudents,
+            };
+          }),
+        );
+      
+        return analytics;
+      }
 
-      const totalStudents = courseProgress.length;
-      const averageCompletion =
-        courseProgress.reduce(
-          (sum, progress) => sum + progress.completionPercentage,
-          0,
-        ) / (totalStudents || 1);
 
-      const lowPerformingStudents = courseProgress
-        .filter((progress) => progress.completionPercentage < 50)
-        .map((progress) => ({
-          studentId: progress.userId._id.toString(),
-          studentName: `${progress.userId.firstName} ${progress.userId.lastName}`,
-          completionPercentage: progress.completionPercentage,
-        }));
+      /////////////////////////
 
-      return {
-        courseId: course._id.toString(),
-        courseName: course.name,
-        totalStudents,
-        averageCompletion,
-        lowPerformingStudents,
-      };
-    });
+  // Generate a downloadable analytics report (e.g., CSV)
+  async generateAnalyticsReport(instructorId: string) {
+    const analytics = await this.getInstructorAnalytics(instructorId);
 
-    return analytics;
+    // Convert analytics to CSV format
+    const headers = [
+      'Course ID',
+      'Course Title',
+      'Total Students',
+      'Average Completion (%)',
+      'Low-Performing Students',
+    ];
+    const rows = analytics.map((course) => [
+      course.courseId,
+      course.courseTitle,
+      course.totalStudents,
+      course.averageCompletion,
+      course.lowPerformingStudents
+        .map((student) => `${student.studentName} (${student.email})`)
+        .join('; '),
+    ]);
+
+    // Combine headers and rows into CSV format
+    const csv = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    return csv;
   }
+
+
+
 }
