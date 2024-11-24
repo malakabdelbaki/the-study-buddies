@@ -9,7 +9,7 @@ export type QuizDocument = Quiz & Document;
 export class Quiz {
 
     @Prop({ type: Types.ObjectId, ref: 'Module', required: true })
-    module_id: string;// Foreign key to the Module schema
+    module_id: Types.ObjectId;// Foreign key to the Module schema
 
     @Prop({ type: [{ type: Types.ObjectId, ref: 'Question' }], default: [] })
     questions: Types.ObjectId[]; // Array of references to the Question schema
