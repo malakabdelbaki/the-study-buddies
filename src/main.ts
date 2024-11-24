@@ -1,9 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const configService = app.get(ConfigService); 
 
   const config = new DocumentBuilder()
   .setTitle('The Study Buddies')
@@ -15,6 +18,13 @@ async function bootstrap() {
   
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = configService.get<number>('PORT') ?? 5000; 
+  await app.listen(port)
+    .then(() => {
+      console.log(`Application is running on http://localhost:${port}`);
+    })
+    .catch((err) => {
+      console.error('Error starting the application:', err);
+    });
 }
 bootstrap();
