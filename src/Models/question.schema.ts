@@ -1,5 +1,6 @@
 import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
 import {Document, Types} from 'mongoose';
+import { Difficulty } from 'src/enums/difficulty.enum';
 
 export type QuestionDocument = Question & Document;
 
@@ -18,8 +19,8 @@ export class Question {
   @Prop({required:true})
   correct_answer:string;
 
-  @Prop({required:true,enum: ['easy', 'medium', 'hard']})
-  difficulty_level: string;
+  @Prop({required:true,enum: Object.values(Difficulty)})
+  difficulty_level: Difficulty;
 
 }
 
