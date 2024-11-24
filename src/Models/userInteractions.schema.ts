@@ -17,6 +17,10 @@ export class UserInteraction {
 
   @Prop({ type: Number, required: true })
   score: number; 
+  
+  @Prop({ required: true, default: 0 })
+  averageScorePerDifficulty: { easy: number; medium: number; hard: number };
+
 
   @Prop({ type: Number, required: true })
   timeSpentMinutes: number; 
