@@ -20,6 +20,10 @@ export class Quiz {
     @Prop({type: Types.ObjectId ,ref :'User'})
     createdBy: Types.ObjectId; // Reference to the instructor who created it
 
+    @Prop({ required: false, type: [{ questionId: Types.ObjectId, difficulty: String }] })
+    questionHistory?: { questionId: Types.ObjectId; difficulty: string }[]; // Array of objects that store the question ID and the difficulty level of the question
+
+
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz);
