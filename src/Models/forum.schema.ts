@@ -3,7 +3,6 @@ import { Document, Types } from 'mongoose';
 
 export type ForumDocument = Forum & Document;
 
-// Forum Schema
 @Schema({ timestamps: true })
 export class Forum {
   @Prop({ type: Types.ObjectId, ref: 'Course', required: true })
