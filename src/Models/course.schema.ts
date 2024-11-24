@@ -1,5 +1,5 @@
 import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
-import {Document} from 'mongoose';
+import {Document, Types} from 'mongoose';
 
 export type CourseDocument = Course & Document;
 
@@ -17,8 +17,14 @@ export class Course{
     @Prop({required: true, enum: ['Beginner', 'Intermediate', 'Advanced']})
     difficulty_level: string;
 
-    @Prop({required: true})
-    created_by: string;
+    @Prop({type: Types.ObjectId, ref: 'User' ,required: true})
+    created_by: Types.ObjectId;
+
+    @Prop({type: Types.ObjectId, ref: 'User' ,required: true})
+    instructor_id: Types.ObjectId;
+
+    @Prop({type: [{type: Types.ObjectId, ref: 'User' }] ,required: true})
+    students: Types.ObjectId[];
 
 }
 
