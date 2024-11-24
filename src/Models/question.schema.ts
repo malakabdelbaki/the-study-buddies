@@ -7,7 +7,7 @@ export type QuestionDocument = Question & Document;
 export class Question {
 
   @Prop({ type: Types.ObjectId, ref: 'Quiz', required: true })
-  quiz_id: string;// Foreign key to the Quiz schema
+  quiz_id: Types.ObjectId;// Foreign key to the Quiz schema
 
   @Prop({required: true})
   question: string;
