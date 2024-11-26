@@ -2,7 +2,7 @@ import { Controller, Get, Param, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { PerformanceService } from './performance.service';
 import { ApiTags, ApiParam, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { StudentDashboardDto } from './dto/student-dashboard.dto'; // Import DTO for student dashboard
+import { StudentProgressDto } from './dto/student-progress.dto'; // Import DTO for student dashboard
 import { InstructorAnalyticsDto } from './dto/instructor-analytics.dto'; // Import DTO for instructor analytics
 
 @ApiTags('Performance') // Group all endpoints under the "Performance" section in Swagger
@@ -16,11 +16,11 @@ export class PerformanceController {
   @ApiResponse({
     status: 200,
     description: 'Student dashboard data',
-    type: [StudentDashboardDto], // Use the DTO for documenting the response
+    type: [StudentProgressDto], // Use the DTO for documenting the response
   })
   async getStudentDashboard(
     @Param('studentId') studentId: string,
-  ): Promise<StudentDashboardDto[]> {
+  ): Promise<StudentProgressDto[]> {
     return this.performanceService.getStudentDashboard(studentId);
   }
 
