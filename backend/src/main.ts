@@ -3,12 +3,14 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import mongoose from 'mongoose';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Get ConfigService for environment variables
-  const configService = app.get(ConfigService);
+  app.useGlobalPipes(new ValidationPipe()); // Enable global validation
+
+  const configService = app.get(ConfigService); 
 
   // Swagger configuration
   const config = new DocumentBuilder()
