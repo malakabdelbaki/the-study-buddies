@@ -3,9 +3,11 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CoursesModule } from './courses/courses.module';
 import { PerformanceModule } from './performance/performance.module';
+import dbconfig from './config/dbconfig';
 
 @Module({
   imports: [
@@ -14,6 +16,7 @@ import { PerformanceModule } from './performance/performance.module';
     }),
     MongooseModule.forRoot(process.env.MONGO_CONNECTION),
     PerformanceModule,
+    CoursesModule
   ],
   controllers: [AppController],
   providers: [AppService],

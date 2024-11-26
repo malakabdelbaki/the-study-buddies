@@ -19,13 +19,13 @@ export class Course{
     difficulty_level: string;
 
     @Prop({type: Types.ObjectId, ref: 'User' ,required: true})
-    created_by: Types.ObjectId;
-
-    @Prop({type: Types.ObjectId, ref: 'User' ,required: true})
     instructor_id: Types.ObjectId;
 
-    @Prop({type: [{type: Types.ObjectId, ref: 'User' }] ,required: true})
+    @Prop({type: [{type: Types.ObjectId, ref: 'User' }] ,required: true ,default:[]})
     students: Types.ObjectId[];
+
+    @Prop({type: [{type: Types.ObjectId, ref: 'Module' }] ,required: true,default:[]})
+    modules: Types.ObjectId[];
 
 }
 
