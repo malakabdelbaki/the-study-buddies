@@ -1,5 +1,6 @@
 import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
 import {Document, Types} from 'mongoose';
+import { Course_diff } from 'src/enums/course-diff.enum';
 
 export type CourseDocument = Course & Document;
 
@@ -14,7 +15,7 @@ export class Course{
     @Prop({required: true})
     category: string;
 
-    @Prop({required: true, enum: ['Beginner', 'Intermediate', 'Advanced']})
+    @Prop({required: true, enum: Object.values(Course_diff)})
     difficulty_level: string;
 
     @Prop({type: Types.ObjectId, ref: 'User' ,required: true})
