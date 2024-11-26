@@ -1,6 +1,15 @@
+import { ApiProperty } from '@nestjs/swagger';
+
 export class StudentProgressDto {
-    courseId: string; // ID of the course
-    courseName: string; // Name of the course
-    completionPercentage: number; // Progress in percentage
-    lastAccessed: Date; // Last time the course was accessed
-  }
+  @ApiProperty({ description: 'The ID of the course' })
+  courseId: string;
+
+  @ApiProperty({ description: 'The name of the course' })
+  courseName: string;
+
+  @ApiProperty({ description: 'Completion percentage of the course' })
+  completionPercentage: number;
+
+  @ApiProperty({ description: 'Last accessed date of the course' })
+  lastAccessed: Date;
+}

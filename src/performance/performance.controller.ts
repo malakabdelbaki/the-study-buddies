@@ -1,43 +1,63 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Res,  } from '@nestjs/common';
+import { Controller, Get, Param, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { PerformanceService } from './performance.service';
-//import { StudentDashboardDto } from './dto/student-dashboard.dto';
-//import { InstructorAnalyticsDto } from './dto/instructor-analytics.dto';
+import { ApiTags, ApiParam, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { StudentDashboardDto } from './dto/student-dashboard.dto'; // Import DTO for student dashboard
+import { InstructorAnalyticsDto } from './dto/instructor-analytics.dto'; // Import DTO for instructor analytics
 
-
+@ApiTags('Performance') // Group all endpoints under the "Performance" section in Swagger
 @Controller('performance')
 export class PerformanceController {
-    //readonly ensures that the data remains immutable, preventing unintended changes
-    constructor(private readonly performanceService: PerformanceService) {}
+  constructor(private readonly performanceService: PerformanceService) {}
 
-    @Get('/student/:studentId')
-  async getStudentDashboard(@Param('studentId') studentId: string) {
+  @Get('/student/:studentId')
+  @ApiOperation({ summary: 'Get student dashboard' })
+  @ApiParam({ name: 'studentId', description: 'The ID of the student' })
+  @ApiResponse({
+    status: 200,
+    description: 'Student dashboard data',
+    type: [StudentDashboardDto], // Use the DTO for documenting the response
+  })
+  async getStudentDashboard(
+    @Param('studentId') studentId: string,
+  ): Promise<StudentDashboardDto[]> {
     return this.performanceService.getStudentDashboard(studentId);
   }
-  
-   
-  // Get instructor analytics
+
   @Get('/instructor/:instructorId')
-  async getInstructorAnalytics(@Param('instructorId') instructorId: string) {
+  @ApiOperation({ summary: 'Get instructor analytics' })
+  @ApiParam({ name: 'instructorId', description: 'The ID of the instructor' })
+  @ApiResponse({
+    status: 200,
+    description: 'Instructor analytics data',
+    type: [InstructorAnalyticsDto], // Use the DTO for documenting the response
+  })
+  async getInstructorAnalytics(
+    @Param('instructorId') instructorId: string,
+  ): Promise<InstructorAnalyticsDto[]> {
     return this.performanceService.getInstructorAnalytics(instructorId);
   }
-    
-      // Download analytics report as a CSV file
-      @Get('/instructor/:instructorId/download')
-      async downloadAnalyticsReport(
-        @Param('instructorId') instructorId: string,
-        @Res() res: Response, // Explicitly define the response type as Express Response
-      ) {
-        const csv = await this.performanceService.generateAnalyticsReport(instructorId);
-      
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader(
-          'Content-Disposition',
-          `attachment; filename="analytics_${instructorId}.csv"`,
-        );
-        res.send(csv);
-      }
 
+  @Get('/instructor/:instructorId/download')
+  @ApiOperation({ summary: 'Download instructor analytics as a CSV file' })
+  @ApiParam({ name: 'instructorId', description: 'The ID of the instructor' })
+  @ApiResponse({
+    status: 200,
+    description: 'CSV file containing analytics report',
+    content: { 'text/csv': {} },
+  })
+  async downloadAnalyticsReport(
+    @Param('instructorId') instructorId: string,
+    @Res() res: Response,
+  ) {
+    const csv = await this.performanceService.generateAnalyticsReport(instructorId);
 
-
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="analytics_${instructorId}.csv"`,
+    );
+    res.send(csv);
+  }
 }
+
