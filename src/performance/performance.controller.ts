@@ -21,6 +21,7 @@ export class PerformanceController {
   async getStudentDashboard(
     @Param('studentId') studentId: string,
   ): Promise<StudentDashboardDto[]> {
+    console.log('Controller received studentId:', studentId); // Add this for debugging
     return this.performanceService.getStudentDashboard(studentId);
   }
 
