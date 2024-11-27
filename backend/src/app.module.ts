@@ -1,5 +1,3 @@
-
-
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -9,6 +7,7 @@ import { CoursesModule } from './courses/courses.module';
 import { PerformanceModule } from './performance/performance.module';
 import { QuizzesController } from './quizzes/quizzes.controller';
 import { QuizzesService } from './quizzes/quizzes.service';
+import { UserModule } from './users/users.module';
 import dbconfig from './config/dbconfig';
 
 @Module({
@@ -18,7 +17,8 @@ import dbconfig from './config/dbconfig';
     }),
     MongooseModule.forRoot(process.env.MONGO_CONNECTION),
     PerformanceModule,
-    CoursesModule
+    CoursesModule,
+    UserModule
   ],
   controllers: [AppController, QuizzesController],
   providers: [AppService, QuizzesService],

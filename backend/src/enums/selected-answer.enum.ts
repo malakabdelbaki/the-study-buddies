@@ -3,4 +3,6 @@ export enum SelectedAnswer {
     B = 'b',
     C = 'c',
     D = 'd',
+    T = 't',
+    F = 'f',
   }
