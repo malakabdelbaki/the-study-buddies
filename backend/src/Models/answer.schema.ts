@@ -9,7 +9,7 @@ export class Answer{
     @Prop({type: Types.ObjectId, ref: 'Question', required: true })// references question
     question_id: Types.ObjectId;
 
-    @Prop({required: true, type: String,  enum: SelectedAnswer, default: SelectedAnswer.A})
+    @Prop({required: true, type: String,  enum: SelectedAnswer})
     selectedAnswer: SelectedAnswer;
 
     @Prop({required: true, default:false})
