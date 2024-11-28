@@ -1,7 +1,7 @@
-  import { Controller, Get, Post, Body, Put, Param, Req, UseGuards, ForbiddenException, InternalServerErrorException, Delete }  from '@nestjs/common';
+  import { Controller, Get, Post, Body, Put, Param, Req, UseGuards, ForbiddenException, InternalServerErrorException, Delete, Patch }  from '@nestjs/common';
   import { UserService } from './users.service';
   import { CreateUserDto } from './dtos/create-user.dto';
-  import { UpdatePersonalInfoDto } from './dtos/update-personal-info.dto';
+  import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
   //import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
   import { authorizationGuard } from '../auth/guards/authorization.guard';
   import { Roles } from '../auth/decorators/roles.decorator';
@@ -9,6 +9,7 @@
   import { Public } from '../auth/decorators/public.decorator';
   import { User } from 'src/Models/user.schema';
   import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiProperty } from '@nestjs/swagger';
+import { ChangePasswordDto } from './dtos/change-password-dto';
 
   @ApiTags('Users') 
   @Controller('users')
@@ -51,6 +52,26 @@
         throw new InternalServerErrorException(error.message);
         }
     }
+
+    @Patch('change-password/:userId')
+    //@Roles(Role.Admin)
+    @ApiParam({
+      name: 'userId',
+      description: 'The ID of the user whose password is to be changed',
+      required: true,
+    })
+    @ApiOperation({ summary: 'Admin changes password for a student or instructor' })
+    @ApiBody({
+      type: ChangePasswordDto,
+      description: 'DTO containing the new password for the user',
+    })
+
+    async changeUserPassword(
+      @Param('userId') userId: string,
+      @Body() changePasswordDto: ChangePasswordDto,
+    ): Promise<string> {
+      return this.userService.changeUserPassword(userId, changePasswordDto);
+    }
   
     /** --------- ADMIN & INSTRUCTOR ENDPOINTS ----------- */
 
@@ -67,18 +88,7 @@
         }
     }
 
-    // Find user by ID
-    @Get(':userId')
-    //@Roles(Role.Admin, Role.Instructor)
-    @ApiOperation({ summary: 'Retrieve a user by their ID' })
-    @ApiParam({ name: 'userId', description: 'The ID of the user to retrieve' })
-    async findUserById(@Param('userId') userId: string): Promise<User> {
-        try {
-        return await this.userService.findUserById(userId);
-        } catch (error) {
-        throw new InternalServerErrorException(error.message);
-        }
-    }
+    
   
     // Create a new user account (Admin can create any user, Instructor can create only students)
     @Post()
@@ -127,43 +137,56 @@
 
 
     /** --------- PUBLIC ENDPOINTS ----------- */
+
+    // Find user by ID
+    @Get(':userId')
+    //@Public()
+    @ApiOperation({ summary: 'Retrieve a user by their ID' })
+    @ApiParam({ name: 'userId', description: 'The ID of the user to retrieve' })
+    async findUserById(@Param('userId') userId: string): Promise<User> {
+        try {
+        return await this.userService.findUserById(userId);
+        } catch (error) {
+        throw new InternalServerErrorException(error.message);
+        }
+    }
   
     // Update personal information (User-specific access)
     @Put(':userId/personal-info')
     //@Public()
     @ApiOperation({ summary: 'Update personal information of a user' })
     @ApiParam({ name: 'userId', description: 'The ID of the user to update' })
-    @ApiBody({ type: UpdatePersonalInfoDto })
+    @ApiBody({ type: UpdateUserInfoDto })
     async updatePersonalInfo(
       @Param('userId') userId: string,
-      @Body() updateDto: UpdatePersonalInfoDto,
+      @Body() updateDto: UpdateUserInfoDto,
       @Req() req: any,
     ) {
       const currentUser = req.user;
   
-      return this.userService.updatePersonalInfo(userId, updateDto);
+      return this.userService.updateUserInfo(userId, updateDto);
     }
   
-    // View enrolled courses 
+    // View enrolled courses of a student
     @Get(':userId/courses/enrolled')
     //@Public()
     @ApiOperation({ summary: 'View enrolled courses for a user' })
     @ApiParam({ name: 'userId', description: 'The ID of the user' })
-    async getEnrolledCourses(@Param('userId') userId: string, @Req() req: any) {
+    async getEnrolledCoursesOfStudent(@Param('userId') userId: string, @Req() req: any) {
       const currentUser = req.user;
   
-      return this.userService.getEnrolledCourses(userId);
+      return this.userService.getEnrolledCoursesOfStudent(userId);
     }
   
-    // View completed courses 
+    // View completed courses of a student
     @Get(':userId/courses/completed')
     //@Public()
     @ApiOperation({ summary: 'View completed courses for a user' })
     @ApiParam({ name: 'userId', description: 'The ID of the user' })
-    async getCompletedCourses(@Param('userId') userId: string, @Req() req: any) {
+    async getCompletedCoursesOfStudent(@Param('userId') userId: string, @Req() req: any) {
       const currentUser = req.user;
   
-      return this.userService.getCompletedCourses(userId);
+      return this.userService.getCompletedCoursesOfStudent(userId);
     }
   
     // Get student average score 
@@ -197,6 +220,17 @@
     //   }
   
       return this.userService.getStudentProgress(courseId, studentId);
+    }
+    
+    // get all courses taught by a certain instructor
+    @Get(':instructorId/courses')
+    //@Public()
+    @ApiOperation({ summary: 'Get all course titles taught by a specific instructor' })
+    @ApiParam({ name: 'instructorId', description: 'The ID of the instructor' })
+    async getCoursesByInstructor(@Param('instructorId') instructorId: string) {
+
+      
+      return this.userService.getCoursesByInstructor(instructorId);
     }
   }
   
