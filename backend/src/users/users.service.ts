@@ -6,10 +6,11 @@ import { Course, CourseDocument } from '../Models/course.schema';
 import { Progress, ProgressDocument } from '../Models/progress.schema';
 import { Response, ResponseDocument } from '../Models/response.schema';
 import { CreateUserDto } from './dtos/create-user.dto';  // Importing DTOs
-import { UpdatePersonalInfoDto } from './dtos/update-personal-info.dto'; // Importing DTOs
+import { UpdateUserInfoDto } from './dtos/update-user-info.dto'; // Importing DTOs
 import { Role } from '../enums/role.enum';
 import * as bcrypt from 'bcrypt';
 import { Types } from 'mongoose';
+import { ChangePasswordDto } from './dtos/change-password-dto';
 
 
 
@@ -59,6 +60,30 @@ export class UserService {
     }
   }
 
+  async changeUserPassword(
+    userId: string,
+    changeDto: ChangePasswordDto,
+  ): Promise<string> {
+    try {
+      // Find the user by ID
+      const user = await this.userModel.findById(userId);
+      if (!user) {
+        throw new NotFoundException(`User with ID ${userId} not found`);
+      }
+  
+      // Hash the new password
+      const hashedPassword = await bcrypt.hash(changeDto.newPassword, 10);
+  
+      // Update the password hash
+      user.passwordHash = hashedPassword;
+      await user.save();
+  
+      return `Password for user ${user.name} has been successfully updated`;
+    } catch (error) {
+      throw new BadRequestException(`Error updating password: ${error.message}`);
+    }
+  }
+
   /** --------- ADMIN & INSTRUCTOR COMMON FUNCTIONALITIES ----------- */
 
   // Get all students in a specific course
@@ -75,16 +100,7 @@ export class UserService {
     }
   }
 
-  // Find user by ID
-  async findUserById(userId: string): Promise<User> {
-    try {
-      const user = await this.userModel.findById(userId);
-      if (!user) throw new NotFoundException('User not found.');
-      return user;
-    } catch (error) {
-      throw new InternalServerErrorException('Error fetching user by ID', error.message);
-    }
-  }
+  
 
   //creates a user account, but instructor only creates user accounts
   async createUser(createUserDto: CreateUserDto, currentUser: User): Promise<User> {
@@ -101,7 +117,7 @@ export class UserService {
       }
   
       // Hash the user's password
-      const passwordHash = await bcrypt.hash(createUserDto.passwordHash, 10);
+      const passwordHash = await bcrypt.hash(createUserDto.password, 10);
   
       // Create a new user document
       const newUser = new this.userModel({
@@ -161,10 +177,21 @@ export class UserService {
 
   /** --------- PUBLIC FUNCTIONALITIES ----------- */
 
-  // Update personal information
-  async updatePersonalInfo(
+  // Find user by ID
+  async findUserById(userId: string): Promise<User> {
+    try {
+      const user = await this.userModel.findById(userId);
+      if (!user) throw new NotFoundException('User not found.');
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException('Error fetching user by ID', error.message);
+    }
+  }
+
+  // Update user information
+  async updateUserInfo(
     userId: string,
-    updateDto: UpdatePersonalInfoDto, // Use DTO to update user info
+    updateDto: UpdateUserInfoDto, // Use DTO to update user info
   ): Promise<User> {
     try {
       const updatedUser = await this.userModel.findByIdAndUpdate(userId, updateDto, { new: true });
@@ -180,8 +207,8 @@ export class UserService {
     }
   }
 
-  // View enrolled courses
-  async getEnrolledCourses(userId: string): Promise<Course[]> {
+  // View enrolled courses of a student
+  async getEnrolledCoursesOfStudent(userId: string): Promise<Course[]> {
     try {
 
       const studentObjectId = new mongoose.Types.ObjectId(userId);
@@ -196,8 +223,8 @@ export class UserService {
       }
   }
 
-  // Track completed courses
-  async getCompletedCourses(userId: string): Promise<any> {
+  // Track completed courses of a student
+  async getCompletedCoursesOfStudent(userId: string): Promise<any> {
     try {
 
      const studentObjectId = new mongoose.Types.ObjectId(userId);
@@ -261,6 +288,26 @@ export class UserService {
     } catch (error) {
         throw new InternalServerErrorException('Error retrieving student progress', error.message);
       }
+  }
+  
+  // get all courses taught by a certain instructor
+  async getCoursesByInstructor(instructorId: string): Promise<string[]> {
+    try {
+      // Ensure the instructor ID is a valid ObjectId
+      const instructorObjectId = new Types.ObjectId(instructorId);
+
+      // Fetch all courses taught by the instructor
+      const courses = await this.courseModel.find({ instructor_id: instructorObjectId }).select('title -_id');
+
+      if (!courses.length) {
+        throw new NotFoundException(`No courses found for the instructor with ID: ${instructorId}`);
+      }
+
+      // Extract and return the titles
+      return courses.map(course => course.title);
+    } catch (error) {
+      throw new NotFoundException('Error fetching courses', error.message);
+    }
   }
   
 }
