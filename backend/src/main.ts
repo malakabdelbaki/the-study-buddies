@@ -8,7 +8,10 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.useGlobalPipes(new ValidationPipe()); // Enable global validation
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true, // Enable transformation
+    whitelist: true, // Remove properties not defined in DTO
+ })); // Enable global validation
 
   const configService = app.get(ConfigService); 
 
@@ -32,9 +35,14 @@ async function bootstrap() {
   }
 
   // Start the application
-  const port = configService.get<number>('PORT') ?? 3000; // Use environment variable or fallback to 3000
-  await app.listen(port);
-  console.log(`Application is running on http://localhost:${port}`);
+  const port = configService.get<number>('PORT') ?? 5000; 
+  await app.listen(port)
+    .then(() => {
+      console.log(`Application is running on http://localhost:${port}`);
+    })
+    .catch((err) => {
+      console.error('Error starting the application:', err);
+    });
 }
 
 bootstrap();

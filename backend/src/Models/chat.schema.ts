@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { ChatType } from '../enums/chat-type.enum';
 
 export type ChatDocument = Chat & Document;
 
@@ -12,8 +11,11 @@ export class Chat {
   @Prop({ type:[{ type: Types.ObjectId, ref: 'Message' }], default: [] })
   messages: Types.ObjectId[];
 
-  @Prop({type: String, enum: ChatType, required: true, default: ChatType.PRIVATE})
-  chat_type: ChatType;
+  @Prop({type: String, required: true})
+  chat_name: string;
+
+  @Prop({ type: Boolean, required: true, default: false })
+  isArchived: boolean;
 }
 
 export const ChatSchema = SchemaFactory.createForClass(Chat);

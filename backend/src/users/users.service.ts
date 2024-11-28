@@ -8,9 +8,9 @@ import { Response, ResponseDocument } from '../Models/response.schema';
 import { CreateUserDto } from './dtos/create-user.dto';  // Importing DTOs
 import { UpdateUserInfoDto } from './dtos/update-user-info.dto'; // Importing DTOs
 import { Role } from '../enums/role.enum';
-import * as bcrypt from 'bcrypt';
 import { Types } from 'mongoose';
 import { ChangePasswordDto } from './dtos/change-password-dto';
+import bcrypt from 'bcrypt';
 
 
 
