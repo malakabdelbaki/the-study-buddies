@@ -152,7 +152,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
   ) 
   {
-    const messages = await this.chatService.getMessagesByChatId(new Types.ObjectId(chatId));
+    const messages = await this.chatService.getMessagesByChatId(new Types.ObjectId(data.chatId));
     client.emit('messageHistory', messages);
   }
 
