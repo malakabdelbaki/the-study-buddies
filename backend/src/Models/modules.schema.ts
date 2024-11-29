@@ -26,9 +26,6 @@ export class Module {
     @Prop({required:true,enum: Object.values(QuizType)})
     quiz_type: QuizType;
 
-    @Prop({required:true,default:false})
-    is_OutDated:boolean;
-
     @Prop({type: [{ type: Types.ObjectId, ref: 'Question' }],required:false})
     question_bank : Types.ObjectId[];
 
