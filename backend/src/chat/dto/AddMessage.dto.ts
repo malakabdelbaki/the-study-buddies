@@ -1,5 +1,5 @@
 import { IsOptional, IsString , IsEnum, IsArray, ArrayNotEmpty, IsNotEmpty} from 'class-validator';
-import { Exists } from '../../common/validators/exists.validator';
+// import { Exists } from '../../common/validators/exists.validator';
 // import { HasRole } from '../../common/validators/has-role.validator';
 import { Role } from '../../enums/role.enum';
 import {Types } from 'mongoose';

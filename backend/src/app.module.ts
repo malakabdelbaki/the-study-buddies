@@ -9,7 +9,7 @@ import { QuizzesController } from './quizzes/quizzes.controller';
 import { QuizzesService } from './quizzes/quizzes.service';
 import dbconfig from './config/dbconfig';
 import { ChatModule } from './chat/chat.module';
-import { ValidatorsModule } from './common/validators/validators.module';
+// import { ValidatorsModule } from './common/validators/validators.module';
 import { UserModule } from './users/users.module';
 
 @Module({
@@ -22,7 +22,7 @@ import { UserModule } from './users/users.module';
     CoursesModule,
     UserModule,
     ChatModule,
-    ValidatorsModule,
+    // ValidatorsModule,
   ],
   controllers: [AppController, QuizzesController],
   providers: [AppService, QuizzesService],
