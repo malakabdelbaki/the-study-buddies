@@ -9,14 +9,15 @@ import { QuizzesController } from './quizzes/quizzes.controller';
 import { QuizzesService } from './quizzes/quizzes.service';
 import dbconfig from './config/dbconfig';
 import { ChatModule } from './chat/chat.module';
-// import { ValidatorsModule } from './common/validators/validators.module';
+//// import { ValidatorsModule } from './common/validators/validators.module';
 import { UserModule } from './users/users.module';
 import { ForumService } from './discussionForum/forum/forum.service';
 import { ForumController } from './discussionForum/forum/forum.controller';
 import { ForumModule } from './discussionForum/forum/forum.module';
 import { Thread } from './Models/thread.schema';
 import { ThreadsModule } from './discussionForum/threads/threads.module';
-import { ReplyModule } from './discussionForum/replies/replies.module';
+import { ReplyModule } from './discussionForum/replies/replies.module';import { ModuleModule } from './module/module.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,7 +28,8 @@ import { ReplyModule } from './discussionForum/replies/replies.module';
     CoursesModule,
     UserModule,
     ChatModule,
-    // ValidatorsModule,
+   // // ValidatorsModule,
+    ModuleModule
     ForumModule,
     ThreadsModule,
     ReplyModule,
