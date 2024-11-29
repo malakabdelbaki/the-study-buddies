@@ -27,6 +27,9 @@ export class Course{
     @Prop({type: [{type: Types.ObjectId, ref: 'Module' }] ,required: true,default:[]})
     modules: Types.ObjectId[];
 
+    @Prop({defalut:[]})
+    key_words : string[];
+
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
