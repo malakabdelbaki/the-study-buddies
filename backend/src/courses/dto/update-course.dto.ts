@@ -4,13 +4,13 @@ import { IsString, IsEnum, IsArray, IsMongoId, IsOptional } from 'class-validato
 import { ApiProperty } from '@nestjs/swagger';
 import { Course_diff } from 'src/enums/course-diff.enum';
 import { Types } from 'mongoose';
+import { User } from 'src/models/user.schema';
 
 export class UpdateCourseDto extends PartialType(CreateCourseDto) {
 
   @ApiProperty({ description: 'Title of the course', required: false })
   @IsString()
   @IsOptional()
-
   title?: string;
 
   @ApiProperty({ description: 'Detailed description of the course', required: false })
@@ -21,7 +21,6 @@ export class UpdateCourseDto extends PartialType(CreateCourseDto) {
   @ApiProperty({ description: 'Category of the course', required: false })
   @IsString()
   @IsOptional()
-
   category?: string;
 
   @ApiProperty({
@@ -40,11 +39,10 @@ export class UpdateCourseDto extends PartialType(CreateCourseDto) {
     type: [Types.ObjectId],
     required: false,
   })
-
   @IsArray()
+  @IsMongoId({ each: true }) // Validates each item in the array is a valid ObjectId
   @IsOptional()
   students?: Types.ObjectId[];
-
 
   @ApiProperty({
     description: 'List of module IDs included in the course',
@@ -52,6 +50,7 @@ export class UpdateCourseDto extends PartialType(CreateCourseDto) {
     required: false,
   })
   @IsArray()
+  @IsMongoId({ each: true }) // Validates each item in the array is a valid ObjectId
   @IsOptional()
   modules?: Types.ObjectId[];
 }

@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpException, HttpStatus } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { ApiQuery } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
 @Controller('courses')
 export class CoursesController {
@@ -23,16 +24,47 @@ export class CoursesController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return await this.coursesService.findOne(id);
+    let ID = new Types.ObjectId(id)
+    return await this.coursesService.findOne(ID);
   }
+
+  @Get(':courseid/modules')
+  async getModules(@Param('courseid') courseid: string) {
+    try {
+      // Ensure the courseid is a valid ObjectId
+      let ID = new Types.ObjectId(courseid);
+      
+      // Get modules for the given course ID
+      const modules = await this.coursesService.getModules(ID);
+      
+      // If no modules found, return a meaningful response
+      if (!modules || modules.length === 0) {
+        throw new HttpException('No modules found for this course', HttpStatus.NOT_FOUND);
+      }
+  
+      return modules;
+    } catch (err) {
+      // Log the error and throw an exception with the relevant message
+      console.error('Error in getModules controller:', err.message);
+      throw new HttpException(
+        'Error retrieving modules',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
-    return this.coursesService.update(id, updateCourseDto);
+    let ID = new Types.ObjectId(id)
+    return this.coursesService.update(ID, updateCourseDto);
   }
+
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    return this.coursesService.remove(id);
+    let ID = new Types.ObjectId(id)
+
+    return this.coursesService.remove(ID);
   }
 }

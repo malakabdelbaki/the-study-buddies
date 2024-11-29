@@ -17,8 +17,13 @@ export class Question {
   @Prop({required: true})
   question: string;
 
-  @Prop({type:[String],required:false})
-  options?:string[];
+  @Prop({
+    type: Map,
+    of: String,
+    required: true,
+  })
+  options: Record<string, string>; // Matches the Record<string, string> format
+
 
   @Prop({required:true})
   correct_answer:string;

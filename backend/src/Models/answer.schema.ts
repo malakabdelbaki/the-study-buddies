@@ -1,6 +1,6 @@
 import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
 import {Document, Types} from 'mongoose';
-import { SelectedAnswer } from 'src/enums/selected-answer.enum';
+import { Choice } from 'src/enums/Choice.enum';
 
 export type AnswerDocument = Answer & Document;
 
@@ -9,8 +9,8 @@ export class Answer{
     @Prop({type: Types.ObjectId, ref: 'Question', required: true })// references question
     question_id: Types.ObjectId;
 
-    @Prop({required: true, type: String,  enum: SelectedAnswer})
-    selectedAnswer: SelectedAnswer;
+    @Prop({required: true, type: String,  enum: Choice})
+    selectedAnswer: Choice;
 
     @Prop({required: true, default:false})
     isCorrect: boolean;
