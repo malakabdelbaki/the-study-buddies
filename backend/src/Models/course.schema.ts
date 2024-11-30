@@ -30,6 +30,10 @@ export class Course{
     @Prop({defalut:[]})
     key_words : string[];
 
+    // New rating field for the course (e.g., rating out of 5)
+    @Prop({ type: [Number], default: [] }) // Array of ratings given by students
+    ratings: number[];
+
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);

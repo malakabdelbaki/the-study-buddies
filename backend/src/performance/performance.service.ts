@@ -531,6 +531,59 @@ const overallstudentPerformance = {
 
 
 
+  //helper function to calculate the average rating of an array of ratings
+  private calculateAverageRating(ratings: number[]): number {
+    if (ratings.length === 0) return 0;
+    const total = ratings.reduce((sum, rating) => sum + rating, 0);
+    return parseFloat((total / ratings.length).toFixed(2));
+  }
+
+  async getContentEffectivenessReport(instructorId: string): Promise<any> {
+    
+    // Step 1: Find all courses for this instructor
+    const courses = await this.courseModel.find({ instructor_id: instructorId}).populate('modules').exec();
+  
+    const reports = [];
+  
+    // Step 2: Loop through each course and its modules to get ratings
+    for (const course of courses) {
+      let courseRatings = course.ratings; // Course ratings
+      const courseRating = this.calculateAverageRating(courseRatings); // Calculate course rating
+  
+      const modulesReport = [];
+  
+      // Step 3: Loop through each module in the course and get ratings
+      for (const moduleId of course.modules) {
+        const module = await this.ModuleModel.findById(moduleId);
+        const moduleRating = this.calculateAverageRating(module.ratings); // Calculate module rating
+  
+        modulesReport.push({
+          moduleId: module._id.toString(),
+          moduleTitle: module.title,
+          moduleRating,
+        });
+      }
+  
+      // Step 4: Get instructor's average rating (based on course ratings)
+      const instructor = await this.userModel.findById(instructorId);
+      const instructorRating = this.calculateAverageRating(instructor.ratings); // Calculate instructor rating
+  
+      reports.push({
+        courseId: course._id.toString(),
+        courseTitle: course.title,
+        courseRating,
+        instructorRating,
+        modules: modulesReport,
+      });
+    }
+  
+    return reports;
+  }
+  
+
+
+
+
 
 
 

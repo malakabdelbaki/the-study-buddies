@@ -43,6 +43,14 @@ export class PerformanceController {
     return this.performanceService.getQuizResultsReport(instructorId);
   }
 
+  @Get('content-effectiveness/:instructorId')
+  async getContentEffectivenessReport(
+    @Param('instructorId') instructorId: string,
+  ) {
+    return await this.performanceService.getContentEffectivenessReport(instructorId);
+  }
+
+
   @Get('/instructor/:instructorId/download')
   @ApiOperation({ summary: 'Download instructor analytics as a CSV file' })
   @ApiParam({ name: 'instructorId', description: 'The ID of the instructor' })
