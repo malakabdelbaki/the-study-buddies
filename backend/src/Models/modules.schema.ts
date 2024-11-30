@@ -32,6 +32,12 @@ export class Module {
     @Prop({required:true,enum: Object.values(Difficulty)})
     module_difficulty: Difficulty;
 
+    // New rating field for the module (e.g., rating out of 5)
+    @Prop({ type: [Number], default: [] }) // Array of ratings given by students
+    ratings: number[];
+
+    @Prop({required:true})
+    quiz_length: number; // Number of questions in the quiz
 }
 
 export const ModuleSchema = SchemaFactory.createForClass(Module);

@@ -28,6 +28,7 @@ export class Progress {
   //lastAccessed is often the current date when a new progress entry is created.This automatically sets the field to the current date if no value is provided
   @Prop({ required: true ,default: () => new Date()})
   lastAccessed: Date;
+  
 }
 
 //SchemaFactory.createForClass(): Converts the decorated Progress class into a Mongoose schema

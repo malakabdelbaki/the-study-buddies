@@ -20,6 +20,11 @@ export class User {
 
   @Prop({required: false})
   profilePictureUrl?: string;
+  
+  // New field to store ratings for the instructor
+  @Prop({ type: [Number], default: [] }) // Array of ratings from students
+  ratings: number[];
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

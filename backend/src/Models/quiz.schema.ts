@@ -11,7 +11,7 @@ export type QuizDocument = Quiz & Document;
 export class Quiz {
 
     @Prop ({type:String})
-    title:String;
+    title:string;  //I (phebe) changed this string (primitive) and not String (wrapper object)
 
     @Prop({ type: Types.ObjectId, ref: 'Module', required: true })
     module_id: Types.ObjectId;// Foreign key to the Module schema
