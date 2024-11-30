@@ -11,6 +11,13 @@ import dbconfig from './config/dbconfig';
 import { ChatModule } from './chat/chat.module';
 //// import { ValidatorsModule } from './common/validators/validators.module';
 import { UserModule } from './users/users.module';
+
+import { ForumService } from './discussionForum/forum/forum.service';
+import { ForumController } from './discussionForum/forum/forum.controller';
+import { ForumModule } from './discussionForum/forum/forum.module';
+import { Thread } from './Models/thread.schema';
+import { ThreadsModule } from './discussionForum/threads/threads.module';
+import { ReplyModule } from './discussionForum/replies/replies.module';
 import { ModuleModule } from './module/module.module';
 
 @Module({
@@ -23,8 +30,11 @@ import { ModuleModule } from './module/module.module';
     CoursesModule,
     UserModule,
     ChatModule,
-   // // ValidatorsModule,
-    ModuleModule
+    // ValidatorsModule,
+    ForumModule,
+    ThreadsModule,
+    ReplyModule,
+    ModuleModule,
   ],
   controllers: [AppController, QuizzesController],
   providers: [AppService, QuizzesService],
