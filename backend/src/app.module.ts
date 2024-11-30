@@ -30,7 +30,7 @@ import { ModuleModule } from './module/module.module';
     UserModule,
     ChatModule,
    // // ValidatorsModule,
-    ModuleModule
+    ModuleModule,
     ForumModule,
     ThreadsModule,
     ReplyModule,

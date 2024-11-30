@@ -100,7 +100,7 @@ import { ChangePasswordDto } from './dtos/change-password-dto';
     })
     async createUser(@Body() createUserDto: CreateUserDto, @Req() req: any) {
       const currentUser = req.user; // Assuming JWT payload contains user info
-      return this.userService.createUser(createUserDto, currentUser);
+      return this.userService.createUser(createUserDto);
     }
   
     // Assign students to a course (Admin or Instructor)
