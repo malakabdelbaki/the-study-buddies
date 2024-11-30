@@ -36,6 +36,8 @@ export class Module {
     @Prop({ type: [Number], default: [] }) // Array of ratings given by students
     ratings: number[];
 
+    @Prop({required:true})
+    quiz_length: number; // Number of questions in the quiz
 }
 
 export const ModuleSchema = SchemaFactory.createForClass(Module);
