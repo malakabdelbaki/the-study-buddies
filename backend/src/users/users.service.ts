@@ -102,8 +102,14 @@ export class UserService {
 
   
 
+  //Find user by email, added for auth
+  async findByEmail(email: string):Promise<UserDocument> {
+    const user=await this.userModel.findOne({email})
+    return user;  // Fetch a student by username
+}
+
   //creates a user account, but instructor only creates user accounts
-  async createUser(createUserDto: CreateUserDto, currentUser: User): Promise<User> {
+  /**async createUser(createUserDto: CreateUserDto, currentUser: User): Promise<User> {
     try {
       // Ensure instructors can only create student accounts
     //   if (currentUser.role === Role.Instructor && createUserDto.role !== Role.Student) { //needs jwt to work
@@ -130,7 +136,33 @@ export class UserService {
     } catch (error) {
         throw new InternalServerErrorException('Error creating user', error.message);
       }
+  } */
+
+  //create a user -edited
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
+    try {
+      // Check if the email is already in use
+      const existingUser = await this.userModel.findOne({ email: createUserDto.email });
+      if (existingUser) {
+        throw new BadRequestException('Email already in use.');
+      }
+  
+      // Hash the user's password
+      const passwordHash = await bcrypt.hash(createUserDto.password, 10);
+  
+      // Create a new user document
+      const newUser = new this.userModel({
+        ...createUserDto,
+        passwordHash,
+      });
+  
+      // Save and return the new user
+      return await newUser.save();
+    } catch (error) {
+        throw new InternalServerErrorException('Error creating user', error.message);
+      }
   }
+  
   
 
   // Assign students to a course
