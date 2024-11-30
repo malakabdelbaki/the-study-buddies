@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@nestjs/jwt": "^10.2.0",
     "@nestjs/websockets": "^10.4.12",
     "@types/bcrypt": "^5.0.2",
     "@types/socket.io": "^3.0.2",
