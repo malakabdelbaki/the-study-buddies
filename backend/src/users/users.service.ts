@@ -148,7 +148,7 @@ export class UserService {
       }
   
       // Hash the user's password
-      const passwordHash = await bcrypt.hash(createUserDto.passwordHash, 10);
+      const passwordHash = await bcrypt.hash(createUserDto.password, 10);
   
       // Create a new user document
       const newUser = new this.userModel({
