@@ -45,4 +45,6 @@ async function bootstrap() {
     });
 }
 
+  //cors
+
 bootstrap();
