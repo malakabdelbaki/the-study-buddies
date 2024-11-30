@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CoursesModule } from './courses/courses.module';
 import { PerformanceModule } from './performance/performance.module';
-import { QuizzesController } from './quizzes/quizzes.controller';
-import { QuizzesService } from './quizzes/quizzes.service';
+import { QuizzesModule } from './quizzes/quizzes.module';
 import dbconfig from './config/dbconfig';
 import { ChatModule } from './chat/chat.module';
 //// import { ValidatorsModule } from './common/validators/validators.module';
@@ -23,7 +22,7 @@ import { ModuleModule } from './module/module.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,
+      isGlobal: true, // Makes configuration globally available
     }),
     MongooseModule.forRoot(process.env.MONGO_CONNECTION),
     PerformanceModule,
@@ -42,4 +41,3 @@ import { ModuleModule } from './module/module.module';
   // providers: [AppService, QuizzesService],
 })
 export class AppModule {}
-
