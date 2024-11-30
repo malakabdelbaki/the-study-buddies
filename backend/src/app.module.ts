@@ -28,16 +28,18 @@ import { ModuleModule } from './module/module.module';
     MongooseModule.forRoot(process.env.MONGO_CONNECTION),
     PerformanceModule,
     CoursesModule,
-    UserModule,
-    ChatModule,
+    // UserModule,
+    // ChatModule,
     // ValidatorsModule,
     ForumModule,
     ThreadsModule,
     ReplyModule,
     ModuleModule,
   ],
-  controllers: [AppController, QuizzesController],
-  providers: [AppService, QuizzesService],
+  controllers: [AppController],
+  providers: [AppService],
+  // controllers: [AppController, QuizzesController],
+  // providers: [AppService, QuizzesService],
 })
 export class AppModule {}
 
