@@ -5,7 +5,7 @@ import { NotificationType } from '../enums/notification-type.enum';
 export type NotificationDocument = Notification & Document;
 
 @Schema({ timestamps: true })  
-class Notification {
+export class Notification {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user_id: Types.ObjectId;  // Reference to the User who receives the notification
 
