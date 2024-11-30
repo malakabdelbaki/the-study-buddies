@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Course } from 'src/Models/course.schema';
 
@@ -34,27 +34,72 @@ export class CoursesService {
     return courses;
   }
 
-  async findOne(id:string) {
+  async findOne(id:Types.ObjectId) {
     let course = await this.courseModel.findById(id);
     return course;
   }
 
-  async update(id: string, updateCourseDto: UpdateCourseDto) {
+  async update(id: Types.ObjectId, updateCourseDto: UpdateCourseDto) {
     let course = this.findOne(id);
     if (!course){
       throw new Error('Course Not found');
     }
+    console.log(updateCourseDto);
     let updatedcourse = await this.courseModel.findByIdAndUpdate(id,updateCourseDto,{new:true});
+    console.log(updatedcourse)
     return updatedcourse.save();
   }
 
-  async remove(id: string) {
+
+  async getModules(id: Types.ObjectId) {
+    try {
+      // Attempt to find the course by its ID
+      const course = await this.courseModel.findById(id).populate('modules');
+  
+      // If no course is found, throw an exception
+      if (!course) {
+        throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
+      }
+  
+      // Return the modules from the course
+      const modules = course.modules;
+  
+      // If modules are empty or undefined, throw an exception
+      if (!modules || modules.length === 0) {
+        throw new HttpException('No modules found for this course', HttpStatus.NOT_FOUND);
+      }
+  
+      return modules;
+    } catch (err) {
+      // Log the error and throw an exception if there's a problem
+      console.error('Error in getModules service:', err.message);
+      throw new HttpException(
+        'Error retrieving modules',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  
+
+  async AddModule(id:Types.ObjectId,ModuleId:Types.ObjectId){
+    let course = (await this.findOne(id)).populate('modules');
+    if (!course){
+      throw new Error('Course Not found');
+    }
+    (await course).modules.push(ModuleId);
+    await (await course).save(); // Save the changes
+    return course;
+  }
+
+  async remove(id: Types.ObjectId) {
     let course = this.findOne(id);
     if (!course){
       throw new Error ('not found course ');
     }
     await this.courseModel.findByIdAndDelete(id);
     //handle any additional things that may affect the other features
+    //such as delete the relevent modules and student performanse and so on
+    
     return 'deleted successfully';
   }
 }

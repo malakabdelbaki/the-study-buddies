@@ -72,7 +72,7 @@ export class ChatController {
     return await this.chatService.searchChats(participants, chatName, content);
   }
 
-  // 6. Create a new chat with other students with the student as a participant and choose chat type
+  // 6. Create a new chat with other students with the student as a participant and choose chat name
   @Post()
   @ApiOperation({ summary: 'Create a new chat with other students' })
   @ApiResponse({ status: 201, description: 'Chat successfully created' })
@@ -107,7 +107,7 @@ export class ChatController {
     return await this.chatService.addMessageToChatOrFail(chatObjectId, senderObjectId, addMessageDto.content);
   }
 
-  // 9. Update chat type (public or private) of a chat
+  // 9. Update chat name (public or private) of a chat
   @ApiOperation({ summary: 'Update the chat name' })
   @ApiResponse({ status: 200, description: 'Chat type updated' })
   @ApiParam({ name: 'chatId', type: String, description: 'The ID of the chat to update' })

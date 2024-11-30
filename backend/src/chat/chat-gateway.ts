@@ -17,8 +17,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
               private readonly userService : UserService) {}
 
   handleConnection(@ConnectedSocket() client: Socket, ...args: any[]) {
-    //to do: jwt authentication
     console.log('client connected ', client.id);
+  //   try {
+  //     const token = client.handshake.headers.authorization?.split(' ')[1]; // Extract Bearer token
+  //     if (!token) {
+  //         throw new UnauthorizedException('No token provided');
+  //     }
+
+  //     const payload = this.jwtService.verify(token); // Verify token
+  //     client.data.user = payload; // Attach user info to the client object
+  //     console.log(`Client connected: ${client.id}, User: ${payload.id}`);
+  // } catch (error) {
+  //     console.error('Authentication error:', error.message);
+  //     client.disconnect(); // Disconnect unauthorized clients
+  // }
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -49,7 +61,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { room:string, chatId: string, senderId: string, content: string },
     @ConnectedSocket() client: Socket
   ) {
-    const { chatId, senderId, content } = data;
+    const { room, chatId, senderId, content } = data;
     const chatObjectId = new Types.ObjectId(chatId);
     const senderObjectId = new Types.ObjectId(senderId);
     
@@ -64,11 +76,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Get the sender's name
       const sender = await this.userService.findUserById(senderId);
       const senderName = sender ? sender.name : 'Unknown';
-      this.server.to(data.room).emit('newMessage', {
+      this.server.to(data.room).emit('receiveMessage', {
         sender: senderName,
         content: newMessage.get('content'),
         timestamp: newMessage.get('createdAt'),
       });
+
+      this.server.to(room).emit('messageNotification', {
+        title: 'New Message',
+        body: `New message from ${senderName}`,
+      });
+
     } catch (error) {
       console.error('Error sending message:', error);
       client.to(data.room).emit('error', { message: 'Error sending message' });
@@ -77,52 +95,64 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('joinChat')
   async handleJoinChat(@MessageBody() data :{ room:string, chatId: string, senderId: string} , @ConnectedSocket() client: Socket) {
-    const { chatId, senderId } = data;
-    client.join(chatId);
-    console.log(`Client ${client.id} joined chat ${chatId}`);
+    const { room, chatId, senderId } = data;
+    client.join(room);
+
+    console.log(`User ${senderId} joined chat ${room}`);
     const chatObjectId = new Types.ObjectId(chatId);
     const studentObjectId = new Types.ObjectId(senderId);
     
-    try {
-      console.log('Joining chat:', chatObjectId, studentObjectId);
-      await this.chatService.addParticipantToChatOrFail(chatObjectId, studentObjectId);
-      const student = await this.userService.findUserById(senderId);
-      this.server.to(data.room).emit('A new student joined', {
-        studentName: student.name,
-      });
-    } catch (error) {
-      console.error('Error joining chat:', error);
-      client.to(data.room).emit('error', { message: 'Error joining chat' });
-    }
+    try{
+    await this.chatService.addParticipantToChatOrFail(chatObjectId, studentObjectId);
+    const user = await this.userService.findUserById(senderId);
+    const username = user ? user.name : 'Unknown';
+
+    this.server.to(room).emit('receiveMessage', {
+      message: `${username} has joined the chat`,
+      sender: 'ChatBot',
+      timestamp: new Date(),
+    });
+  }
+  catch(error){
+    console.error('Error joining chat:', error);
+    client.to(data.room).emit('error', { message: 'Error joining chat' });  
+  }
   
   }
 
   @SubscribeMessage('leaveChat')
   async handleLeaveChat(@MessageBody() data: { room:string, chatId: string, senderId: string} , @ConnectedSocket() client: Socket) {
-    const { chatId, senderId } = data
-    client.leave(chatId);
-    console.log(`Client ${client.id} left chat ${chatId}`);
+    const {room, chatId, senderId } = data
+    client.leave(room);
+
+    console.log(`Client ${senderId} left chat ${room}`);
+
     const chatObjectId = new Types.ObjectId(chatId);
     const studentObjectId = new Types.ObjectId(senderId);
-    try {
-      await this.chatService.leaveChatOrFail(chatObjectId, studentObjectId);
-      const student = await this.userService.findUserById(senderId);
-      this.server.to(data.room).emit('A student left', {
-        studentName: student.name,
-      });
-    } catch (error) {
-      console.error('Error leaving chat:', error);
-      client.to(data.room).emit('error', { message: 'Error leaving chat' });
-    }
+    try{
+    await this.chatService.leaveChatOrFail(chatObjectId, studentObjectId);
+    const user = await this.userService.findUserById(senderId);
+    const username = user?.name || 'Unknown';
+
+    this.server.to(room).emit('receiveMessage', {
+      message: `${username} has left the chat`,
+      sender: 'ChatBot',
+      timestamp: new Date(),
+    });
+  }
+  catch(error){
+    console.error('Error leaving chat:', error);
+    client.to(data.room).emit('error', { message: 'Error leaving chat' });  
+  }
   }
 
   @SubscribeMessage('loadMessages')
   async handleLoadMessages(
-    @MessageBody() chatId: string,
+    @MessageBody() data: {chatId: string},
     @ConnectedSocket() client: Socket,
   ) 
   {
-    const messages = await this.chatService.getMessagesByChatId(new Types.ObjectId(chatId));
+    const messages = await this.chatService.getMessagesByChatId(new Types.ObjectId(data.chatId));
     client.emit('messageHistory', messages);
   }
 

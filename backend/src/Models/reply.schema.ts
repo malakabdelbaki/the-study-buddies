@@ -4,7 +4,7 @@ import { Document, Types } from 'mongoose';
 export type ReplyDocument = Reply & Document;
 
 @Schema({ timestamps: true })
-class Reply {
+export class Reply {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user_id: Types.ObjectId; //sender of the reply
 
@@ -14,8 +14,6 @@ class Reply {
   @Prop({ type: String, required: true })
   content: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Reply', default: null })
-  parent_reply_id: Types.ObjectId | null;  // For nested replies
 }
 
 export const ReplySchema = SchemaFactory.createForClass(Reply);

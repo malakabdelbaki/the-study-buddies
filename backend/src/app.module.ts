@@ -5,12 +5,20 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CoursesModule } from './courses/courses.module';
 import { PerformanceModule } from './performance/performance.module';
-// import { QuizzesController } from './quizzes/quizzes.controller';
-// import { QuizzesService } from './quizzes/quizzes.service';
-// import dbconfig from './config/dbconfig';
-// import { ChatModule } from './chat/chat.module';
-// // import { ValidatorsModule } from './common/validators/validators.module';
-// import { UserModule } from './users/users.module';
+import { QuizzesController } from './quizzes/quizzes.controller';
+import { QuizzesService } from './quizzes/quizzes.service';
+import dbconfig from './config/dbconfig';
+import { ChatModule } from './chat/chat.module';
+//// import { ValidatorsModule } from './common/validators/validators.module';
+import { UserModule } from './users/users.module';
+
+import { ForumService } from './discussionForum/forum/forum.service';
+import { ForumController } from './discussionForum/forum/forum.controller';
+import { ForumModule } from './discussionForum/forum/forum.module';
+import { Thread } from './Models/thread.schema';
+import { ThreadsModule } from './discussionForum/threads/threads.module';
+import { ReplyModule } from './discussionForum/replies/replies.module';
+import { ModuleModule } from './module/module.module';
 
 @Module({
   imports: [
@@ -23,6 +31,10 @@ import { PerformanceModule } from './performance/performance.module';
     // UserModule,
     // ChatModule,
     // ValidatorsModule,
+    ForumModule,
+    ThreadsModule,
+    ReplyModule,
+    ModuleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

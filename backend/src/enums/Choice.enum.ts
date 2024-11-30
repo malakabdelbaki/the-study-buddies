@@ -1,4 +1,4 @@
-export enum SelectedAnswer {
+export enum Choice {
     A = 'a',
     B = 'b',
     C = 'c',
