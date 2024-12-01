@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Notification, NotificationDocument } from '../Models/notification.schema';
-import { NotificationType } from '../enums/notification-type.enum';
+import { Notification, NotificationDocument } from '../../Models/notification.schema';
+import { NotificationType } from '../../enums/notification-type.enum';
 import { Types } from 'mongoose';
 import { NotificationsGateway } from './notification.gateway';
 

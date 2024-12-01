@@ -11,6 +11,9 @@ import { CoursesModule } from 'src/courses/courses.module';
 import { Course, CourseSchema } from 'src/Models/course.schema';
 import { Progress, ProgressSchema } from 'src/models/progress.schema';
 import { Response, ResponseSchema } from 'src/models/response.schema';
+import { ThreadsModule } from '../threads/threads.module';
+import { ThreadsService } from '../threads/threads.service';
+import { CoursesService } from 'src/courses/courses.service';
 
 @Module({
   imports: [
@@ -23,9 +26,10 @@ import { Response, ResponseSchema } from 'src/models/response.schema';
       { name: Response.name, schema: ResponseSchema },
     ]),
     ForumModule,
+    ThreadsModule
   ],
   controllers: [RepliesController],
-  providers: [RepliesService, UserService],
+  providers: [RepliesService, UserService, ThreadsService, CoursesService],
   exports: [RepliesService],
 })
 export class ReplyModule {}

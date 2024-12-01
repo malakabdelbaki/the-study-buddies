@@ -7,7 +7,7 @@ import { CoursesModule } from './courses/courses.module';
 import { PerformanceModule } from './performance/performance.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
 import dbconfig from './config/dbconfig';
-import { ChatModule } from './chat/chat.module';
+import { ChatModule } from './WebSockets/chat/chat.module';
 //// import { ValidatorsModule } from './common/validators/validators.module';
 import { UserModule } from './users/users.module';
 

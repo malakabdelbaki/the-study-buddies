@@ -7,9 +7,10 @@ import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 import { CoursesService } from '../courses/courses.service';
 import { Types } from 'mongoose';
 import { UserService } from '../users/users.service';
-import { NotificationsService } from '../notification/notification.service';
+import { NotificationsService } from '../WebSockets/notification/notification.service';
 import { NotificationType } from '../enums/notification-type.enum';
-import { NotificationsGateway } from '../notification/notification.gateway';
+import { NotificationsGateway } from '../WebSockets/notification/notification.gateway';
+import { User } from '../Models/user.schema';
 
 @Injectable()
 export class AnnouncementService {
@@ -53,37 +54,41 @@ export class AnnouncementService {
   return savedAnnouncement;
   }
 
-  //remove
-  async findAll(): Promise<Announcement[]> {
-    return this.announcementModel.find().exec();
-  }
-
-  async findOne(id: string): Promise<Announcement> {
+  async findOne(id: string, initiator : Types.ObjectId): Promise<Announcement> {
     const announcement = await this.announcementModel.findById(id).exec(); 
     if (!announcement) {
       throw new NotFoundException(`Announcement #${id} not found`);
     }
+  if(!this.ValidateInitiatorForRead(initiator, announcement)) {
+    throw new NotFoundException(`User is not authorized to view the announcement`);
+  }
+    
     return announcement;
   }
 
-  async findByCourse(courseId: string): Promise<Announcement[]> {
-    const courseObjectId = new Types.ObjectId(courseId);
-    console.log(courseObjectId);
+  async findByCourse(courseId: string, initiator: Types.ObjectId): Promise<Announcement[]> {
     const announcements = await this.announcementModel.find({ course_id: courseId }).exec();
-    console.log(announcements);
+    for (const announcement of announcements) {
+      if(!this.ValidateInitiatorForRead(initiator, announcement)) {
+        throw new NotFoundException(`User is not authorized to view the announcement`);
+      }
+    }
     return announcements;
   }
 
   async findByInstructor(instructorId: string): Promise<Announcement[]> {
-    const instructorObjectId = new Types.ObjectId(instructorId);
+    const announcements = await this.announcementModel.find({ instructor_id: instructorId }).exec();
+    if (!announcements) {
+      throw new NotFoundException(`Instructor #${instructorId} has no announcements`);
+    }
     return this.announcementModel.find({ instructor_id: instructorId }).exec();
   }
 
-  async findAnnouncementsOfStudent(studentId: string): Promise<Announcement[]> {
+  async findAnnouncementsOfStudent(studentId: string, ): Promise<Announcement[]> {
     const enrolledCourses = await this.userService.getEnrolledCoursesOfStudent(studentId);
     const announcements = [];
     for (const course of enrolledCourses) {
-      const courseAnnouncements = await this.findByCourse((course as any)._id.toString());
+      const courseAnnouncements = await this.announcementModel.find({ course_id: (course as any)._id }).exec();
       announcements.push(...courseAnnouncements); // Use spread to flatten results into the announcements array
     }
     return announcements;  
@@ -92,10 +97,8 @@ export class AnnouncementService {
 
 
   async update(updateAnnouncementDto: UpdateAnnouncementDto,  announcement_id: string): Promise<Announcement> {
-    console.log(updateAnnouncementDto);
-    console.log(announcement_id);
+   
     const announcement = await this.announcementModel.findOne({_id: announcement_id}).exec();
-    console.log(announcement);
     if (!announcement) {
       throw new NotFoundException(`Announcement #${announcement_id} not found`);
     }
@@ -125,13 +128,20 @@ export class AnnouncementService {
     return updatedAnnouncement;  
   }  
 
-  // async remove(id: string): Promise<Announcement> {
-  //   const announcementObjectId = new Types.ObjectId(id);
-  //   console.log(announcementObjectId);
-  //   const announcement = await this.announcementModel.findByIdAndDelete(announcementObjectId).exec();
-  //   if (!announcement) {
-  //     throw new NotFoundException(`Announcement #${id} not found`);
-  //   }
-  //   return announcement;
-  // }
+  async ValidateInitiatorForRead(initiator: Types.ObjectId, announcement: Announcement) : Promise<Boolean> {
+    const user = await this.userService.findUserById(initiator.toString());
+    const course = await this.courseService.findOne(announcement.course_id);
+    if(user.role === 'student') {
+      const enrolledStudents = await this.userService.getAllStudentsInCourse(course._id.toString());
+      if (!enrolledStudents.some(student => (student as any)._id.equals(initiator))) {
+        throw new NotFoundException(`Student is not enrolled in the course`);
+      }
+    } else if(user.role === 'instructor') {
+      if(course.instructor_id.toString() !== initiator._id.toString()) {
+        throw new NotFoundException(`Instructor is not the author of the announcement`);
+      }
+    }
+    return true;
+  }
+
 }

@@ -6,18 +6,20 @@ import { CreateThreadDto } from './dto/create-thread.dto';
 import { UpdateThreadDto } from './dto/update-thread.dto';
 import { ForumService } from '../forum/forum.service';
 import { UserService } from 'src/users/users.service';
-
+import { Role } from 'src/enums/role.enum';
+import { CoursesService } from 'src/courses/courses.service';
 @Injectable()
 export class ThreadsService {
   constructor(
     @InjectModel(Thread.name) private readonly threadModel: Model<ThreadDocument>,
     private readonly userService: UserService,
-    private readonly forumService: ForumService
+    private readonly forumService: ForumService,
+    private readonly courseService: CoursesService
   ){}
 
   async create(createThreadDto: CreateThreadDto): Promise<Thread> {
     const forumId = createThreadDto.forumId;
-    const forum = await this.forumService.findOne(forumId.toString());
+    const forum = await this.forumService.findOne(forumId.toString(), createThreadDto.createdBy);
     
     if (!forum) {
       throw new NotFoundException(`Forum #${forumId} not found`);
@@ -45,17 +47,19 @@ export class ThreadsService {
   }
 
 
-  async findOne(id: string) {
+  async findOne(id: string, initiator: Types.ObjectId): Promise<Thread> {
     const thread = await this.threadModel.findById(id).exec();
     if (!thread) {
       throw new NotFoundException(`Thread #${id} not found`);
     }
+    const forum = await this.forumService.findOne(thread.forumId.toString(), initiator);
+    if(!this.forumService.validateInitiator(forum.course_id, initiator)) {
+      throw new NotFoundException('User not authorized to view thread');
+    }
+
     return thread;
   }
 
-  async findByModule(moduleId: string) {
-    return this.threadModel.find({ module: moduleId }).exec();
-  }
 
   async update(id: string, updateThreadDto: UpdateThreadDto): Promise<Thread> {
     const thread = await this.threadModel.findByIdAndUpdate
@@ -66,17 +70,26 @@ export class ThreadsService {
     return thread;
   }
 
-  async resolve(id: string) {
+  async resolve(id: string, initiator: Types.ObjectId): Promise<Thread> {
     const thread = await this.threadModel.findById(id).exec();
     if (!thread) {
       throw new NotFoundException(`Thread #${id} not found`);
+    }
+    const user = await this.userService.findUserById(initiator.toString());
+    if(!thread.createdBy.equals(initiator)) {
+      throw new NotFoundException('User not authorized to resolve thread');
     }
     thread.isResolved = true;
     await thread.save();
     return thread;
   }
 
-  async searchThreads(query: string): Promise<Thread[]> {
+  async searchThreads(query: string, forumId: Types.ObjectId, initiator: Types.ObjectId): Promise<Thread[]> {
+    const forum = await this.forumService.findOne(forumId.toString(), initiator);
+    if(!this.forumService.validateInitiator(forum.course_id, initiator)) {
+      throw new NotFoundException('User not authorized to view threads');
+    }
+
   return await this.threadModel
     .find({
       $or: [
@@ -86,5 +99,21 @@ export class ThreadsService {
     });
   }
 
+  async remove(id: string, initiator: Types.ObjectId): Promise<Thread> {
+    const thread = await this.threadModel.findById(id).exec();
+    if (!thread) {
+      throw new NotFoundException(`Thread #${id} not found`);
+    }
+
+    const user = await this.userService.findUserById(initiator.toString());
+    if(user.role == Role.Student
+      && !thread.createdBy.equals(initiator)) {
+      throw new NotFoundException('User not authorized to delete thread');
+    }
+    const forum = await this.forumService.findOne(thread.forumId.toString(), initiator);
+    
+    const deletedThread = await this.threadModel.findByIdAndDelete(id).exec();
+    return deletedThread;
+  }
 
 }

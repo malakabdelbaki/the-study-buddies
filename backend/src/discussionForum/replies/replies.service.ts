@@ -7,14 +7,17 @@ import { UpdateReplyDto } from './dto/update-reply.dto';
 import { Thread, ThreadDocument } from '../../Models/thread.schema';
 import { UserService } from 'src/users/users.service';
 import { ForumService } from '../forum/forum.service';
+import { Role } from '../../enums/role.enum';
 import mongoose from 'mongoose';
+import { ThreadsService } from '../threads/threads.service';
 @Injectable()
 export class RepliesService {
   constructor(
     @InjectModel(Reply.name) private readonly replyModel: Model<ReplyDocument>,
     @InjectModel(Thread.name) private readonly threadModel: Model<ThreadDocument>,
     private readonly userService: UserService,
-    private readonly forumService: ForumService
+    private readonly forumService: ForumService,
+    private readonly threadService: ThreadsService,
   ) {}
 
   async create(createReplyDto: CreateReplyDto): Promise<Reply> {
@@ -26,8 +29,8 @@ export class RepliesService {
     if (thread.isResolved) {
       throw new NotFoundException(`Thread #${thread_id} is resolved`);
     }
-    const user = await this.userService.findUserById(createReplyDto.user_id.toString());
-    const threadForum = await this.forumService.findOne(thread.forumId.toString());
+    const user = await this.userService.findUserById(createReplyDto.user_id);
+    const threadForum = await this.forumService.findOne(thread.forumId.toString(), new Types.ObjectId(createReplyDto.user_id));
 
     if (user.role === 'student') {
       const studentForums = await this.forumService.findForumsOfStudent(createReplyDto.user_id.toString());
@@ -49,8 +52,8 @@ export class RepliesService {
     return createdReply;
   }
 
-  async findRepliesOnThread(threadId: string): Promise<Reply[]> {
-    const thread = await this.threadModel.findById(threadId);
+  async findRepliesOnThread(threadId: string, initiator: Types.ObjectId): Promise<Reply[]> {
+    const thread = await this.threadService.findOne(threadId , initiator);
     console.log(thread);
     if (!thread) {
       throw new NotFoundException(`Thread #${threadId} not found`);
@@ -59,20 +62,27 @@ export class RepliesService {
     return replies;
   }
 
-  async findOne(reply_id: string): Promise<Reply> {
+  async findOne(reply_id: string, initiator: Types.ObjectId): Promise<Reply> {
+    const user = await this.userService.findUserById(initiator.toString());
     const reply = await this.replyModel.findById(reply_id);
     if (!reply) {
       throw new NotFoundException(`Reply #${reply_id} not found`);
     }
+    const thread = await this.threadService.findOne(reply.thread_id.toString(), initiator);
     return reply;
   }
 
-  async update(reply_id: string, updateReplyDto: UpdateReplyDto): Promise<Reply> {
-    const reply = await this.replyModel.findByIdAndUpdate(reply_id, updateReplyDto, { new: true }).exec();
+  async update(reply_id: string, updateReplyDto: UpdateReplyDto, initiator:Types.ObjectId): Promise<Reply> {
+    const reply = await this.replyModel.findById(reply_id).exec();
     if (!reply) {
       throw new NotFoundException(`Reply #${reply_id} not found`);
     }
-    return reply;
+    if(!reply.user_id.equals(initiator)) {
+      throw new NotFoundException('User not authorized to update reply');
+    }
+
+    const updatedReply = await this.replyModel.findByIdAndUpdate(reply_id, updateReplyDto, { new: true }).exec();
+    return updatedReply;
   }
 
   async findSender(reply_id: string) {
@@ -97,5 +107,28 @@ export class RepliesService {
       thread_id: threadId,
       content: { $regex: query, $options: 'i' },
     }).exec();
+  }
+
+  async remove(reply_id: string, initiator: Types.ObjectId): Promise<Reply> {
+    const user = await this.userService.findUserById(initiator.toString());
+    const reply = await this.replyModel.findById(reply_id).exec();
+    if (!reply) {
+      throw new NotFoundException(`Reply #${reply_id} not found`);
+    }
+
+    if(user.role === Role.Student && !reply.user_id.equals(initiator)) {
+      throw new NotFoundException('User not authorized to delete reply');
+    }
+    const thread = await this.threadService.findOne(reply.thread_id.toString(), initiator);
+    const forum = await this.forumService.findOne(thread.forumId.toString(), initiator);
+
+    if(user.role === Role.Instructor) {
+      if(!this.forumService.validateInitiator(initiator, forum.course_id)) {
+        throw new NotFoundException('User not authorized to delete reply');
+    }
+  }
+    const deletedReply = await this.replyModel.findByIdAndDelete(reply_id).exec();
+    
+    return reply;
   }
 }

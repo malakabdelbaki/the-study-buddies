@@ -1,7 +1,7 @@
 import { IsOptional, IsString , IsEnum, IsArray, ArrayNotEmpty} from 'class-validator';
 //// import { Exists } from '../../common/validators/exists.validator';
 // import { HasRole } from '../../common/validators/has-role.validator';
-import { Role } from '../../enums/role.enum';
+import { Role } from '../../../enums/role.enum';
 import {Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';

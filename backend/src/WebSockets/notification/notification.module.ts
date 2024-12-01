@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { Mongoose } from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Notification, NotificationSchema } from '../models/notification.schema';
+import { Notification, NotificationSchema } from '../../models/notification.schema';
 import { NotificationController } from './notification.controller';
 import { NotificationsGateway } from './notification.gateway';
 import { NotificationsService } from './notification.service';
-import { UserModule } from '../users/users.module';
-import { ChatModule } from 'src/chat/chat.module';
+import { UserModule } from '../../users/users.module';
+import { ChatModule } from 'src/WebSockets/chat/chat.module';
 import { forwardRef } from '@nestjs/common';
 import { Thread } from 'src/Models/thread.schema';
 import { ThreadsModule } from 'src/discussionForum/threads/threads.module';
