@@ -18,9 +18,6 @@ export class Quiz {
 
     @Prop({required:true,enum: Object.values(QuizType)})
     quiz_type: QuizType; // enum for the quiz type will be = to module_id.quiz_type
-
-    @Prop({required:true})
-    Number_of_questions:Number;
     
     @Prop({ type: [{ type: Types.ObjectId, ref: 'Question' }], default: [] })
     questions: Types.ObjectId[]; // Array of references to the Question schema

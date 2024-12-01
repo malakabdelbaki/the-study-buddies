@@ -42,54 +42,9 @@ export class QuizzesService {
   }
 
 
-  // // get random questions from the filtered questions 
-  // //ensuring no duplication unless quiz length is greater than the number of questions
-  // // - working
-  // getRandomQuestions(filteredQuestions: Question[], quizLength: number): Question[] {
-  //   const shuffledQuestions = [...filteredQuestions].sort(() => 0.5 - Math.random()); // Shuffle questions
-  //   const selectedQuestions: Question[] = [];
-  //   let remainingQuestions = [...shuffledQuestions];
-  
-  //   while (selectedQuestions.length < quizLength) {
-  //     if (remainingQuestions.length === 0) {
-  //       // Refill remaining questions and shuffle again if exhausted
-  //       remainingQuestions = [...shuffledQuestions].sort(() => 0.5 - Math.random());
-  //     }
-  
-  //     // Pick the next question and add to selected
-  //     const nextQuestion = remainingQuestions.pop()!;
-  //     selectedQuestions.push(nextQuestion);
-  //   }
-  
-  //   return selectedQuestions;
-  // }
-  
-
-  // // Filter questions based on the student's grading level - working
-  // filterQuestionsByGrade(filteredQuestions: Question[], studentGrade: number): Question[] {
-  //   let allowedDifficulties: string[] = []; // Define the allowed difficulties based on the student's grade
-  
-  //   if (studentGrade >= 0 && studentGrade < 50) {
-  //     allowedDifficulties = ['easy']; // Grade less than 50%: only easy questions
-  //   } else if (studentGrade >= 50 && studentGrade < 70) {
-  //     allowedDifficulties = ['easy', 'medium']; // Grade between 50% and 70%: easy and medium
-  //   } else if (studentGrade >= 70 && studentGrade < 90) {
-  //     allowedDifficulties = ['easy', 'medium', 'hard']; // Grade between 70% and 90%: easy, medium, and hard
-  //   } else if (studentGrade >= 90 && studentGrade <= 100) {
-  //     allowedDifficulties = ['medium', 'hard']; // Grade above 90%: medium and hard
-  //   }
-  
-  //   // Filter the questions based on the allowed difficulties
-  //   return filteredQuestions.filter(question =>
-  //     allowedDifficulties.includes(question.difficulty_level)
-  //   );
-  // }
-
-  
-  //*******************************testing********************************************************************** */
   //********************* logic for handling - filter questions based on student grade *********************************** */
 
-  // helper function to get questions with no duplication 
+  // helper function to get questions with no duplication - working
   getQuestionsWithNoDuplication(questions: Question[], count: number, alreadyChosen: Question[] = []): Question[] {
     // Exclude already chosen questions from the pool of questions using alreadyChosen
     const remainingQuestions = questions.filter(
@@ -114,7 +69,7 @@ export class QuizzesService {
   }
 
 
-  // get random questions from the filtered questions (filtered by Quiz type)
+  // get random questions from the filtered questions (filtered by Quiz type) - working
   getRandomQuestions(filteredQuestions: Question[], quizLength: number, studentGrade: number): Question[] {
     // Group questions by difficulty
     const easyQuestions = filteredQuestions.filter(q => q.difficulty_level === 'easy');
@@ -206,8 +161,6 @@ export class QuizzesService {
     return selectedQuestions.sort(() => 0.5 - Math.random());
   }
 
-  //*******************************testing****************************************/
-
 
 
   
@@ -255,18 +208,10 @@ export class QuizzesService {
     // Get the student's grade level
     const studentGrade = 100;  
 
-
-    // // Filter questions based on the student's grading level - working
-    // const filteredQuestionsByGrade = this.filterQuestionsByGrade(filteredQuestions, studentGrade);
-
-    // // Select random questions from the filtered questions - working
-    // const selectedQuestions = this.getRandomQuestions(filteredQuestions, module.quiz_length);
-
-  //*******************************testing****************************************/
- 
+    
+    // Filter questions based on the student's grading level - working
+     // Select random questions from the filtered questions - working
     const selectedQuestions = this.getRandomQuestions(filteredQuestions, module.quiz_length, studentGrade);
-  //*******************************testing****************************************/
-
 
 
 
@@ -299,5 +244,28 @@ export class QuizzesService {
 
     // Return the saved quiz
     return savedQuiz;  }
-    
+
+
+    async CreateResponse(quiz_id: string, user_id: string, user_answers: Record<string, string>[]) {
+
+      // Retrieve the quiz by ID
+      const quiz = await this.quizModel.findById(quiz_id).exec();
+      if (!quiz) {
+       throw new NotFoundException(`Quiz with ID ${quiz_id} not found`);
+      } 
+
+      for (var key in user_answers) {
+        console.log("key " + key + " has value " + user_answers[key]);
+        
+      }
+
+        
+
+    }
+
+        
+
+        
 }
+    
+
