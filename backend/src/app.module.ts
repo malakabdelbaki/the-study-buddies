@@ -35,6 +35,7 @@ import { ModuleModule } from './module/module.module';
     ThreadsModule,
     ReplyModule,
     ModuleModule,
+    QuizzesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
