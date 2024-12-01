@@ -2,7 +2,7 @@ import { Controller } from '@nestjs/common';
 import { Body } from '@nestjs/common';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { CreateResponseDto } from './dto/create-response.dto';
-import { Post } from '@nestjs/common'; 
+import { Post , Param } from '@nestjs/common'; 
 import { QuizzesService } from './quizzes.service';
 
 @Controller('quizzes')
@@ -15,10 +15,18 @@ export class QuizzesController {
     
     }
 
-    // @Post(/:quiz_id/submit) 
-    // submit(@Body() CreateResponseDto: CreateResponseDto) {
-    //     return this.quizzesService.CreateResponse(CreateResponseDto.quiz_id, CreateResponseDto.user_id, CreateResponseDto.user_answers);
-    // }
+    @Post(':quiz_id/submit')
+    submit(
+      @Param('quiz_id') quiz_id: string, // Extract quiz_id from the route
+      @Body() createResponseDto: CreateResponseDto // Properly name the DTO instance
+    ) {
+      return this.quizzesService.createResponse(
+        quiz_id, 
+        createResponseDto.user_id, 
+        createResponseDto.user_answers
+      );
+    }
+    
 
   
 }

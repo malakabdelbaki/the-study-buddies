@@ -7,6 +7,8 @@ import { Module as ModuleEntity, ModuleSchema } from 'src/models/modules.schema'
 import { Question, QuestionSchema } from 'src/models/question.schema';
 import { Course ,CourseSchema } from 'src/models/course.schema';
 import { Quiz, QuizSchema } from 'src/models/quiz.schema';
+import { Answer, AnswerSchema } from 'src/models/answer.schema';
+import { Response, ResponseSchema } from 'src/models/response.schema';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { Quiz, QuizSchema } from 'src/models/quiz.schema';
       { name: Question.name, schema: QuestionSchema },   // Register Question schema
       { name: Course.name , schema: CourseSchema },     // Register Course schema
       { name: Quiz.name, schema: QuizSchema },          // Register Quiz schema
+      { name: Answer.name, schema: AnswerSchema },      // Register Answer schema
+      { name: Response.name, schema: ResponseSchema }, // Register Response schema
     ]),
   ],
   controllers: [QuizzesController], // Attach your QuizzesController
