@@ -5,14 +5,19 @@ import { Module, ModuleDocument } from 'src/models/modules.schema';
 import { Question, QuestionDocument } from 'src/models/question.schema';
 import { Course, CourseDocument } from 'src/models/course.schema';
 import { Quiz, QuizDocument } from 'src/models/quiz.schema';
-
+import { Answer, AnswerDocument } from 'src/models/answer.schema';
+import { Response, ResponseDocument } from 'src/models/response.schema';
+import { User, UserDocument } from 'src/models/user.schema';
 @Injectable()
 export class QuizzesService {
   constructor(
     @InjectModel(Module.name) private readonly moduleModel: Model<ModuleDocument>,
     @InjectModel(Question.name) private readonly questionModel: Model<QuestionDocument>,
     @InjectModel(Course.name) private readonly courseModel: Model<CourseDocument>,
-    @InjectModel(Quiz.name) private readonly quizModel: Model<QuizDocument>, // Inject Quiz model
+    @InjectModel(Quiz.name) private readonly quizModel: Model<QuizDocument>, 
+    @InjectModel(Answer.name) private readonly answerModel: Model<AnswerDocument>,
+    @InjectModel(Response.name) private readonly responseModel: Model<ResponseDocument>,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
 
   ) {}
 
@@ -162,6 +167,25 @@ export class QuizzesService {
   }
 
 
+  async getStudentGrade(user_id: string) {
+    // Retrieve the user by ID
+    const user = this.userModel.findById(user_id).exec();
+    console.log("user: ", user); 
+
+    //get all responses by user_id
+    const responses = await this.responseModel.find({user_id: user_id}).exec();
+
+    let totalScore = 0; 
+    for(var index in responses){
+      const response = responses[index];
+      console.log("response: ", response);
+      totalScore += response.score;
+    }
+    const studentGrade = totalScore / responses.length;
+    console.log("studentGrade: ", studentGrade);
+    return studentGrade;
+
+  }
 
   
 
@@ -204,13 +228,16 @@ export class QuizzesService {
         );
       }
 
-    
-    // Get the student's grade level
-    const studentGrade = 100;  
 
+
+      //*********************** get the accumilative student grade ****************************** */
+
+    // Get the student's grade level
+    // const studentGrade = await this.getStudentGrade(user_id);  
+    const studentGrade = 70; // Hardcoded for testing
     
     // Filter questions based on the student's grading level - working
-     // Select random questions from the filtered questions - working
+    // Select random questions from the filtered questions - working
     const selectedQuestions = this.getRandomQuestions(filteredQuestions, module.quiz_length, studentGrade);
 
 
@@ -243,23 +270,115 @@ export class QuizzesService {
     // console.log('filtered Questions By Grade: ', filteredQuestionsByGrade);
 
     // Return the saved quiz
-    return savedQuiz;  }
+    return savedQuiz;  
+  }
+  
 
 
-    async CreateResponse(quiz_id: string, user_id: string, user_answers: Record<string, string>[]) {
 
+
+
+
+
+
+    // Helper function to get the value of a key from an array of objects
+    getValueByKey(array, key) {
+      for (const obj of array) {
+        if (obj.hasOwnProperty(key)) {
+          return obj[key];
+        }
+      }
+      return null; // Return null if the key is not found
+    }
+
+    // Create an answer for a question
+    async createAnswer(question_id:Types.ObjectId ,user_answers: { [key: string]: string; }) {
+      console.log("entered the createAnswer function");
+      
+      //convert question_id to string 
+      const key = question_id.toString();
+      const selectedAnswer = this.getValueByKey(user_answers, key); 
+      // console.log("selected answer: ", selectedAnswer); - working
+
+     // Retrieve the question by ID
+      const question = await this.questionModel.findById(question_id)
+      // console.log("question: ", question); - working
+      
+      // Check if the selected answer is correct
+      let isCorrect = false;
+      if(question.correct_answer === selectedAnswer)
+        isCorrect = true;
+
+      // Create the answer object 
+      const answer = new this.answerModel({
+        question_id: question_id,
+        selectedAnswer: selectedAnswer,
+        isCorrect: isCorrect,
+      });
+      
+      // Save the answer to the database
+      // console.log("answer: ", answer); - working
+      const savedAnswer = await answer.save();
+      return answer;
+    }
+
+
+
+    async createResponse(quiz_id: string, user_id: string, user_answers:{[key:string] : string}) {
+      console.log("entered the createResponse function");
       // Retrieve the quiz by ID
       const quiz = await this.quizModel.findById(quiz_id).exec();
-      if (!quiz) {
-       throw new NotFoundException(`Quiz with ID ${quiz_id} not found`);
-      } 
+      const student = await this.userModel.findById(user_id).exec(); 
+      
+      // console.log("quiz_id: ", quiz_id); - working
+      // console.log("user_id: ", user_id); - working
+      // console.log("quiz: ", quiz); - working
+      // console.log("student: ", student); - working
 
-      for (var key in user_answers) {
-        console.log("key " + key + " has value " + user_answers[key]);
-        
+
+      // array of answers for a quiz
+      const answers = [];
+      let answer;
+
+      // create answer for each question in the quiz
+      for(var index in quiz.questions){
+        const question_id = quiz.questions[index]; 
+        // console.log("question id: ", question_id); - working
+        answer = await this.createAnswer(question_id, user_answers);
+        answers.push(answer);
       }
 
-        
+
+      console.log("answers array: ", answers);
+
+      //calculate the score of the student
+      let score = 0;
+      for(var index in quiz.questions){
+        console.log("entered score calculation loop");
+        const question_id = quiz.questions[index]; 
+        //find answer by question_id
+        const answer = await this.answerModel.findOne({question_id: question_id}).exec();
+        // console.log("answer for score : ", answer); - working
+        if(answer.isCorrect)
+          score++;
+      }
+
+
+      // console.log("score: ", score); - working
+      const scorePercentage = (score / quiz.questions.length) * 100;
+      // console.log("score percentage: ", scorePercentage); - working
+
+      // Create the response object
+      const response = new this.responseModel({
+        user_id: student._id,
+        quiz_id: quiz._id,
+        answers: answers,
+        score: scorePercentage,
+      });
+
+      // console.log("response: ", response); - working
+      // Save the response to the database
+      const savedResponse = await response.save();
 
     }
 
@@ -268,4 +387,5 @@ export class QuizzesService {
         
 }
     
+
 
