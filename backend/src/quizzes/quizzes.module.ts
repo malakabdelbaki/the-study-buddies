@@ -9,6 +9,7 @@ import { Course ,CourseSchema } from 'src/models/course.schema';
 import { Quiz, QuizSchema } from 'src/models/quiz.schema';
 import { Answer, AnswerSchema } from 'src/models/answer.schema';
 import { Response, ResponseSchema } from 'src/models/response.schema';
+import {User , UserSchema} from 'src/models/user.schema';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { Response, ResponseSchema } from 'src/models/response.schema';
       { name: Quiz.name, schema: QuizSchema },          // Register Quiz schema
       { name: Answer.name, schema: AnswerSchema },      // Register Answer schema
       { name: Response.name, schema: ResponseSchema }, // Register Response schema
+      { name: User.name, schema: UserSchema },         // Register User schema
     ]),
   ],
   controllers: [QuizzesController], // Attach your QuizzesController

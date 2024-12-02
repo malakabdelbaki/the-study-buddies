@@ -7,6 +7,7 @@ import { Course, CourseDocument } from 'src/models/course.schema';
 import { Quiz, QuizDocument } from 'src/models/quiz.schema';
 import { Answer, AnswerDocument } from 'src/models/answer.schema';
 import { Response, ResponseDocument } from 'src/models/response.schema';
+import { User, UserDocument } from 'src/models/user.schema';
 @Injectable()
 export class QuizzesService {
   constructor(
@@ -16,6 +17,7 @@ export class QuizzesService {
     @InjectModel(Quiz.name) private readonly quizModel: Model<QuizDocument>, 
     @InjectModel(Answer.name) private readonly answerModel: Model<AnswerDocument>,
     @InjectModel(Response.name) private readonly responseModel: Model<ResponseDocument>,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
 
   ) {}
 
@@ -165,6 +167,25 @@ export class QuizzesService {
   }
 
 
+  async getStudentGrade(user_id: string) {
+    // Retrieve the user by ID
+    const user = this.userModel.findById(user_id).exec();
+    console.log("user: ", user); 
+
+    //get all responses by user_id
+    const responses = await this.responseModel.find({user_id: user_id}).exec();
+
+    let totalScore = 0; 
+    for(var index in responses){
+      const response = responses[index];
+      console.log("response: ", response);
+      totalScore += response.score;
+    }
+    const studentGrade = totalScore / responses.length;
+    console.log("studentGrade: ", studentGrade);
+    return studentGrade;
+
+  }
 
   
 
@@ -207,13 +228,16 @@ export class QuizzesService {
         );
       }
 
-    
-    // Get the student's grade level
-    const studentGrade = 100;  
 
+
+      //*********************** get the accumilative student grade ****************************** */
+
+    // Get the student's grade level
+    // const studentGrade = await this.getStudentGrade(user_id);  
+    const studentGrade = 70; // Hardcoded for testing
     
     // Filter questions based on the student's grading level - working
-     // Select random questions from the filtered questions - working
+    // Select random questions from the filtered questions - working
     const selectedQuestions = this.getRandomQuestions(filteredQuestions, module.quiz_length, studentGrade);
 
 
@@ -246,7 +270,8 @@ export class QuizzesService {
     // console.log('filtered Questions By Grade: ', filteredQuestionsByGrade);
 
     // Return the saved quiz
-    return savedQuiz;  }
+    return savedQuiz;  
+  }
   
 
 
@@ -303,6 +328,13 @@ export class QuizzesService {
       console.log("entered the createResponse function");
       // Retrieve the quiz by ID
       const quiz = await this.quizModel.findById(quiz_id).exec();
+      const student = await this.userModel.findById(user_id).exec(); 
+      
+      // console.log("quiz_id: ", quiz_id); - working
+      // console.log("user_id: ", user_id); - working
+      // console.log("quiz: ", quiz); - working
+      // console.log("student: ", student); - working
+
 
       // array of answers for a quiz
       const answers = [];
@@ -332,17 +364,18 @@ export class QuizzesService {
       }
 
 
-      console.log("score: ", score);
+      // console.log("score: ", score); - working
       const scorePercentage = (score / quiz.questions.length) * 100;
-      console.log("score percentage: ", scorePercentage);
+      // console.log("score percentage: ", scorePercentage); - working
 
       // Create the response object
       const response = new this.responseModel({
-        user_id: user_id,
-        quiz_id: quiz_id,
+        user_id: student._id,
+        quiz_id: quiz._id,
         answers: answers,
         score: scorePercentage,
       });
+
       // console.log("response: ", response); - working
       // Save the response to the database
       const savedResponse = await response.save();
