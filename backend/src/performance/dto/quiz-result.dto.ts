@@ -12,8 +12,8 @@ export class StudentQuizResultDto {
   @ApiProperty()
   score: number;
 
-  @ApiProperty()
-  answers: string[];
+  // @ApiProperty()
+  // answers: string[];
 }
 
 export class QuizResultDto {
