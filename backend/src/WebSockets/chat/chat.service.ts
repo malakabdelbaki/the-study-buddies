@@ -113,7 +113,7 @@ export class ChatService {
   async createGroupChatOrFail(createGroupChatDto:CreateGroupChatDto, initiator:  Types.ObjectId): Promise<Chat> {
 
     const user = await this.userService.findUserById(initiator.toString());
-    const { chatName, courseId } = createGroupChatDto;
+    const { chatName, courseId, participants } = createGroupChatDto;
     const course = await this.coursesService.findOne(courseId);
     if (!course) {
       throw new EntityDoesNotExistException('Course', courseId.toString());
@@ -128,11 +128,15 @@ export class ChatService {
       && !course.students.some((student) => student._id.toString() === initiator.toString())){
         throw new BadRequestException('Student is not enrolled in this course');
     }
+    const validParticipants = []
+    for(const participant in participants){
+      if(course.students.some((student) => student._id.toString() === participant.toString())
+      || course.instructor_id.toString() === participant.toString()){
+        validParticipants.push(participant)
+      }
+    }
 
-    const participants = course.students.map((student) => student._id);
-    participants.push(course.instructor_id);
-
-    const newChat = new this.chatModel({ participants, chat_name: chatName, chat_type: ChatType.Group, course_id: courseId });
+    const newChat = new this.chatModel({ validParticipants, chat_name: chatName, chat_type: ChatType.Group, course_id: courseId });
     const savedChat = await newChat.save();
     return savedChat;
   }
@@ -153,7 +157,7 @@ export class ChatService {
     }
 
     const validParticipant = await this.userModel.find({
-      _id: { $in: [participant] }}).exec();
+      _id: participant }).exec();
     
     if (!validParticipant) {
       throw new EntityDoesNotExistException('Participant', participant.toString());
@@ -165,17 +169,26 @@ export class ChatService {
 
     const course = await this.coursesService.findOne(chat.course_id);
     const addedUser = await this.userService.findUserById(participant.toString());
+
+    const userInChat = await this.userService.findUserById(initiator.toString());
+    if(userInChat.role == Role.Student 
+      && !course.students.some((student) => student._id.toString() === participant.toString())
+    ){
+      throw new IncorrectRoleException('Student not allowed to add participants');
+    }
     
+    if(userInChat.role == Role.Instructor
+      && course.instructor_id.toString() !== participant.toString()){
+      throw new IncorrectRoleException('Instructor not allowed to add participants');
+    }
 
     if(addedUser.role==Role.Student && 
-      (!course.students.some((student) => student._id.toString() === participant.toString())
-      || course.instructor_id.toString() !== initiator.toString())){
+      (!course.students.some((student) => student._id.toString() === participant.toString()))){
       throw new BadRequestException('Participant is not enrolled in this course or instructor is not allowed to do this'); 
     }
 
     if(addedUser.role==Role.Instructor &&
-      (course.instructor_id.toString() !== participant.toString())
-      || !course.students.some((student) => student._id.toString() === initiator.toString())){
+      (course.instructor_id.toString() !== participant.toString())){
       throw new BadRequestException('Participant is not the instructor of this course');
     }
 

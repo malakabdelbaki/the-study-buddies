@@ -21,5 +21,11 @@ export class CreateGroupChatDto{
   @IsMongoId()
   courseId: Types.ObjectId;
 
+  @ApiProperty({
+    description: 'array of participants in chat',
+    type: [Types.ObjectId]
+  })
+  participants: Types.ObjectId[]
+
   
 }

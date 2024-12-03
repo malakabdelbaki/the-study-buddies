@@ -12,6 +12,7 @@ import { CoursesService } from 'src/courses/courses.service';
 import { WsAuthorizationGuard } from '../guards/ws-jwt-authorization.guard';
 import { SetMetadata } from '@nestjs/common';
 import { Role } from 'src/enums/role.enum';
+import { CreateGroupChatDto } from './dto/create-group-chat.dto';
 import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
 @UseGuards(WsJwtGuard)
 
@@ -43,7 +44,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @UseGuards(WsAuthorizationGuard)
   @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor])
   async handleCreateGroupChat(
-    @MessageBody() data: { room : string, chatName: string, courseId: string, receiverId:string}, 
+    @MessageBody() data: { room : string, chatName: string, courseId: string, newParticipants:string[]}, 
     @ConnectedSocket() client: AuthenticatedSocket
   ) : Promise<WsResponse<any>>{
 
@@ -53,9 +54,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const userId = client.user; 
       const user = await this.userService.findUserById(userId.toString());
 
-      const dto = new CreateDirectChatDto();
+      const dto = new CreateGroupChatDto();
       dto.chatName = data.chatName;
-      dto.receiverId =  new Types.ObjectId(data.receiverId);
+      dto.participants =  data.newParticipants.map((id) => new Types.ObjectId(id));
       dto.courseId = new Types.ObjectId(data.courseId);;
 
       const newChat = await this.chatService.createGroupChatOrFail(dto, userId);
