@@ -9,7 +9,8 @@ import { Course ,CourseSchema } from 'src/models/course.schema';
 import { Quiz, QuizSchema } from 'src/models/quiz.schema';
 import { Answer, AnswerSchema } from 'src/models/answer.schema';
 import { Response, ResponseSchema } from 'src/models/response.schema';
-import {User , UserSchema} from 'src/models/user.schema';
+import { User , UserSchema} from 'src/models/user.schema';
+import { Progress , ProgressSchema } from 'src/models/progress.schema';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import {User , UserSchema} from 'src/models/user.schema';
       { name: Answer.name, schema: AnswerSchema },      // Register Answer schema
       { name: Response.name, schema: ResponseSchema }, // Register Response schema
       { name: User.name, schema: UserSchema },         // Register User schema
+      { name: Progress.name , schema: ProgressSchema } // Register Progress schema
     ]),
   ],
   controllers: [QuizzesController], // Attach your QuizzesController
