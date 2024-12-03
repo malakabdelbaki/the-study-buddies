@@ -1,0 +1,20 @@
+import { Module } from '@nestjs/common';
+import { NoteService } from './note.service';
+import { NoteController } from './note.controller';
+import { Mongoose } from 'mongoose';
+import { MongooseModule } from '@nestjs/mongoose';
+import { CoursesModule } from 'src/courses/courses.module';
+import { ModuleModule } from 'src/module/module.module';
+import { NoteSchema } from 'src/Models/notes.schema';
+
+@Module({
+  imports: [
+    MongooseModule.forFeature([{ name: 'Note', schema: NoteSchema }]),
+    CoursesModule,
+    ModuleModule,
+  ],
+  providers: [NoteService],
+  controllers: [NoteController],
+  exports: [NoteService],
+})
+export class NoteModule {}

@@ -16,5 +16,6 @@ import { CourseSchema } from 'src/Models/course.schema';
             CoursesModule],
   controllers: [ModuleController,CoursesController],
   providers: [ModuleService,CoursesService],
+  exports: [ModuleService]
 })
 export class ModuleModule {} 

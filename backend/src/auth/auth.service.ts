@@ -31,10 +31,10 @@ export class AuthService{
         const createUserDto: CreateUserDto = {
           name: user.name, // Access instance properties of the DTO
           email: user.email,
-          password: await bcrypt.hash(user.password, 10), // Hash the password
+          passwordHash: await bcrypt.hash(user.password, 10), // Hash the password
           role: user.role,
         };
-
+        console.log('createUserDto:', createUserDto);
         await this.usersService.createUser(createUserDto); //normal creation
         return 'registered successfully';
 
@@ -53,7 +53,7 @@ export class AuthService{
         }
       console.log("password: ", user.passwordHash);
       const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-        console.log( await bcrypt.compare(password, user.passwordHash))
+        console.log( await bcrypt.compare(password, user.passwordHash));
       if (!isPasswordValid) {
           throw new UnauthorizedException('Invalid credentials');
         }

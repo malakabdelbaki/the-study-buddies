@@ -18,6 +18,8 @@ import { Thread } from './Models/thread.schema';
 import { ThreadsModule } from './discussionForum/threads/threads.module';
 import { ReplyModule } from './discussionForum/replies/replies.module';
 import { ModuleModule } from './module/module.module';
+import { NoteController } from './note/note.controller';
+import { NoteModule } from './note/note.module';
 
 @Module({
   imports: [
@@ -36,8 +38,9 @@ import { ModuleModule } from './module/module.module';
     ReplyModule,
     ModuleModule,
     QuizzesModule,
+    NoteModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, NoteController],
   providers: [AppService],
   // controllers: [AppController, QuizzesController],
   // providers: [AppService, QuizzesService],

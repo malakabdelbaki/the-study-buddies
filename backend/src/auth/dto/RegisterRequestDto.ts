@@ -6,7 +6,7 @@ export class RegisterRequestDto {
   @IsString()
   name:string;
 
-  //@IsEmail()
+  @IsEmail()
   email: string;
 
   @IsString()

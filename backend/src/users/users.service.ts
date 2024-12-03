@@ -146,14 +146,10 @@ export class UserService {
       if (existingUser) {
         throw new BadRequestException('Email already in use.');
       }
-  
-      // Hash the user's password
-      const passwordHash = await bcrypt.hash(createUserDto.password, 10);
-  
+        
       // Create a new user document
       const newUser = new this.userModel({
-        ...createUserDto,
-        passwordHash,
+        ...createUserDto
       });
   
       // Save and return the new user

@@ -9,7 +9,7 @@ export class CreateUserDto {
   email: string;
 
   @IsString()
-  password: string;
+  passwordHash: string;
 
   @IsEnum(Role)
   role: Role;
