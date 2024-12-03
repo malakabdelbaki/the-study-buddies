@@ -12,6 +12,9 @@ import {Answer, AnswerDocument } from '../models/answer.schema'
 import { StudentProgressDto } from './dto/student-progress.dto';
 import { InstructorAnalyticsDto } from './dto/instructor-analytics.dto';
 import { StudentQuizResultDto ,QuizResultDto } from './dto/quiz-result.dto';
+import * as fs from 'fs';
+import * as path from 'path';
+import { Parser } from 'json2csv'; // For CSV conversion
 
 
 type PopulatedCourse = {
@@ -192,6 +195,7 @@ return dashboardData;
           courseTitle: course.title,
           totalStudents: 0,
           averageCompletion: 0,
+          completedStudents: 0,
           modulesPerformance: [],
           studentPerformance: { belowAverage: 0, average: 0, aboveAverage: 0, excellent: 0 },
           overallstudentPerformance: { belowAverage: 0, average: 0, aboveAverage: 0, excellent: 0 },
@@ -491,25 +495,123 @@ const overallstudentPerformance = {
 
 
   
-  // Generate a downloadable analytics report (e.g., CSV)
-  async generateAnalyticsReport(instructorId: string): Promise<string> {
+  // // Generate a downloadable analytics report (e.g., CSV)
+  // async generateAnalyticsReport(instructorId: string): Promise<string> {
+  //   const analytics = await this.getInstructorAnalytics(instructorId);
+
+  //   const headers = [
+  //     'Course ID',
+  //     'Course Title',
+  //     'Total Students',
+  //     'completed students',
+  //     'Average Completion rate(%)',
+  //     'course student performance',
+  //     'completion student performance',
+  //     'Modules perforemance'
+  //   ];
+  //   const rows = analytics.map((course) => [
+  //     course.courseId,
+  //     course.courseTitle,
+  //     course.totalStudents,
+  //     course.completedStudents,
+  //     course.averageCompletion,
+  //     course.overallstudentPerformance,
+  //     course.CompletionPerformanceCategories,
+  //     course.modulesPerformance
+  
+  //   ]);
+
+  //   return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+  // }
+
+
+  async generateDownloadableAnalytics(
+    instructorId: string,
+    format: 'csv' | 'json',
+  ): Promise<{ filePath: string; fileName: string }> {
     const analytics = await this.getInstructorAnalytics(instructorId);
 
-    const headers = [
-      'Course ID',
-      'Course Title',
-      'Total Students',
-      'Average Completion (%)',
-      'Low-Performing Students',
-    ];
-    const rows = analytics.map((course) => [
-      course.courseId,
-      course.courseTitle,
-      course.totalStudents,
-      course.averageCompletion
-  
-    ]);
+    let fileContent: string;
+    let fileName: string;
 
-    return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    if (format === 'csv') {
+      const parser = new Parser(); // json2csv library
+      fileContent = parser.parse(analytics);
+      fileName = `instructor_analytics_${instructorId}.csv`;
+    } else {
+      fileContent = JSON.stringify(analytics, null, 2); // Pretty-print JSON
+      fileName = `instructor_analytics_${instructorId}.json`;
+    }
+
+    const filePath = path.join(__dirname, '../downloads', fileName);
+
+    // Ensure the directory exists
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+    // Write the file to the filesystem
+    fs.writeFileSync(filePath, fileContent);
+
+    return { filePath, fileName };
   }
+
+
+
+
+  async generateDownloadableQuizResults(
+    instructorId: string,
+    format: 'csv' | 'json',
+  ): Promise<{ filePath: string; fileName: string }> {
+    const quizResults = await this.getQuizResultsReport(instructorId);
+
+    let fileContent: string;
+    let fileName: string;
+
+    if (format === 'csv') {
+      const parser = new Parser(); // json2csv library
+      fileContent = parser.parse(quizResults);
+      fileName = `quiz_results_${instructorId}.csv`;
+    } else {
+      fileContent = JSON.stringify(quizResults, null, 2); // Pretty-print JSON
+      fileName = `quiz_results_${instructorId}.json`;
+    }
+
+    const filePath = path.join(__dirname, '../downloads', fileName);
+
+    // Ensure the directory exists
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+    // Write the file to the filesystem
+    fs.writeFileSync(filePath, fileContent);
+
+    return { filePath, fileName };
+  }
+
+  async generateDownloadableContentEffectivenessReport(
+    instructorId: string,
+    format: 'csv' | 'json',
+  ): Promise<{ filePath: string; fileName: string }> {
+    const report = await this.getContentEffectivenessReport(instructorId);
+
+    let fileContent: string;
+    let fileName: string;
+
+    if (format === 'csv') {
+      const parser = new Parser(); // json2csv library
+      fileContent = parser.parse(report);
+      fileName = `content_effectiveness_${instructorId}.csv`;
+    } else {
+      fileContent = JSON.stringify(report, null, 2); // Pretty-print JSON
+      fileName = `content_effectiveness_${instructorId}.json`;
+    }
+
+    const filePath = path.join(__dirname, '../downloads', fileName);
+
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, fileContent);
+
+    return { filePath, fileName };
+  }
+
+
 }
+

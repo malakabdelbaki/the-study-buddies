@@ -3,27 +3,7 @@ import { IsString, IsNotEmpty, IsNumber, Min, Max, IsEmail, IsArray, ValidateNes
 import { Type } from 'class-transformer';
 import { ModulePerformanceDto } from './module-performance.dto';
 
-// export class LowPerformingStudentDto {
-//   @ApiProperty({ description: 'Student ID' })
-//   @IsString()
-//   @IsNotEmpty()
-//   studentId: string;
 
-//   @ApiProperty({ description: 'Student name' })
-//   @IsString()
-//   @IsNotEmpty()
-//   studentName: string;
-
-//   @ApiProperty({ description: 'Student email' })
-//   @IsEmail()
-//   email: string;
-
-//   @ApiProperty({ description: 'Completion percentage of the student' })
-//   @IsNumber()
-//   @Min(0)
-//   @Max(100)
-//   completionPercentage: number;
-// }
 
 export class InstructorAnalyticsDto {
   @ApiProperty({ description: 'Course ID' })
@@ -41,16 +21,18 @@ export class InstructorAnalyticsDto {
   @Min(0)
   totalStudents: number;
 
+  @ApiProperty({ description: 'Total number of students who completed the course' })
+  @IsNumber()
+  @Min(0)
+  completedStudents: number;
+
   @ApiProperty({ description: 'Average completion percentage of the course' })
   @IsNumber()
   @Min(0)
   @Max(100)
   averageCompletion: number;
 
-  // @ApiProperty({
-  //   description: 'List of low-performing students',
-  //   type: [LowPerformingStudentDto],
-  // })
+ 
   
   @ApiProperty({
     description: 'Performance categories for students in the course',
@@ -65,14 +47,24 @@ export class InstructorAnalyticsDto {
   };
 
   @ApiProperty({
+    description: 'Overall student performance across modules in the course',
+    type: Object,
+  })
+  @IsNotEmpty()
+  overallstudentPerformance: {
+    belowAverage: number;
+    average: number;
+    aboveAverage: number;
+    excellent: number;
+  };
+
+  @ApiProperty({
     description: 'List of performance data for each module in the course',
     type: [ModulePerformanceDto],
   })
 
   @IsArray()
   @ValidateNested({ each: true })
-  //@Type(() => LowPerformingStudentDto) // Required for nested validation
-  //lowPerformingStudents: LowPerformingStudentDto[];
   @Type(() => ModulePerformanceDto)
   modulesPerformance: ModulePerformanceDto[];
 }
