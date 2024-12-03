@@ -10,7 +10,7 @@ import { Course, CourseSchema } from '../Models/course.schema';
 import { Quiz, QuizSchema } from '../Models/quiz.schema';
 import { Response, ResponseSchema } from '../Models/response.schema';
 import { Module, ModuleSchema } from '../Models/modules.schema';
-import { CourseAccess, CourseAccessSchema } from '../Models/courseAccess.schema';
+
 
 
 @NestModule({
@@ -21,8 +21,7 @@ import { CourseAccess, CourseAccessSchema } from '../Models/courseAccess.schema'
       { name: Course.name, schema: CourseSchema },
       { name: Quiz.name, schema: QuizSchema },
       { name: Response.name, schema: ResponseSchema },
-      { name: Module.name, schema: ModuleSchema },
-      {name: CourseAccess.name, schema:CourseAccessSchema}
+      { name: Module.name, schema: ModuleSchema }
     ]),
   ],
   providers: [PerformanceService],
