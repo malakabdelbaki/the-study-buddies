@@ -1,11 +1,11 @@
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UserService } from '../users/users.service';
+import { UserService } from '../../users/users.service';
 import { ChatService } from '../chat/chat.service';
 import { Types } from 'mongoose';
-import { ThreadsService } from '../discussionForum/threads/threads.service';
-import { ForumService } from '../discussionForum/forum/forum.service';
-import { CoursesService } from '../courses/courses.service';
+import { ThreadsService } from '../../discussionForum/threads/threads.service';
+import { ForumService } from '../../discussionForum/forum/forum.service';
+import { CoursesService } from '../../courses/courses.service';
 
 @WebSocketGateway({ cors: true })
 export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
