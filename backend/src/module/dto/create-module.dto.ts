@@ -67,7 +67,7 @@ export class CreateModuleDto {
   @IsArray()
   @IsOptional()
   @IsMongoId({ each: true })
-  question_bank: Types.ObjectId[];
+  question_bank?: Types.ObjectId[];
 
   
   @ApiProperty({
