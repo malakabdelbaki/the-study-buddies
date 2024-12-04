@@ -53,4 +53,14 @@ export class UpdateCourseDto extends PartialType(CreateCourseDto) {
   @IsMongoId({ each: true }) // Validates each item in the array is a valid ObjectId
   @IsOptional()
   modules?: Types.ObjectId[];
+
+
+  @ApiProperty({
+    description: 'List of key words for the course',
+    type: [String],
+    required: false,
+  })
+  @IsArray()
+  @IsOptional()
+  key_words?: string[];
 }
