@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import * as mongoose from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Module, ModuleDocument } from 'src/models/modules.schema';
@@ -8,6 +9,7 @@ import { Quiz, QuizDocument } from 'src/models/quiz.schema';
 import { Answer, AnswerDocument } from 'src/models/answer.schema';
 import { Response, ResponseDocument } from 'src/models/response.schema';
 import { User, UserDocument } from 'src/models/user.schema';
+import { Progress, ProgressDocument } from 'src/models/progress.schema';
 @Injectable()
 export class QuizzesService {
   constructor(
@@ -18,6 +20,7 @@ export class QuizzesService {
     @InjectModel(Answer.name) private readonly answerModel: Model<AnswerDocument>,
     @InjectModel(Response.name) private readonly responseModel: Model<ResponseDocument>,
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(Progress.name) private readonly progressModel: Model<ProgressDocument>,  
 
   ) {}
 
@@ -167,54 +170,50 @@ export class QuizzesService {
   }
 
 
-  async getStudentGrade(user_id: string) {
-    // Retrieve the user by ID
-    const user = this.userModel.findById(user_id).exec();
-    console.log("user: ", user); 
-
-    //get all responses by user_id
-    const responses = await this.responseModel.find({user_id: user_id}).exec();
-
-    let totalScore = 0; 
-    for(var index in responses){
-      const response = responses[index];
-      console.log("response: ", response);
-      totalScore += response.score;
-    }
-    const studentGrade = totalScore / responses.length;
-    console.log("studentGrade: ", studentGrade);
-    return studentGrade;
-
-  }
-
-  
 
   // Create a quiz
   async createQuiz(user_id: string, module_id: string) {
+    // Retrieve the user by ID - working
+    const user = await this.userModel.findById(user_id).exec();
+    if (!user) {
+      throw new NotFoundException(`User with ID ${user_id} not found`);
+    } 
+    console.log("user: ", user);
     // Retrieve module - working
     const module = await this.getModuleById(module_id);
+    if (!module) {
+      throw new NotFoundException(`Module with ID ${module_id} not found`);
+    }
+    console.log("module: ", module);
+
   
+    console.log("***************** 1 *********************")
     // Retrieve the associated course - working
     const course = await this.courseModel.findById(module.course_id).exec();
     if (!course) {
       throw new NotFoundException(`Course for Module ID ${module_id} not found`);
     }
-  
+      console.log("course: ", course);
+      console.log("***************** 2 *********************")
+
     // Check if the user is enrolled in the course - working
     const isEnrolled = course.students.some(student => student.toString() === user_id);
     if (!isEnrolled) {
       throw new UnauthorizedException(`User with ID ${user_id} is not enrolled in the course`);
     }
-  
+      console.log("***************** 3 *********************")
+
     // Retrieve questions with module_id - working
     const allQuestions = await this.getQuestionsByModuleId(module_id);
   
+        console.log("***************** 4 *********************")
+
     // Filter questions based on the module's quiz type - working
     const filteredQuestions = module.quiz_type === 'mixed'
     ? allQuestions
     : allQuestions.filter(q => q.question_type.toString() === module.quiz_type.toString());
   
-    // Throw an error if no questions are found for the module quiz type
+    // Throw an error if no questions are found for the module quiz type 
     if (filteredQuestions.length === 0) {
       throw new NotFoundException(
         `No questions found for Module ID ${module_id} with quiz type ${module.quiz_type}`
@@ -228,46 +227,58 @@ export class QuizzesService {
         );
       }
 
+    console.log("***************** 5 *********************")
 
 
-      //*********************** get the accumilative student grade ****************************** */
+    //*********************** get the accumilative student grade ****************************** */
 
-    // Get the student's grade level
-    // const studentGrade = await this.getStudentGrade(user_id);  
-    const studentGrade = 70; // Hardcoded for testing
+    // Get the student's grade level from the progress collection - working
+    // get progress by user_id and course_id - working
+    const progress = await this.progressModel.findOne({userId: user._id, courseId: module.course_id }).exec();
+    if (!progress) {
+      throw new NotFoundException(`Progress not found for User ID ${user_id} and Course ID ${module.course_id}`);
+    }
+    console.log("progress: ", progress);
+
+    const studentGrade = progress.AverageGrade;
+    if (!studentGrade) {
+      throw new NotFoundException(`Student grade not found for User ID ${user_id}`);
+    }
     
+    console.log("***************** 6 *********************")
+
     // Filter questions based on the student's grading level - working
     // Select random questions from the filtered questions - working
-    const selectedQuestions = this.getRandomQuestions(filteredQuestions, module.quiz_length, studentGrade);
+    const selectedQuestions = await this.getRandomQuestions(filteredQuestions, module.quiz_length, studentGrade);
+
+    console.log("***************** 7 *********************")
 
 
 
-    // Add quiz creation logic here
-    // Map selected questions to ObjectIds
+    // Map selected questions to ObjectIds - working
     const questionIds = selectedQuestions.map(q => (q as QuestionDocument)._id);
 
-    // Create the quiz object
+    // Create the quiz object - working
     const quiz = new this.quizModel({
         title: `${module.title} quiz`,
-        module_id: module_id,
+        module_id: (module as ModuleDocument)._id,
         quiz_type: module.quiz_type,
         questions: questionIds,
         createdBy: module.instructor_id,
-        student_id: user_id,
+        student_id: user._id,
     });
 
-    // Save the quiz to the database
+    // Save the quiz to the database - working
     const savedQuiz = await quiz.save();
 
   
-    // Log details for debugging
+    // Log details for debugging - working
     console.log('Module details:', module);
     console.log('Course details:', course);
     console.log('Filtered Questions:', filteredQuestions);
     console.log(filteredQuestions.length, 'questions found for Module ID', module_id);
     console.log('Selected Questions:', selectedQuestions);
     console.log('Quiz created:', savedQuiz);
-    // console.log('filtered Questions By Grade: ', filteredQuestionsByGrade);
 
     // Return the saved quiz
     return savedQuiz;  
@@ -281,7 +292,7 @@ export class QuizzesService {
 
 
 
-    // Helper function to get the value of a key from an array of objects
+    // Helper function to get the value of a key from an array of objects - working
     getValueByKey(array, key) {
       for (const obj of array) {
         if (obj.hasOwnProperty(key)) {
@@ -291,25 +302,25 @@ export class QuizzesService {
       return null; // Return null if the key is not found
     }
 
-    // Create an answer for a question
+    // Create an answer for a question - working
     async createAnswer(question_id:Types.ObjectId ,user_answers: { [key: string]: string; }) {
       console.log("entered the createAnswer function");
       
-      //convert question_id to string 
+      //convert question_id to string - working
       const key = question_id.toString();
       const selectedAnswer = this.getValueByKey(user_answers, key); 
-      // console.log("selected answer: ", selectedAnswer); - working
+      console.log("selected answer: ", selectedAnswer);
 
-     // Retrieve the question by ID
+     // Retrieve the question by ID - working
       const question = await this.questionModel.findById(question_id)
       // console.log("question: ", question); - working
       
-      // Check if the selected answer is correct
+      // Check if the selected answer is correct - working
       let isCorrect = false;
       if(question.correct_answer === selectedAnswer)
         isCorrect = true;
 
-      // Create the answer object 
+      // Create the answer object - working
       const answer = new this.answerModel({
         question_id: question_id,
         selectedAnswer: selectedAnswer,
@@ -326,7 +337,7 @@ export class QuizzesService {
 
     async createResponse(quiz_id: string, user_id: string, user_answers:{[key:string] : string}) {
       console.log("entered the createResponse function");
-      // Retrieve the quiz by ID
+      // Retrieve the quiz by ID - working
       const quiz = await this.quizModel.findById(quiz_id).exec();
       const student = await this.userModel.findById(user_id).exec(); 
       
@@ -336,11 +347,11 @@ export class QuizzesService {
       // console.log("student: ", student); - working
 
 
-      // array of answers for a quiz
+      // array of answers for a quiz 
       const answers = [];
       let answer;
 
-      // create answer for each question in the quiz
+      // create answer for each question in the quiz - working
       for(var index in quiz.questions){
         const question_id = quiz.questions[index]; 
         // console.log("question id: ", question_id); - working
@@ -351,7 +362,7 @@ export class QuizzesService {
 
       console.log("answers array: ", answers);
 
-      //calculate the score of the student
+      //calculate the score of the student - working
       let score = 0;
       for(var index in quiz.questions){
         console.log("entered score calculation loop");
@@ -364,11 +375,11 @@ export class QuizzesService {
       }
 
 
-      // console.log("score: ", score); - working
+      console.log("score: ", score); 
       const scorePercentage = (score / quiz.questions.length) * 100;
-      // console.log("score percentage: ", scorePercentage); - working
+      console.log("score percentage: ", scorePercentage); 
 
-      // Create the response object
+      // Create the response object - working
       const response = new this.responseModel({
         user_id: student._id,
         quiz_id: quiz._id,
@@ -376,9 +387,32 @@ export class QuizzesService {
         score: scorePercentage,
       });
 
-      // console.log("response: ", response); - working
-      // Save the response to the database
+
+      //get course_id by module_id in quiz - working
+      const module = await this.moduleModel.findById(quiz.module_id).exec(); 
+      console.log("module: ", module);
+      //get progress by user_id and course_id - working
+      const progress = await this.progressModel.findOne({userId: student._id, courseId: module.course_id }).exec();
+      console.log("progress: ", progress);
+      console.log("############ 1 ##############");
+      //update progress - working
+      progress.AccumilativeGrade += scorePercentage;
+      progress.totalNumberOfQuizzes += 1;
+      progress.AverageGrade = progress.AccumilativeGrade / progress.totalNumberOfQuizzes;
+      console.log("############ 2 ##############");
+      //save progress to the database - working
+      progress.save();
+      console.log("progress: ", progress);
+      console.log("progress.AccumilativeGrade: ", progress.AccumilativeGrade);
+      console.log("progress.totalNumberOfQuizzes: ", progress.totalNumberOfQuizzes);
+      console.log("progress.AverageGrade: ", progress.AverageGrade);
+      console.log("############ 3 ##############");
+
+
+      console.log("response: ", response); 
+      // Save the response to the database - working
       const savedResponse = await response.save();
+      return savedResponse; 
 
     }
 
@@ -387,5 +421,16 @@ export class QuizzesService {
         
 }
     
+
+
+
+
+
+
+
+  
+ 
+
+
 
 
