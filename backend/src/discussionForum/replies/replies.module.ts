@@ -14,6 +14,7 @@ import { Response, ResponseSchema } from 'src/models/response.schema';
 import { ThreadsModule } from '../threads/threads.module';
 import { ThreadsService } from '../threads/threads.service';
 import { CoursesService } from 'src/courses/courses.service';
+import { ModuleSchema } from 'src/Models/modules.schema';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CoursesService } from 'src/courses/courses.service';
       { name: Thread.name, schema: ThreadSchema },
       { name: User.name, schema: UserSchema },
       { name: Course.name, schema: CourseSchema },
+      { name: 'Module', schema: ModuleSchema },
       { name: Progress.name, schema: ProgressSchema },
       { name: Response.name, schema: ResponseSchema },
     ]),
