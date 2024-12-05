@@ -18,6 +18,7 @@ import { Thread } from './Models/thread.schema';
 import { ThreadsModule } from './discussionForum/threads/threads.module';
 import { ReplyModule } from './discussionForum/replies/replies.module';
 import { ModuleModule } from './module/module.module';
+import { LogsModule } from './log/log.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { ModuleModule } from './module/module.module';
     ReplyModule,
     ModuleModule,
     QuizzesModule,
+    LogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

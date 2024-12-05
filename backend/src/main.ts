@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import mongoose from 'mongoose';
 import { ValidationPipe } from '@nestjs/common';
+//import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -43,8 +44,15 @@ async function bootstrap() {
     .catch((err) => {
       console.error('Error starting the application:', err);
     });
+
+    //cors
+  app.enableCors({
+    origin: `http://localhost:${port}`, // Allow requests from Next.js server
+    methods:'GET,POST,PUT,PATCH,DELETE',
+    credentials: true,
+  });
+  //app.use(cookieParser());
 }
 
-  //cors
 
 bootstrap();

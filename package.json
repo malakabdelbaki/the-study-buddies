@@ -2,11 +2,14 @@
   "dependencies": {
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/platform-socket.io": "^10.4.12",
+    "@nestjs/schedule": "^4.1.1",
     "@nestjs/websockets": "^10.4.12",
     "@types/socket.io": "^3.0.2",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "winston": "^3.17.0",
+    "winston-mongodb": "^6.0.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2"

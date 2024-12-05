@@ -1,4 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+//schema probably not needed!
+
+/**import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { Role } from '../enums/role.enum'; 
 import { Log_event } from 'src/enums/log-event.enum';
@@ -40,3 +42,4 @@ export class Log extends Document {
 }
 
 export const LogSchema = SchemaFactory.createForClass(Log);
+*/
