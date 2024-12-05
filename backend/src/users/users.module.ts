@@ -6,19 +6,19 @@ import { User, UserSchema } from '../Models/user.schema';
 import { Course, CourseSchema } from '../Models/course.schema';
 import { Progress, ProgressSchema } from '../Models/progress.schema';
 import { Response, ResponseSchema } from '../Models/response.schema';
+import { ModuleSchema } from 'src/Models/modules.schema';
 import { authorizationGuard } from '../auth/guards/authorization.guard';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-      { name: Course.name, schema: CourseSchema },
-      { name: Progress.name, schema: ProgressSchema },
-      { name: Response.name, schema: ResponseSchema },
-    ]),
+  imports :[MongooseModule.forFeature([{ name: 'Module', schema: ModuleSchema }]),
+  MongooseModule.forFeature([{name:'Response',schema:ResponseSchema}]),         
+  MongooseModule.forFeature([{name:'Course',schema:CourseSchema}]),
+  MongooseModule.forFeature([{name:'Progress',schema:ProgressSchema}]),
+  MongooseModule.forFeature([{name:'User',schema:UserSchema}])
   ],
   controllers: [UserController],
   providers: [UserService, authorizationGuard],
   exports: [UserService], // Export the service if it's needed in other modules
 })
 export class UserModule {}
+

@@ -8,7 +8,7 @@ import { IsValidOptions } from "src/common/validators/Option.validator";
 export class CreateQuestionDto {
     @ApiProperty({
       description: 'The ID of the module this question belongs to',
-      type: String,
+      type:  Types.ObjectId,
       example: '64c8e08f5f1d1b001b23f6d5',
     })
     @IsMongoId()
@@ -16,7 +16,7 @@ export class CreateQuestionDto {
   
     @ApiProperty({
       description: 'The ID of the instructor who created the question',
-      type: String,
+      type:  Types.ObjectId,
       example: '64c8e08f5f1d1b001b23f6d5',
     })
     @IsMongoId()

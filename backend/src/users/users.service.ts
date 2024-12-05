@@ -5,12 +5,16 @@ import { User, UserDocument } from '../Models/user.schema';
 import { Course, CourseDocument } from '../Models/course.schema';
 import { Progress, ProgressDocument } from '../Models/progress.schema';
 import { Response, ResponseDocument } from '../Models/response.schema';
-import { CreateUserDto } from './dtos/create-user.dto';  // Importing DTOs
-import { UpdateUserInfoDto } from './dtos/update-user-info.dto'; // Importing DTOs
+import { Module, ModuleDocument } from '../Models/modules.schema';
+import { CreateUserDto } from './dtos/create-user.dto';  
+import { UpdateUserInfoDto } from './dtos/update-user-info.dto'; 
 import { Role } from '../enums/role.enum';
 import { Types } from 'mongoose';
 import { ChangePasswordDto } from './dtos/change-password-dto';
 import bcrypt from 'bcrypt';
+import { RateDto } from './dtos/rate-dto';
+import { EnrollInCourseDto } from './dtos/enroll-in-course-dto';
+import { CreateProgressDto } from './dtos/create-progress-dto';
 
 
 
@@ -21,6 +25,7 @@ export class UserService {
     @InjectModel(Course.name) private courseModel: Model<CourseDocument>,
     @InjectModel(Progress.name) private progressModel: Model<ProgressDocument>,
     @InjectModel(Response.name) private responseModel: Model<ResponseDocument>,
+    @InjectModel(Module.name) private moduleModel: Model<ModuleDocument>,
   ) {}
 
   /** --------- ADMIN ONLY FUNCTIONALITIES ----------- */
@@ -108,6 +113,55 @@ export class UserService {
     return user;  // Fetch a student by username
 }
 
+  
+  
+
+  // Assign students to a course
+  async assignStudentsToCourse(courseId: string, studentIds: string[]): Promise<Course> {
+    try {
+      const course = await this.courseModel.findById(courseId);
+      if (!course) throw new NotFoundException('Course not found.');
+
+      // Convert studentIds to ObjectIds
+      const objectIds =  studentIds.map(id => new Types.ObjectId(id));
+
+      course.students.push(...objectIds);
+      return await course.save();
+    } catch (error) {
+        throw new InternalServerErrorException('Error assigning students to course', error.message);
+      }
+  }
+
+  //updates student progress
+  async updateStudentProgress(courseId: string, studentId: string, completionPercentage: number): Promise<Progress> {
+    try {
+            if (completionPercentage < 0 || completionPercentage > 100) {
+              throw new BadRequestException('Completion percentage must be between 0 and 100.');
+            }
+
+         // Ensure ObjectId type if needed
+        const courseObjectId = new mongoose.Types.ObjectId(courseId);
+        const studentObjectId = new mongoose.Types.ObjectId(studentId);
+
+      const progress = await this.progressModel.findOneAndUpdate(
+        { courseId : courseObjectId, userId: studentObjectId },
+        { completionPercentage, lastAccessed: new Date() },
+        { new: true },
+      );
+
+      if (!progress) throw new NotFoundException('Progress record not found.');
+
+      return progress;
+    } catch (error) {
+      throw new InternalServerErrorException('Error updating student progress', error.message);
+    }
+  }
+
+  
+
+  /** --------- PUBLIC FUNCTIONALITIES ----------- */
+
+
   //creates a user account, but instructor only creates user accounts
   /**async createUser(createUserDto: CreateUserDto, currentUser: User): Promise<User> {
     try {
@@ -159,51 +213,6 @@ export class UserService {
       }
   }
   
-  
-
-  // Assign students to a course
-  async assignStudentsToCourse(courseId: string, studentIds: string[]): Promise<Course> {
-    try {
-      const course = await this.courseModel.findById(courseId);
-      if (!course) throw new NotFoundException('Course not found.');
-
-      // Convert studentIds to ObjectIds
-      const objectIds =  studentIds.map(id => new Types.ObjectId(id));
-
-      course.students.push(...objectIds);
-      return await course.save();
-    } catch (error) {
-        throw new InternalServerErrorException('Error assigning students to course', error.message);
-      }
-  }
-
-  //updates student progress
-  async updateStudentProgress(courseId: string, studentId: string, completionPercentage: number): Promise<Progress> {
-    try {
-            if (completionPercentage < 0 || completionPercentage > 100) {
-              throw new BadRequestException('Completion percentage must be between 0 and 100.');
-            }
-
-         // Ensure ObjectId type if needed
-        const courseObjectId = new mongoose.Types.ObjectId(courseId);
-        const studentObjectId = new mongoose.Types.ObjectId(studentId);
-
-      const progress = await this.progressModel.findOneAndUpdate(
-        { courseId : courseObjectId, userId: studentObjectId },
-        { completionPercentage, lastAccessed: new Date() },
-        { new: true },
-      );
-
-      if (!progress) throw new NotFoundException('Progress record not found.');
-
-      return progress;
-    } catch (error) {
-      throw new InternalServerErrorException('Error updating student progress', error.message);
-    }
-  }
-  
-
-  /** --------- PUBLIC FUNCTIONALITIES ----------- */
 
   // Find user by ID
   async findUserById(userId: string): Promise<User> {
@@ -337,5 +346,90 @@ export class UserService {
       throw new NotFoundException('Error fetching courses', error.message);
     }
   }
+
+  // STUDENT ONLY ENDPOINTS 
+
+  // Rate a Module
+  async rateModule(dto: RateDto) {
+    const module = await this.moduleModel.findById(dto.targetId);
+    if (!module) throw new NotFoundException('Module not found');
+    module.ratings.push(dto.rating);
+    await module.save();
+    return { message: 'Module rated successfully', ratings: module.ratings };
+  }
+
+  // Rate a Course
+  async rateCourse(dto: RateDto) {
+    const course = await this.courseModel.findById(dto.targetId);
+    if (!course) throw new NotFoundException('Course not found');
+    course.ratings.push(dto.rating);
+    await course.save();
+    return { message: 'Course rated successfully', ratings: course.ratings };
+  }
+
+  // Rate an Instructor
+  async rateInstructor(dto: RateDto) {
+    const instructor = await this.userModel.findById(dto.targetId);
+    if (!instructor || instructor.role !== 'instructor')
+      throw new NotFoundException('Instructor not found');
+    instructor.ratings.push(dto.rating);
+    await instructor.save();
+    return { message: 'Instructor rated successfully', ratings: instructor.ratings };
+  }
+
+  // Enroll in a Course and create progress automatically
+  async enrollInCourse(dto: EnrollInCourseDto) {
+    const course = await this.courseModel.findById(dto.courseId);
+    if (!course) throw new NotFoundException('Course not found');
   
+    const studentObjectId = new mongoose.Types.ObjectId(dto.studentId);
+  
+    // Check if the student is already enrolled
+    if (course.students.includes(studentObjectId))
+      throw new BadRequestException('Student already enrolled');
+  
+    // Add the student to the course
+    course.students.push(studentObjectId);
+    await course.save();
+  
+    // Create progress for the enrolled student
+    try {
+      await this.createProgress({
+        userId: dto.studentId,
+        courseId: dto.courseId,
+      });
+    } catch (error) {
+      // Handle potential errors from createProgress
+      throw new BadRequestException('Failed to create progress: ' + error.message);
+    }
+  
+    return { message: 'Enrolled in course and progress created successfully', courseId: course.id };
+  }
+  
+
+  // Create Progress
+  async createProgress(dto: CreateProgressDto) {
+    const existingProgress = await this.progressModel.findOne({
+      userId: dto.userId,
+      courseId: dto.courseId,
+    });
+
+    if (existingProgress)
+      throw new BadRequestException('Progress for this course already exists');
+
+    const userObjectId = new Types.ObjectId(dto.userId);
+    const courseObjectId = new Types.ObjectId(dto.courseId);
+
+    const progress = new this.progressModel({
+      userId: userObjectId,
+      courseId: courseObjectId,
+      completionPercentage: 0,
+      totalNumberOfQuizzes: 0,
+      AccumilativeGrade: 0,
+      AverageGrade: 0,
+    });
+
+    await progress.save();
+    return { message: 'Progress created successfully', progress };
+  }
 }
