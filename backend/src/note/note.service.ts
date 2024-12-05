@@ -60,8 +60,9 @@ export class NoteService {
   async createNote(userId: string, createNoteDto: CreateNoteDto): Promise<Note> {
     const user = new Types.ObjectId(userId);
     const course_id = new Types.ObjectId(createNoteDto.courseId);
+    const module_id = new Types.ObjectId(createNoteDto.moduleId)
     const course = await this.coursesService.findOne(course_id);
-    const module = await this.moduleService.GetModule(createNoteDto.moduleId);
+    const module = await this.moduleService.findOne(module_id);
 
     if(!course || !module){
       throw new NotFoundException('Course or Module not found');
