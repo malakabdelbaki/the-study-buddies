@@ -6,12 +6,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CoursesModule } from 'src/courses/courses.module';
 import { ModuleModule } from 'src/module/module.module';
 import { NoteSchema } from 'src/Models/notes.schema';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Note', schema: NoteSchema }]),
     CoursesModule,
     ModuleModule,
+    AuthModule
   ],
   providers: [NoteService],
   controllers: [NoteController],

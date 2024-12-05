@@ -10,11 +10,15 @@ import { Request } from 'express';
 import * as dotenv from 'dotenv';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { AuthService } from '../auth.service';
 dotenv.config();
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-    constructor(private jwtService: JwtService,private reflector: Reflector) { }
+    constructor(
+        private jwtService: JwtService,
+        private reflector: Reflector,
+        private authService: AuthService) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
@@ -29,6 +33,11 @@ export class AuthGuard implements CanActivate {
         if (!token) {
             throw new UnauthorizedException('No token, please login');
         }
+
+        if (this.authService.isTokenBlacklisted(token)) {
+            throw new UnauthorizedException('Token is invalidated');
+        }
+
         try {
             const payload = await this.jwtService.verifyAsync(
                 token,

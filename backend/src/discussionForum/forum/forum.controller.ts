@@ -11,6 +11,7 @@ import { Role } from 'src/enums/role.enum';
 import { Types } from 'mongoose';
 
 @Controller('forum')
+@UseGuards(AuthGuard, authorizationGuard)
 export class ForumController {
   constructor(private readonly forumService: ForumService,
   ) {}

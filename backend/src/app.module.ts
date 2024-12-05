@@ -20,6 +20,7 @@ import { ReplyModule } from './discussionForum/replies/replies.module';
 import { ModuleModule } from './module/module.module';
 import { NoteController } from './note/note.controller';
 import { NoteModule } from './note/note.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -31,14 +32,13 @@ import { NoteModule } from './note/note.module';
     CoursesModule,
     UserModule,
     ChatModule,
-   // // ValidatorsModule,
     ModuleModule,
     ForumModule,
     ThreadsModule,
     ReplyModule,
-    ModuleModule,
     QuizzesModule,
     NoteModule,
+    AuthModule
   ],
   controllers: [AppController, NoteController],
   providers: [AppService],

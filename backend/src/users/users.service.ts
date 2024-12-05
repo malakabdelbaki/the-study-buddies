@@ -11,7 +11,7 @@ import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { Role } from '../enums/role.enum';
 import { Types } from 'mongoose';
 import { ChangePasswordDto } from './dtos/change-password-dto';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { RateDto } from './dtos/rate-dto';
 import { EnrollInCourseDto } from './dtos/enroll-in-course-dto';
 import { CreateProgressDto } from './dtos/create-progress-dto';
@@ -75,10 +75,14 @@ export class UserService {
       if (!user) {
         throw new NotFoundException(`User with ID ${userId} not found`);
       }
-  
+
+      const isSameAsOldPassword = await bcrypt.compare(changeDto.newPassword, user.passwordHash);
+      if (isSameAsOldPassword) {
+          throw new BadRequestException('New password cannot be the same as the old password');
+      }
       // Hash the new password
       const hashedPassword = await bcrypt.hash(changeDto.newPassword, 10);
-  
+     
       // Update the password hash
       user.passwordHash = hashedPassword;
       await user.save();
@@ -205,6 +209,9 @@ export class UserService {
       const newUser = new this.userModel({
         ...createUserDto
       });
+      if(createUserDto.role === Role.Instructor){
+        newUser.ratings = [];
+      }
   
       // Save and return the new user
       return await newUser.save();

@@ -10,6 +10,7 @@ import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
 
 @Controller('replies')
+@UseGuards(AuthGuard, authorizationGuard)
 export class RepliesController {
   constructor(
     private readonly repliesService: RepliesService,
@@ -29,11 +30,6 @@ export class RepliesController {
   @ApiParam({ name: 'threadId', description: 'The ID of the thread' })
   @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
 
-  // search(
-  //   @Param('threadId') threadId: string ,
-  //   @Query('query') query?: string) {
-  //   return this.repliesService.searchReplies(query, threadId);
-  // }
 
   @Get('thread/:threadId')
   @ApiOperation({ summary: 'Retrieve all replies on a thread' })

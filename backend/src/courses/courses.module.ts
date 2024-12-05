@@ -6,9 +6,13 @@ import { CourseSchema } from 'src/Models/course.schema';
 import { authorizationGuard } from 'src/auth/guards/authorization.guard';
 import { ModuleService } from 'src/module/module.service';
 import { ModuleModule } from 'src/module/module.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports:[MongooseModule.forFeature([{ name: 'Course', schema: CourseSchema }]),ModuleModule] ,// Register scheme]
+  imports:[
+      MongooseModule.forFeature([{ name: 'Course', schema: CourseSchema }]),
+      ModuleModule,
+      AuthModule] ,// Register scheme]
   controllers: [CoursesController],
   providers: [CoursesService,authorizationGuard],
   exports: [CoursesService],

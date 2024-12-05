@@ -10,6 +10,7 @@ import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
 import { Types } from 'mongoose';
 @Controller('threads')
+@UseGuards(AuthGuard, authorizationGuard)
 export class ThreadsController {
   constructor(private readonly threadService: ThreadsService) {}
 

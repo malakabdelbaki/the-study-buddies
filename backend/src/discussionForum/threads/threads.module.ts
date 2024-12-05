@@ -8,13 +8,15 @@ import { ForumModule } from '../forum/forum.module';
 import { CoursesModule } from 'src/courses/courses.module';
 import { User } from 'src/models/user.schema';
 import { UserModule } from 'src/users/users.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Thread.name, schema: ThreadSchema }]),
     ForumModule,
     CoursesModule,
-    UserModule
+    UserModule,
+    AuthModule
   ],
   controllers: [ThreadsController],
   providers: [ThreadsService],
