@@ -3,7 +3,7 @@ import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { Role } from '../../enums/role.enum';
-import { LogsService } from '../log/log.service';
+import { LogsService } from '../../log/log.service';
 
 
 @Injectable()

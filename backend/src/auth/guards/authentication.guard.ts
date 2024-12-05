@@ -10,7 +10,7 @@ import { Request } from 'express';
 import * as dotenv from 'dotenv';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
-import { LogsService } from '../log/log.service';
+import { LogsService } from '../../log/log.service';
 dotenv.config();
 
 @Injectable()
