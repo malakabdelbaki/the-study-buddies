@@ -6,13 +6,17 @@ import { CourseSchema } from 'src/Models/course.schema';
 import { authorizationGuard } from 'src/auth/guards/authorization.guard';
 import { ModuleService } from 'src/module/module.service';
 import { ModuleModule } from 'src/module/module.module';
+import { ValidatorsModule } from 'src/common/validators/validators.module';
 import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports:[
+      
       MongooseModule.forFeature([{ name: 'Course', schema: CourseSchema }]),
+      
       ModuleModule,
-      AuthModule] ,// Register scheme]
+      AuthModule ,
+      ValidatorsModule],// Register scheme]
   controllers: [CoursesController],
   providers: [CoursesService,authorizationGuard],
   exports: [CoursesService],

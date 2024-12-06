@@ -21,6 +21,7 @@ import { ModuleModule } from './module/module.module';
 import { NoteController } from './note/note.controller';
 import { NoteModule } from './note/note.module';
 import { AuthModule } from './auth/auth.module';
+import { ValidatorsModule } from './common/validators/validators.module';
 
 @Module({
   imports: [
@@ -38,10 +39,12 @@ import { AuthModule } from './auth/auth.module';
     ReplyModule,
     QuizzesModule,
     NoteModule,
-    AuthModule
+    AuthModule,
+    ValidatorsModule
   ],
   controllers: [AppController, NoteController],
   providers: [AppService],
+  exports: [AppService, MongooseModule],
   // controllers: [AppController, QuizzesController],
   // providers: [AppService, QuizzesService],
 })

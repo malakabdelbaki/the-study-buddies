@@ -9,6 +9,8 @@ import { CoursesModule } from 'src/courses/courses.module';
 import { User } from 'src/models/user.schema';
 import { UserModule } from 'src/users/users.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
+import { ExistsOnDatabaseValidator } from 'src/common/validators/exists-on-database.validator';
 
 @Module({
   imports: [
@@ -19,6 +21,7 @@ import { AuthModule } from 'src/auth/auth.module';
     AuthModule
   ],
   controllers: [ThreadsController],
-  providers: [ThreadsService],
+  providers: [ThreadsService, ExistsOnDatabaseValidator],
+  exports: [ThreadsService, MongooseModule.forFeature([{ name: Thread.name, schema: ThreadSchema }])],
 })
 export class ThreadsModule {}
