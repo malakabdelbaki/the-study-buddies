@@ -5,6 +5,9 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from '../../Models/user.schema'; // Replace with your schema path
 import { Course, CourseDocument } from 'src/Models/course.schema';
 import { Thread, ThreadDocument } from 'src/Models/thread.schema';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Connection, Types } from 'mongoose';
+import { EntityDoesNotExistException } from '../exceptions/EntityDoesNotExist.exception';
 
 interface ExistsOnDatabaseOptions {
   modelName: string;
@@ -14,33 +17,32 @@ interface ExistsOnDatabaseOptions {
 @Injectable()
 @ValidatorConstraint({ name: 'existsOnDatabase', async: true })
 export class ExistsOnDatabaseValidator implements ValidatorConstraintInterface {
-  constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-    @InjectModel(Course.name) private readonly courseModel: Model<CourseDocument>
-  ) {
-    console.log("in constructor");
-    console.log("userModel: ", userModel);
-    console.log("courseModel: ", courseModel);
+  constructor(@InjectConnection() private readonly connection: Connection) {
+    if (!connection) {
+      console.error('Mongoose connection is undefined in ExistsValidator');
+    } else {
+      console.log('Mongoose connection established in ExistsValidator');
+    }
   }
 
   async validate(value: any, args: ValidationArguments): Promise<boolean> {
-    if (!value) return true; // Allow null or undefined to pass
-
-    const options: ExistsOnDatabaseOptions = args.constraints[0];
-    const { modelName, column } = options;
-
-    console.log("modelname: ", modelName, "column: ", column);
-    const model = this.getModel(modelName);
-    console.log("retreived model ", model);
-    if (!model) {
-      console.error(`Model ${modelName} not found.`);
-      return false;
+    const [modelName, fieldName = '_id'] = args.constraints;
+    const model = this.connection.model(modelName);
+    if(!model) {
+      throw new Error(`Model ${modelName} not found`);
     }
 
-    // Check if the entity exists
-    const exists = await model.exists({ [column]: value });
 
-    return !!exists;
+    if (!Types.ObjectId.isValid(value)) {
+      return false; // Invalid ObjectId
+    }
+
+    const exists = await model.exists({ [fieldName]: new Types.ObjectId(value) });
+    if (!exists) {
+      throw new EntityDoesNotExistException(modelName, value);
+    }
+
+    return true; 
   }
 
   defaultMessage(args: ValidationArguments): string {
@@ -49,17 +51,4 @@ export class ExistsOnDatabaseValidator implements ValidatorConstraintInterface {
     return `The ${column} provided does not exist in the ${modelName} collection.`;
   }
 
-  private getModel(modelName: string): Model<any> | null {
-    console.log("modelname in getModel: ", modelName);
-    switch (modelName.toLowerCase()) {
-      case 'user':
-        return this.userModel;
-      case 'course':
-        return this.courseModel;
-      
-      // Add more cases for other models
-      default:
-        return null;
-    }
-  }
 }
