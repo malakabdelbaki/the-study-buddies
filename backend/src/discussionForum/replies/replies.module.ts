@@ -18,6 +18,7 @@ import { ModuleSchema } from 'src/Models/modules.schema';
 import { QuestionSchema } from 'src/Models/question.schema';
 import { ModuleService } from 'src/module/module.service';
 import { ModuleModule } from 'src/module/module.module';
+import { LogsModule } from 'src/log/log.module';
 
 @Module({
   imports: [
@@ -31,7 +32,8 @@ import { ModuleModule } from 'src/module/module.module';
     ]),
     ForumModule,
     ThreadsModule,
-    ModuleModule
+    ModuleModule,
+    LogsModule
   ],
   controllers: [RepliesController],
   providers: [RepliesService, UserService, ThreadsService, CoursesService],
