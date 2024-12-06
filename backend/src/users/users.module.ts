@@ -8,13 +8,15 @@ import { Progress, ProgressSchema } from '../Models/progress.schema';
 import { Response, ResponseSchema } from '../Models/response.schema';
 import { ModuleSchema } from 'src/Models/modules.schema';
 import { authorizationGuard } from '../auth/guards/authorization.guard';
+import { LogsModule } from 'src/log/log.module';
 
 @Module({
   imports :[MongooseModule.forFeature([{ name: 'Module', schema: ModuleSchema }]),
   MongooseModule.forFeature([{name:'Response',schema:ResponseSchema}]),         
   MongooseModule.forFeature([{name:'Course',schema:CourseSchema}]),
   MongooseModule.forFeature([{name:'Progress',schema:ProgressSchema}]),
-  MongooseModule.forFeature([{name:'User',schema:UserSchema}])
+  MongooseModule.forFeature([{name:'User',schema:UserSchema}]),
+  LogsModule
   ],
   controllers: [UserController],
   providers: [UserService, authorizationGuard],
