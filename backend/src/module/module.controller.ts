@@ -19,9 +19,11 @@ import { ResourceDto } from './dto/create-resource.dto';
 import { Response } from 'express';
 import * as fs from 'fs';
 import { UpdateResourceDto } from './dto/update-resource.dto';
+import { AuthGuard } from 'src/auth/guards/authentication.guard';
 
 
 @Controller('modules')
+@UseGuards(AuthGuard)
 export class ModuleController {
   constructor(private readonly moduleService: ModuleService, private readonly courseService: CoursesService) {}
 

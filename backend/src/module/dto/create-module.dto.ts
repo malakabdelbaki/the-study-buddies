@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsMongoId, IsOptional, IsString } from 'class-validator';
 import { Types } from 'mongoose';
+import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 import { Difficulty } from 'src/enums/difficulty.enum';
 import { QuizType } from 'src/enums/QuizType.enum';
 
@@ -10,6 +11,7 @@ export class CreateModuleDto {
     example: '64a1234f7d9b5f001f123456',
   })
   @IsMongoId()
+  @ExistsOnDatabase({ modelName: 'Course', column: '_id' })
   course_id: Types.ObjectId;
 
 
@@ -18,6 +20,7 @@ export class CreateModuleDto {
     example: '64a5678f7d9b5f001f654321',
   })
   @IsMongoId()
+  @ExistsOnDatabase({ modelName: 'User', column: '_id' })
   instructor_id: Types.ObjectId;
 
 

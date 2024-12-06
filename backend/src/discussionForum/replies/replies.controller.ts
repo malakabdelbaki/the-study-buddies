@@ -39,7 +39,7 @@ export class RepliesController {
   findRepliesOnThread(
     @Param('threadId') threadId: string,
     @Req() req: any) {
-    const initiator = req.user; 
+    const initiator = req.user.userid; 
     return this.repliesService.findRepliesOnThread(threadId, initiator);  
   }
 
@@ -50,7 +50,7 @@ export class RepliesController {
   findOne(
     @Param('id') id: string,
     @Req() req: any) {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return this.repliesService.findOne(id, initiator);
   }
 
@@ -71,7 +71,7 @@ export class RepliesController {
     @Param('id') id: string, 
     @Body() updateReplyDto: UpdateReplyDto,
     @Req() req: any) {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return this.repliesService.update(id, updateReplyDto, initiator);
   }
 
@@ -80,7 +80,7 @@ export class RepliesController {
   @ApiParam({ name: 'id', description: 'The ID of the reply to delete' })
   @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
   remove(@Param('id') id: string, @Req() req: any) {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return this.repliesService.remove(id, initiator);
   }
 

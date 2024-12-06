@@ -22,14 +22,18 @@ export class ExistsOnDatabaseValidator implements ValidatorConstraintInterface {
       console.error('Mongoose connection is undefined in ExistsValidator');
     } else {
       console.log('Mongoose connection established in ExistsValidator');
+      console.log('Connection name: ', connection.name);
+      console.log(connection.modelNames());
+      console.log("module", connection.model('Module'));
     }
   }
 
   async validate(value: any, args: ValidationArguments): Promise<boolean> {
+
     const [modelName, fieldName = '_id'] = args.constraints;
-    const model = this.connection.model(modelName);
+    const model = this.connection.model(modelName.modelName);
     if(!model) {
-      throw new Error(`Model ${modelName} not found`);
+      throw new Error(`Model ${modelName.modelName} not found`);
     }
 
 

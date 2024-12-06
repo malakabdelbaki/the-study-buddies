@@ -10,8 +10,10 @@ import { ApiTags, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { authorizationGuard } from 'src/auth/guards/authorization.guard';
 import { Role } from 'src/enums/role.enum';
+import { AuthGuard } from '../auth/guards/authentication.guard';
 
 @ApiTags('Courses') // Tag for Swagger grouping
+@UseGuards(AuthGuard)
 @Controller('courses')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}

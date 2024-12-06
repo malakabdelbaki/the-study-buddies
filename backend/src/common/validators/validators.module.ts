@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ModuleSchema } from '../../Models/modules.schema';
+import { Module as M } from '../../Models/modules.schema';
 import { Response, ResponseSchema } from '../../Models/response.schema';
 import { Course, CourseSchema } from '../../Models/course.schema';
 import { Progress, ProgressSchema } from '../../Models/progress.schema';
@@ -14,7 +15,7 @@ import { ExistsOnDatabaseValidator } from './exists-on-database.validator';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: 'Module', schema: ModuleSchema },
+      { name: M.name, schema: ModuleSchema },
       { name: Response.name, schema: ResponseSchema },
       { name: Course.name, schema: CourseSchema },
       { name: Progress.name, schema: ProgressSchema },

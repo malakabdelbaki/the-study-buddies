@@ -21,7 +21,7 @@ export class NoteController {
   async getNotes(
     @Req() req,
   ) {
-    const userId = req.userid;
+    const userId = req.user.userid;
     return this.noteService.getNotes(userId);
   }
 
@@ -30,7 +30,7 @@ export class NoteController {
     @Param('courseId') courseId: string,
     @Req() req,
   ) {
-    const userId = req.userid;
+    const userId = req.user.userid;
     return this.noteService.getCourseNotes(userId, courseId);
   }
 
@@ -40,7 +40,7 @@ export class NoteController {
     @Param('noteId') noteId: string,
     @Req() req,
   ) {
-    const userId = req.userid;
+    const userId = req.user.userid;
     return this.noteService.getNote(userId, noteId);
   }
 
@@ -50,16 +50,18 @@ export class NoteController {
     @Param('moduleId') moduleId: string,
     @Req() req,
   ) {
-    const userId = req.userid;
+    const userId = req.user.userid;
     return this.noteService.getModuleNotes(userId, courseId, moduleId);
   }
 
   @Post()
   async createNote(
-    createNoteDto: CreateNoteDto,
+    @Body() createNoteDto: CreateNoteDto,
     @Req() req,
   ) {
-    const userId = req.userid;
+    const userId = req.user.userid;
+    console.log(userId);
+    console.log(createNoteDto.courseId);
     return this.noteService.createNote(userId, createNoteDto);
   }
 
@@ -70,7 +72,7 @@ export class NoteController {
     updateNoteDto: UpdateNoteDto,
     @Req() req,
   ) {
-    const userId = req.userid;
+    const userId = req.user.userid;
     return this.noteService.updateNote(userId, noteId, updateNoteDto);
   }
 
@@ -79,7 +81,7 @@ export class NoteController {
     @Param('noteId') noteId: string,
     @Req() req,
   ) {
-    const userId = req.userid;
+    const userId = req.user.userid;
     return this.noteService.deleteNote(userId, noteId);
   } 
 
@@ -90,7 +92,7 @@ export class NoteController {
     @Body() body: { content: string; clientUpdatedAt: string },
     @Req() req,
   ) {
-    const userId = req.user.id; // Extract user ID from JWT or session
+    const userId = req.user.userid; // Extract user ID from JWT or session
 
     try {
       const updatedNote = await this.noteService.autoSaveNote(

@@ -22,7 +22,7 @@ export class AnnouncementController {
   async getAnnouncementsForCourse(
     @Param('courseId') courseId: string,
     @Req() req: any){
-      const initiator = req.user;
+      const initiator = req.user.userid;
       return this.announcementService.findByCourse(courseId, initiator);
   }
 
@@ -48,7 +48,7 @@ export class AnnouncementController {
   async getAnnouncement(
     @Param('announcementId') announcementId: string,
     @Req() req: any){
-      const initiator = req.user;
+      const initiator = req.user.userid;
     return this.announcementService.findOne(announcementId, initiator);
   }
 

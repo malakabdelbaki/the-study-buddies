@@ -5,6 +5,7 @@ import { Choice } from "src/enums/Choice.enum";
 import { Difficulty } from "src/enums/difficulty.enum";
 import { QuestionType } from "src/enums/QuestionType.enum";
 import { IsValidOptions } from "src/common/validators/Option.validator";
+import { ExistsOnDatabase } from "src/common/decorators/exists-on-database.decorator";
 export class CreateQuestionDto {
     @ApiProperty({
       description: 'The ID of the module this question belongs to',
@@ -12,6 +13,7 @@ export class CreateQuestionDto {
       example: '64c8e08f5f1d1b001b23f6d5',
     })
     @IsMongoId()
+    @ExistsOnDatabase({ modelName: 'Module', column: '_id' })
     module_id: Types.ObjectId; // Foreign key to the Module schema
   
     @ApiProperty({
@@ -20,6 +22,7 @@ export class CreateQuestionDto {
       example: '64c8e08f5f1d1b001b23f6d5',
     })
     @IsMongoId()
+    @ExistsOnDatabase({ modelName: 'User', column: '_id' })
     instructor_id: Types.ObjectId; // Reference to the instructor who created it
   
     @ApiProperty({

@@ -58,6 +58,7 @@ export class NoteService {
   }
 
   async createNote(userId: string, createNoteDto: CreateNoteDto): Promise<Note> {
+    console.log(createNoteDto);
     const user = new Types.ObjectId(userId);
     const course_id = new Types.ObjectId(createNoteDto.courseId);
     const module_id = new Types.ObjectId(createNoteDto.moduleId)

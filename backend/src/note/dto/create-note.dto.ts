@@ -1,15 +1,24 @@
-import { IsString, IsMongoId } from 'class-validator';
+import { Type } from '@nestjs/common';
+import { IsString, IsMongoId, IsNotEmpty } from 'class-validator';
+import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
+import { Types } from 'mongoose';
 export class CreateNoteDto {
 
   @IsMongoId()
-  courseId: string;
+  @IsNotEmpty()
+  @ExistsOnDatabase({ modelName: 'Course', column: '_id' })
+  courseId: Types.ObjectId;
 
   @IsMongoId()
-  moduleId: string;
+  @IsNotEmpty()
+  @ExistsOnDatabase({ modelName: 'Module', column: '_id' })
+  moduleId: Types.ObjectId;
 
   @IsString()
+  @IsNotEmpty()
   content: string;
   
   @IsString()
+  @IsNotEmpty()
   title: string;
 }

@@ -1,5 +1,6 @@
 import { IsArray, IsEnum, isEnum, IsMongoId, isMongoId, IsOptional, IsString } from "class-validator";
 import { Types } from "mongoose";
+import { ExistsOnDatabase } from "src/common/decorators/exists-on-database.decorator";
 import { Course_diff } from "src/enums/course-diff.enum";
 
 export class CreateCourseDto {
@@ -14,6 +15,7 @@ export class CreateCourseDto {
     category: string;
 
     @IsMongoId()
+    @ExistsOnDatabase({modelName:'User',column:'_id'})
     instructor_id: Types.ObjectId;
     
     @IsEnum(Course_diff,{message:'It must be of type course difficulty'})

@@ -32,7 +32,7 @@ export class ForumController {
   async findOne(
     @Param('id') id: string,
     @Req() req: any){
-      const initiator = req.user;
+      const initiator = req.user.userid;
     return this.forumService.findOne(id, initiator);
   }
 
@@ -44,7 +44,7 @@ export class ForumController {
   async findByCourse(
     @Param('courseId') courseId: Types.ObjectId,
     @Req() req: any){
-      const initiator = req.user;
+      const initiator = req.user.userid;
     return this.forumService.findByCourse(courseId, initiator);
   }
 
@@ -73,7 +73,7 @@ export class ForumController {
  async findThreads(
     @Param('id') id: string,
     @Req() req: any){
-      const initiator = req.user;
+      const initiator = req.user.userid;
     return this.forumService.findThreads(id, initiator);
   }
 
@@ -94,7 +94,7 @@ export class ForumController {
   async archive(
     @Param('id') id: string,
     @Req() req: any){
-      const initiator = req.user;
+      const initiator = req.use.useridr;
     return this.forumService.archive(id, initiator);
   }
 
@@ -106,7 +106,7 @@ export class ForumController {
     @Param('id') id: string,
     @Req() req: any){
     
-      const initiator = req.user;
+      const initiator = req.user.userid;
     return this.forumService.remove(id, initiator);
   }
 

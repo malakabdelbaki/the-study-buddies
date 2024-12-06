@@ -5,6 +5,7 @@ import { Role } from '../../../enums/role.enum';
 import {Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 
 export class CreateDirectChatDto{
   @ApiProperty({
@@ -19,6 +20,7 @@ export class CreateDirectChatDto{
     type: Types.ObjectId, 
   })
   @IsMongoId()
+  @ExistsOnDatabase({ modelName: 'Course', column: '_id' })
   courseId: Types.ObjectId;
 
   @ApiProperty({
@@ -26,5 +28,6 @@ export class CreateDirectChatDto{
     type: Types.ObjectId, 
   })
   @IsMongoId()
+  @ExistsOnDatabase({ modelName: 'User', column: '_id' })
   receiverId: Types.ObjectId;
 }

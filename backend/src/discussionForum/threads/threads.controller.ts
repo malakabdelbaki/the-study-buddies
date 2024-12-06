@@ -32,7 +32,7 @@ async search(
   @Param('forumId') forumId: Types.ObjectId,
   @Query('query') query: string,
   @Req () req: any) {
-  const initiator = req.user; 
+  const initiator = req.user.userid; 
   return this.threadService.searchThreads(query, forumId, initiator); 
 }
 
@@ -43,7 +43,7 @@ async search(
   findOne(
     @Param('id') id: string,
     @Req() req: any) {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return this.threadService.findOne(id,initiator);
   }
 
@@ -66,7 +66,7 @@ async search(
   resolve(
     @Param('id') id: string,
     @Req() req: any) {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return this.threadService.resolve(id, initiator);
   }
 
@@ -78,7 +78,7 @@ async search(
   remove(
     @Param('id') id: string,
     @Req() req: any) {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return this.threadService.remove(id, initiator);
   }
 

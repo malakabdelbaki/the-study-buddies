@@ -5,6 +5,7 @@ import { Role } from '../../../enums/role.enum';
 import {Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 export class AddParticipantDto{
   @ApiProperty({
     description: 'List of participant IDs to add to the chat.',
@@ -16,5 +17,6 @@ export class AddParticipantDto{
   @Transform(({ value }) => {
     return new Types.ObjectId(value); // Ensure it's converted to an ObjectId
   })  
+  @ExistsOnDatabase({ modelName: 'User', column: '_id' })
   participant: Types.ObjectId;
 }
