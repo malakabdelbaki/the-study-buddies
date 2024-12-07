@@ -6,6 +6,7 @@ import { Difficulty } from "src/enums/difficulty.enum";
 import { QuestionType } from "src/enums/QuestionType.enum";
 import { IsValidOptions } from "src/common/validators/Option.validator";
 import { ExistsOnDatabase } from "src/common/decorators/exists-on-database.decorator";
+import { MatchInstructorForModule } from "src/common/decorators/instructor-matches-module-instructor.decorator";
 export class CreateQuestionDto {
     @ApiProperty({
       description: 'The ID of the module this question belongs to',
@@ -14,6 +15,7 @@ export class CreateQuestionDto {
     })
     @IsMongoId()
     @ExistsOnDatabase({ modelName: 'Module', column: '_id' })
+    @MatchInstructorForModule()
     module_id: Types.ObjectId; // Foreign key to the Module schema
   
     @ApiProperty({

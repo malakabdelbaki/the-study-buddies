@@ -1,9 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsMongoId, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsMongoId, IsOptional, IsString, Validate } from 'class-validator';
 import { Types } from 'mongoose';
 import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 import { Difficulty } from 'src/enums/difficulty.enum';
 import { QuizType } from 'src/enums/QuizType.enum';
+import { MatchInstructor } from 'src/common/decorators/instructor-matches-course-instructor.decorator';
+import { Exclude } from 'class-transformer';
 
 export class CreateModuleDto {
   @ApiProperty({
@@ -12,6 +14,7 @@ export class CreateModuleDto {
   })
   @IsMongoId()
   @ExistsOnDatabase({ modelName: 'Course', column: '_id' })
+  @MatchInstructor()
   course_id: Types.ObjectId;
 
 

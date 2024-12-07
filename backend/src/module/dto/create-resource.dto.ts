@@ -3,6 +3,8 @@ import { CreateModuleDto } from "./create-module.dto";
 import { IsMongoId, IsString, IsArray, IsEnum, IsOptional } from "class-validator";
 import { Types } from "mongoose";
 import { ExistsOnDatabase } from "src/common/decorators/exists-on-database.decorator";
+import { MatchInstructor } from "src/common/decorators/instructor-matches-course-instructor.decorator";
+import { MatchInstructorForModule } from "src/common/decorators/instructor-matches-module-instructor.decorator";
 
 export class ResourceDto {
 
@@ -13,6 +15,7 @@ export class ResourceDto {
       })
       @IsMongoId()
       @ExistsOnDatabase({ modelName: 'Module', column: '_id' })
+      @MatchInstructorForModule()
       module_id: Types.ObjectId;
     
       @ApiProperty({
