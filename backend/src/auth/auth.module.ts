@@ -7,10 +7,12 @@ import * as dotenv from 'dotenv';
 import { WsJwtGuard } from 'src/WebSockets/guards/ws-jwt-authentication.guard';
 import { LogsModule } from 'src/log/log.module';
 dotenv.config();
+import { UserService } from 'src/users/users.service';
+import { IsEmailUniqueConstraint } from 'src/common/validators/is-email-unique.validator';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, WsJwtGuard],
+  providers: [AuthService, WsJwtGuard, IsEmailUniqueConstraint],
   imports:[
     UserModule,
     JwtModule.register({
@@ -19,7 +21,8 @@ dotenv.config();
       signOptions: { expiresIn: process.env.JWT_EXPIRES_IN },
     }),
     LogsModule,
+    UserModule,
   ],//export if we'll use one of the services outside.
-  exports:[WsJwtGuard]
+  exports:[WsJwtGuard, IsEmailUniqueConstraint]
 })
 export class AuthModule {}
