@@ -10,7 +10,7 @@ import { ModuleService } from '../../module/module.service';
 import { Types } from 'mongoose';
 
 @Injectable()
-export class InstructorGuard implements CanActivate {
+export class EnrolledGuard implements CanActivate {
   constructor(private readonly coursesService: CoursesService,
               private readonly moduleService: ModuleService,
   ) {}
@@ -25,9 +25,10 @@ export class InstructorGuard implements CanActivate {
       );
     }
   
-  const course_id = request.params.course_id || request.body.course_id;
-  const module_id = request.params.module_id || request.body.module_id;
+  let course_id = request.params.course_id || request.body.course_id;
+  let module_id = request.params.module_id || request.body.module_id;
   const quesId = request.params.quesId || request.body.quesId;
+
    
   if(!course_id && !module_id && !quesId) {
     throw new HttpException(
@@ -35,7 +36,6 @@ export class InstructorGuard implements CanActivate {
       HttpStatus.BAD_REQUEST,
     );
   }
-
     if(quesId) {
       const question = await this.moduleService.findQuestion(quesId);
       if (!question) {
@@ -44,13 +44,8 @@ export class InstructorGuard implements CanActivate {
           HttpStatus.NOT_FOUND,
         );
       }
-      if (question.instructor_id.toString() !== userId) {
-        throw new HttpException(
-          'You are not authorized to perform this action.',
-          HttpStatus.FORBIDDEN,
-        );
+      module_id = question.module_id;
     }
-  }
 
     if(module_id) {
     const module = await this.moduleService.findOne(module_id);
@@ -60,32 +55,9 @@ export class InstructorGuard implements CanActivate {
         HttpStatus.NOT_FOUND,
       );
     }
-    if (module.instructor_id.toString() !== userId) {
-      throw new HttpException(
-        'You are not authorized to perform this action.',
-        HttpStatus.FORBIDDEN,
-      );
-    }
+   course_id = module.course_id;
   }
 
-    if(course_id) {
-    const course = await this.coursesService.findOne(new Types.ObjectId(course_id));
-    if (!course) {
-      throw new HttpException(
-        'Course does not exist.',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    if (course.instructor_id.toString() !== userId) {
-      throw new HttpException(
-        'You are not authorized to perform this action.',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
-  }
-    
-  return true; // Allow the request to proceed
+  return this.coursesService.isStudentEnrolledInCourse(course_id, userId);
   }
 }

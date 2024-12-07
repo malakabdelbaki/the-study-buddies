@@ -11,6 +11,10 @@ import { Answer, AnswerSchema } from 'src/models/answer.schema';
 import { Response, ResponseSchema } from 'src/models/response.schema';
 import { User , UserSchema} from 'src/models/user.schema';
 import { Progress , ProgressSchema } from 'src/models/progress.schema';
+import { AuthService } from 'src/auth/auth.service';
+import { UserModule } from 'src/users/users.module';
+import { CoursesModule } from 'src/courses/courses.module';
+import { ModuleModule } from 'src/module/module.module';
 
 @Module({
   imports: [
@@ -24,9 +28,12 @@ import { Progress , ProgressSchema } from 'src/models/progress.schema';
       { name: User.name, schema: UserSchema },         // Register User schema
       { name: Progress.name , schema: ProgressSchema } // Register Progress schema
     ]),
+    UserModule,
+    CoursesModule,
+    ModuleModule,
   ],
   controllers: [QuizzesController], // Attach your QuizzesController
-  providers: [QuizzesService], // Register QuizzesService
+  providers: [QuizzesService, AuthService], // Register QuizzesService
   exports: [QuizzesService], // Allow other modules to use QuizzesService if needed
 })
 export class QuizzesModule {}
