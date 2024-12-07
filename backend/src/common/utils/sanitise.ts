@@ -1,4 +1,4 @@
-/*import sanitizeHtml from 'sanitize-html';
+import sanitizeHtml from 'sanitize-html';
 
 // * Sanitizes a string to remove control characters and scripts.
 // * @param input - The string to sanitize.
@@ -10,5 +10,3 @@ export function sanitizeInput(input: string): string {
     allowedAttributes: {}, // Strip all attributes
   });
 }
-
-*/
