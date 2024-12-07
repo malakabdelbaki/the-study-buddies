@@ -8,7 +8,7 @@ import { ObjectId, Types } from 'mongoose';
 import { runInNewContext } from 'vm';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { LogsService } from 'src/log/log.service';
-
+import * as validator from 'validator';
 
 
 
@@ -24,6 +24,10 @@ export class AuthService{
     //sign up:
     async register(user: RegisterRequestDto): Promise<string> { //takes dto and creates a new user
       try{
+        const sanitizedEmail = validator.normalizeEmail(user.email); // Normalize email to lowercase
+        const sanitizedName = validator.escape(user.name); // Escape unsafe characters
+        const sanitizedPassword = validator.escape(user.password);
+
         const existingUser = await this.usersService.findByEmail(user.email);
         if (existingUser) {
           this.logsService.logError('Registration attempt failed: Email already exists', { email: user.email }); //error log!
@@ -50,6 +54,9 @@ export class AuthService{
 
     //login
     async signIn(email: string, password: string): Promise< {access_token:string,payload:any}> { //ask!!
+      const sanitizedEmail = validator.normalizeEmail(email); // Normalize email
+      const sanitizedPassword = validator.escape(password); // Escape unsafe characters
+
       const user = await this.usersService.findByEmail(email); //return userDocument
       if (!user) {
           this.logsService.logError('Login attempt failed: User not found', { email }); //error log!
