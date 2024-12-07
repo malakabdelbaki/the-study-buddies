@@ -17,6 +17,6 @@ dotenv.config();
       signOptions: { expiresIn: process.env.JWT_EXPIRES_IN },
     }),
   ],//export if we'll use one of the services outside.
-  exports:[WsJwtGuard]
+  exports:[WsJwtGuard, AuthService]
 })
 export class AuthModule {}

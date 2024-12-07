@@ -2,11 +2,13 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsNumber, Min } from 'class-validator';
+import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 
 export class ModulePerformanceDto {
   @ApiProperty({ description: 'Module ID' })
   @IsString()
   @IsNotEmpty()
+  @ExistsOnDatabase({ modelName: 'Module', column: '_id' })
   moduleId: string;
 
   @ApiProperty({ description: 'Module title' })

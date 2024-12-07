@@ -1,10 +1,11 @@
-import { IsOptional, IsString , IsEnum, IsArray, ArrayNotEmpty} from 'class-validator';
+import { IsOptional, IsString , IsEnum, IsArray, ArrayNotEmpty, Validate} from 'class-validator';
 //// import { Exists } from '../../common/validators/exists.validator';
 // import { HasRole } from '../../common/validators/has-role.validator';
 import { Role } from '../../../enums/role.enum';
 import {Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 
 export class SearchChatsDto{
   @ApiProperty({
@@ -37,5 +38,9 @@ export class SearchChatsDto{
   @IsArray()
   @ArrayNotEmpty()
   @Transform(({ value }) => value.map((id: string) => new Types.ObjectId(id)))
+  @Validate(ExistsOnDatabase, [{ modelName: 'User', column: '_id' }], {
+    each: true, // Applies the `ExistsOnDatabase` validator to each element in the array
+    message: 'One or more student IDs do not exist in the database',
+  })
   participants?: Types.ObjectId[];
 }

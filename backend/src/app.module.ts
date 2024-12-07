@@ -18,6 +18,10 @@ import { Thread } from './Models/thread.schema';
 import { ThreadsModule } from './discussionForum/threads/threads.module';
 import { ReplyModule } from './discussionForum/replies/replies.module';
 import { ModuleModule } from './module/module.module';
+import { NoteController } from './note/note.controller';
+import { NoteModule } from './note/note.module';
+import { AuthModule } from './auth/auth.module';
+import { ValidatorsModule } from './common/validators/validators.module';
 
 @Module({
   imports: [
@@ -29,16 +33,18 @@ import { ModuleModule } from './module/module.module';
     CoursesModule,
     UserModule,
     ChatModule,
-   // // ValidatorsModule,
     ModuleModule,
     ForumModule,
     ThreadsModule,
     ReplyModule,
-    ModuleModule,
     QuizzesModule,
+    NoteModule,
+    AuthModule,
+    ValidatorsModule
   ],
-  controllers: [AppController],
+  controllers: [AppController, NoteController],
   providers: [AppService],
+  exports: [AppService, MongooseModule],
   // controllers: [AppController, QuizzesController],
   // providers: [AppService, QuizzesService],
 })

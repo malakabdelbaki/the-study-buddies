@@ -131,7 +131,8 @@ export class ChatService {
     const validParticipants = []
     for(const participant in participants){
       if(course.students.some((student) => student._id.toString() === participant.toString())
-      || course.instructor_id.toString() === participant.toString()){
+      || (course.instructor_id.toString() === participant.toString()
+          && user.role != Role.Student)){
         validParticipants.push(participant)
       }
     }

@@ -4,6 +4,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import mongoose from 'mongoose';
 import { ValidationPipe } from '@nestjs/common';
+import * as cookieParser from 'cookie-parser';
+import {useContainer, Validator} from "class-validator";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,6 +16,10 @@ async function bootstrap() {
  })); // Enable global validation
 
   const configService = app.get(ConfigService); 
+  app.use(cookieParser())
+
+  // Enable validation container
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   // Swagger configuration
   const config = new DocumentBuilder()

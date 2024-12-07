@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsNumber, Min, Max, IsEmail, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ModulePerformanceDto } from './module-performance.dto';
+import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 
 
 
@@ -9,6 +10,7 @@ export class InstructorAnalyticsDto {
   @ApiProperty({ description: 'Course ID' })
   @IsString()
   @IsNotEmpty()
+  @ExistsOnDatabase({ modelName: 'Course', column: '_id' })
   courseId: string;
 
   @ApiProperty({ description: 'Course title' })
