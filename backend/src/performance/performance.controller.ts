@@ -77,7 +77,7 @@ export class PerformanceController {
   @Get('download-analytics/:instructorId')
   async downloadAnalytics(
     @Param('instructorId') instructorId: string,
-    @Query('format csv or json') format: 'csv' | 'json' = 'json',
+    @Query('format: csv or json') format: 'csv' | 'json' = 'json',
     @Res() res: Response,
   ) {
     try {
@@ -104,7 +104,7 @@ export class PerformanceController {
   @Get('download-quiz-results/:instructorId')
   async downloadQuizResults(
     @Param('instructorId') instructorId: string,
-    @Query('format') format: 'csv' | 'json' = 'json',
+    @Query('format: csv or json') format: 'csv' | 'json' = 'json',
     @Res() res: Response,
   ) {
     try {
@@ -131,7 +131,7 @@ export class PerformanceController {
   @Get('download-content-effectiveness/:instructorId')
   async downloadContentEffectivenessReport(
     @Param('instructorId') instructorId: string,
-    @Query('format') format: 'csv' | 'json' = 'json',
+    @Query('format: csv or json') format: 'csv' | 'json' = 'json',
     @Res() res: Response,
   ) {
     try {
