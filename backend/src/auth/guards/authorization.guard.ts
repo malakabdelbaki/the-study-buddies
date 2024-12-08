@@ -27,7 +27,7 @@ export class authorizationGuard implements CanActivate {
 
       const userRole = user.role
       console.log('userRole', userRole);
-      if (!requiredRoles.includes(userRole)){{ //error log! this automatically logs the person that tried to acess the route!
+      if (!requiredRoles.includes(userRole)){ //error log! this automatically logs the person that tried to acess the route!
         this.logsService.logError('Unauthorized access attempt: Insufficient role', {
           userId: user.id,
           role: user.role,
