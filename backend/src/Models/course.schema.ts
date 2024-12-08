@@ -30,9 +30,13 @@ export class Course{
     @Prop({defalut:[]})
     key_words : string[];
 
-    // New rating field for the course (e.g., rating out of 5)
-    @Prop({ type: [Number], default: [] }) // Array of ratings given by students
-    ratings: number[];
+    // New rating field for the module (e.g., rating out of 5)
+    @Prop({
+        type: Map,
+        of: Number, // The value type (rating) is a number
+        default: {},
+      })
+      ratings: Map<Types.ObjectId, number>;
 
 }
 

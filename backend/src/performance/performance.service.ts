@@ -525,7 +525,7 @@ const overallstudentPerformance = {
       // Loop through each course and its modules to get ratings
       for (const course of courses) {
         try {
-          let courseRatings = course.ratings;
+          const courseRatings = Array.from(course.ratings.values());
           const courseRating = this.calculateAverageRating(courseRatings);
   
           const modulesReport = [];
@@ -536,8 +536,8 @@ const overallstudentPerformance = {
             if (!module) {
               throw new NotFoundException(`Module with ID ${moduleId} not found`);
             }
-  
-            const moduleRating = this.calculateAverageRating(module.ratings);
+            const moduleRatings = Array.from(module.ratings.values());
+            const moduleRating = this.calculateAverageRating(moduleRatings);
             modulesReport.push({
               moduleId: module._id.toString(),
               moduleTitle: module.title,
@@ -546,7 +546,8 @@ const overallstudentPerformance = {
           }
   
           // Calculate the instructor's average rating
-          const instructorRating = this.calculateAverageRating(instructor.ratings);
+          const instructorRatings = Array.from(instructor.ratings.values());
+          const instructorRating = this.calculateAverageRating(instructorRatings);
   
           reports.push({
             courseId: course._id.toString(),

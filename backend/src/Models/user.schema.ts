@@ -1,5 +1,5 @@
 import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
-import {Document} from 'mongoose';
+import {Document, Types} from 'mongoose';
 
 export type UserDocument = User & Document;
 import { Role } from '../enums/role.enum'; 
@@ -21,9 +21,13 @@ export class User {
   @Prop({required: false})
   profilePictureUrl?: string;
   
-  // New field to store ratings for the instructor
-  @Prop({ type: [Number], default: [] }) // Array of ratings from students
-  ratings: number[];
+  // New rating field for the module (e.g., rating out of 5)
+  @Prop({
+    type: Map,
+    of: Number, // The value type (rating) is a number
+    default: {},
+  })
+  ratings: Map<Types.ObjectId, number>;
 
 }
 
