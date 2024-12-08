@@ -21,7 +21,7 @@ export class CreateDirectChatDto{
   })
   @IsMongoId()
   @ExistsOnDatabase({ modelName: 'Course', column: '_id' })
-  courseId: Types.ObjectId;
+  course_id: Types.ObjectId;
 
   @ApiProperty({
     description: 'receiver_id',

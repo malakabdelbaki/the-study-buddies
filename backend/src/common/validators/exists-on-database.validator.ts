@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
-import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../../Models/user.schema'; // Replace with your schema path
 import { Course, CourseDocument } from 'src/Models/course.schema';

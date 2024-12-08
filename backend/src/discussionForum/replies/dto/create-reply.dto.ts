@@ -1,11 +1,11 @@
-import { IsString, IsNotEmpty, IsMongoId } from 'class-validator';
+import { IsString, IsNotEmpty, IsMongoId, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 
 export class CreateReplyDto {
   @ApiProperty({ description: 'The ID of the user who created this reply' })
   @IsMongoId()
-  @IsNotEmpty()
+  @IsOptional()
   @ExistsOnDatabase({ modelName: 'User', column: '_id' })
   user_id: string;
 

@@ -8,6 +8,7 @@ import {
 import { CoursesService } from '../../courses/courses.service';
 import { ModuleService } from '../../module/module.service';
 import { Types } from 'mongoose';
+import { Role } from 'src/enums/role.enum';
 
 @Injectable()
 export class InstructorGuard implements CanActivate {
@@ -16,7 +17,9 @@ export class InstructorGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    console.log("InstructorGuard");
     const request = context.switchToHttp().getRequest();
+    console.log("request", request);
     const userId = request.user?.userid; // Get logged-in user ID
      if (!userId) {
       throw new HttpException(
@@ -24,18 +27,15 @@ export class InstructorGuard implements CanActivate {
         HttpStatus.FORBIDDEN,
       );
     }
+    if(request.user.role !== Role.Instructor) {
+      return true;
+    }
   
   const course_id = request.params.course_id || request.body.course_id;
   const module_id = request.params.module_id || request.body.module_id;
   const quesId = request.params.quesId || request.body.quesId;
    
-  if(!course_id && !module_id && !quesId) {
-    throw new HttpException(
-      'Invalid request. Missing course ID or module ID.',
-      HttpStatus.BAD_REQUEST,
-    );
-  }
-
+    console.log("course_id", course_id);
     if(quesId) {
       const question = await this.moduleService.findQuestion(quesId);
       if (!question) {
@@ -70,6 +70,7 @@ export class InstructorGuard implements CanActivate {
 
     if(course_id) {
     const course = await this.coursesService.findOne(new Types.ObjectId(course_id));
+    console.log("course", course);
     if (!course) {
       throw new HttpException(
         'Course does not exist.',
@@ -85,7 +86,8 @@ export class InstructorGuard implements CanActivate {
     }
 
   }
-    
+  console.log("userId", userId);
+  console.log("true");
   return true; // Allow the request to proceed
   }
 }
