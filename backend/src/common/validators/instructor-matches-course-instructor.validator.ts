@@ -15,7 +15,9 @@ export class MatchInstructorForCourseValidator implements ValidatorConstraintInt
     private readonly CoursesService: CoursesService,
   ) {}
  async validate(courseId: string, args: ValidationArguments) {
-   
+  if(!args.object['instructor_id']){
+    return true;
+  }
     const userId = args.object['instructor_id'];
     const course = await this.CoursesService.findOne(new Types.ObjectId(courseId));
     if (!course) {
