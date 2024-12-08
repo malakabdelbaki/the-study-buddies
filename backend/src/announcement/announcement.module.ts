@@ -11,6 +11,8 @@ import { CoursesModule } from 'src/courses/courses.module';
 import { UserModule } from 'src/users/users.module';
 import { NotificationModule } from 'src/WebSockets/notification/notification.module';
 import { forwardRef } from '@nestjs/common';  
+import { AuthModule } from 'src/auth/auth.module';
+import { LogsModule } from 'src/log/log.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { forwardRef } from '@nestjs/common';
     forwardRef(() => CoursesModule),
     forwardRef(() => UserModule),
     forwardRef(() => NotificationModule),
+    AuthModule,
+    LogsModule
   ],
   controllers: [AnnouncementController],
   providers: [AnnouncementService],

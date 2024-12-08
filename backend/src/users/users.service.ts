@@ -219,9 +219,9 @@ export class UserService {
       const newUser = new this.userModel({
         ...createUserDto
       });
-      if(createUserDto.role === Role.Instructor){
-        newUser.ratings = [];
-      }
+      // if(createUserDto.role === Role.Instructor){
+      //   newUser.ratings = [];
+      // }
   
       // Save and return the new user
       return await newUser.save();
@@ -376,7 +376,7 @@ export class UserService {
   async rateModule(dto: RateDto) {
     const module = await this.moduleModel.findById(dto.targetId);
     if (!module) throw new NotFoundException('Module not found');
-    module.ratings.push(dto.rating);
+    //module.ratings.push(dto.rating);
     await module.save();
     return { message: 'Module rated successfully', ratings: module.ratings };
   }
@@ -391,7 +391,7 @@ export class UserService {
       throw new BadRequestException('You are not enrolled in this course in order to rate it');
     }
 
-    course.ratings.push(dto.rating);
+    //course.ratings.push(dto.rating);
     await course.save();
     return { message: 'Course rated successfully', ratings: course.ratings };
   }
@@ -417,7 +417,7 @@ export class UserService {
       throw new BadRequestException(`You are not enrolled in any course taught by this instructor.`);
     }
 
-    instructor.ratings.push(dto.rating);
+    //instructor.ratings.push(dto.rating);
     await instructor.save();
     return { message: 'Instructor rated successfully', ratings: instructor.ratings };
   }

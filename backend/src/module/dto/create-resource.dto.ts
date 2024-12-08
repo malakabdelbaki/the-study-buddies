@@ -15,7 +15,7 @@ export class ResourceDto {
       })
       @IsMongoId()
       @ExistsOnDatabase({ modelName: 'Module', column: '_id' })
-      @MatchInstructorForModule()
+      //@MatchInstructorForModule()
       module_id: Types.ObjectId;
     
       @ApiProperty({

@@ -13,6 +13,7 @@ import { WsJwtGuard } from '../guards/ws-jwt-authentication.guard'
 import { WsAuthorizationGuard } from '../guards/ws-jwt-authorization.guard'
 import { AuthModule } from 'src/auth/auth.module';
 import { LogsModule } from 'src/log/log.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { LogsModule } from 'src/log/log.module';
     CoursesModule,
     AuthModule,
     LogsModule,
+    NotificationModule,
   ],
   controllers: [ChatController],
   providers: [ChatGateway, ChatService, WsJwtGuard, WsAuthorizationGuard],

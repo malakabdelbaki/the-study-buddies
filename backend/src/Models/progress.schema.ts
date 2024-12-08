@@ -37,7 +37,9 @@ export class Progress {
 
   @Prop({ required: true ,default: 0 })
   AverageGrade : number;
-  
+
+  @Prop({required:true,default:'beginner'})
+  studentLevel: string;
 }
 
 //SchemaFactory.createForClass(): Converts the decorated Progress class into a Mongoose schema

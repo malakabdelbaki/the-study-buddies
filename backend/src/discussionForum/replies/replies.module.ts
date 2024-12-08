@@ -1,4 +1,4 @@
-import { Module, Res } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RepliesController } from './replies.controller';
 import { RepliesService } from './replies.service';
@@ -18,6 +18,7 @@ import { ModuleModule } from 'src/module/module.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { UserModule } from 'src/users/users.module';
 import { LogsModule } from 'src/log/log.module';
+import { NotificationModule } from 'src/WebSockets/notification/notification.module';
 
 @Module({
   imports: [
@@ -29,13 +30,14 @@ import { LogsModule } from 'src/log/log.module';
       { name: Progress.name, schema: ProgressSchema },
       { name: Response.name, schema: ResponseSchema },
     ]),
-    ForumModule,
-    ThreadsModule,
+    forwardRef(()=>ForumModule),
+    forwardRef(()=>ThreadsModule),
     ModuleModule,
     AuthModule,
     CoursesModule,
     UserModule,
     LogsModule,
+    forwardRef(()=>NotificationModule)
   ],
   controllers: [RepliesController],
   providers: [RepliesService],

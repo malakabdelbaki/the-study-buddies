@@ -21,7 +21,7 @@ export class CreateGroupChatDto{
   })
   @IsMongoId()
   @ExistsOnDatabase({ modelName: 'Course', column: '_id' })
-  courseId: Types.ObjectId;
+  course_id: Types.ObjectId;
 
   @ApiProperty({
     description: 'array of participants in chat',

@@ -20,10 +20,7 @@ export class CreateThreadDto {
   content: string;
 
   @ApiProperty({ description: 'The ID of the user who created this thread' })
-  @IsNotEmpty()
-  createdBy: Types.ObjectId;
-
-  @ApiProperty({ description: 'The ID of the forum the thread belongs to' })  
   @IsOptional()
-  module?: Types.ObjectId;
+  @ExistsOnDatabase({ modelName: 'User', column: '_id' })
+  createdBy: Types.ObjectId;
 }

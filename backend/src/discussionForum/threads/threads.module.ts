@@ -12,6 +12,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 import { ExistsOnDatabaseValidator } from 'src/common/validators/exists-on-database.validator';
 import { LogsModule } from 'src/log/log.module';
+import { ReplyModule } from '../replies/replies.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { LogsModule } from 'src/log/log.module';
     UserModule,
     AuthModule,
     LogsModule,
+    ReplyModule
   ],
   controllers: [ThreadsController],
   providers: [ThreadsService, ExistsOnDatabaseValidator],

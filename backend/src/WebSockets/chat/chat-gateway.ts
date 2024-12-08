@@ -14,20 +14,28 @@ import { SetMetadata } from '@nestjs/common';
 import { Role } from 'src/enums/role.enum';
 import { CreateGroupChatDto } from './dto/create-group-chat.dto';
 import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
-@UseGuards(WsJwtGuard)
+import { InstructorWsGuard } from '../guards/ws-jwt-instructor.guard';
+import { StudentEnrollmentWsGuard } from '../guards/ws-jwt-enrolled.guard';
+import { IsChatMemberWsGuard } from '../guards/ws-jwt-is-chat-member.guard';
+import { AddMessageDto } from './dto/AddMessage.dto';
+import { AddParticipantDto } from './dto/AddParticipant.dto';
+import { LeaveChatDto } from './dto/LeaveChat.dto';
+import { NotificationsService } from '../notification/notification.service';
+import { NotificationType } from 'src/enums/notification-type.enum';
 
 @WebSocketGateway({
   cors:{
   origin: '*',
   methods: ['GET', 'POST'],
 }})
-
+@UseGuards(WsJwtGuard)
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
 
   constructor(private readonly chatService: ChatService,
               private readonly userService : UserService,
-              private readonly coursesService: CoursesService) {}
+              private readonly coursesService: CoursesService,
+              private readonly notificationsService:NotificationsService) {}
 
   handleConnection(@ConnectedSocket() client: AuthenticatedSocket, ...args: any[]) {
     if (!client.user) {
@@ -41,10 +49,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('createGroupChat')
-  @UseGuards(WsAuthorizationGuard)
-  @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor])
+  @UseGuards(WsAuthorizationGuard, InstructorWsGuard, StudentEnrollmentWsGuard)
+  @SetMetadata(ROLES_KEY, [Role.Student, Role.Instructor])
   async handleCreateGroupChat(
-    @MessageBody() data: { room : string, chatName: string, courseId: string, newParticipants:string[]}, 
+    @MessageBody() data: { room : string, createChatDto : CreateGroupChatDto}, 
     @ConnectedSocket() client: AuthenticatedSocket
   ) : Promise<WsResponse<any>>{
 
@@ -53,22 +61,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try{
       const userId = client.user; 
       const user = await this.userService.findUserById(userId.toString());
+      const newChat = await this.chatService.createGroupChatOrFail(data.createChatDto, userId);
+      const course = await this.coursesService.findOne(new Types.ObjectId(data.createChatDto.course_id)); 
 
-      const dto = new CreateGroupChatDto();
-      dto.chatName = data.chatName;
-      dto.participants =  data.newParticipants.map((id) => new Types.ObjectId(id));
-      dto.courseId = new Types.ObjectId(data.courseId);;
-
-      const newChat = await this.chatService.createGroupChatOrFail(dto, userId);
-      const course = await this.coursesService.findOne(new Types.ObjectId(data.courseId)); 
       this.server.to(data.room).emit('chatCreated', {
-        chat_id: (newChat as any)._id,
+        chatId: (newChat as any)._id,
         chatName: newChat.chat_name,
         studentName: user.name, // Send student name
         course: course.title,
       });
     
     return { event: 'chatCreated', data: newChat };
+
   } catch (error) {
     console.error('Error creating group chat:', error);
     client.emit('error', { message: 'Failed to create group chat.' });
@@ -76,25 +80,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('createDirectChat')
-  @UseGuards(WsAuthorizationGuard)
-  @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor])
+  @UseGuards(WsAuthorizationGuard,  InstructorWsGuard, StudentEnrollmentWsGuard)
+  @SetMetadata(ROLES_KEY, [Role.Student, Role.Instructor])
   async handleCreateDirectChat(
-  @MessageBody() data: { room : string, chatName: string, receiverId: string, courseId: string}, 
+  @MessageBody() data: { room : string, createDirectChatdto : CreateDirectChatDto}, 
   @ConnectedSocket() client: AuthenticatedSocket) : Promise<WsResponse<any>>{
-    console.log('Received data:', data);  // Log the incoming data
     
     try{
-      
+
     const userId = client.user;
     const user = await this.userService.findUserById(userId.toString());
-    const receiverObjectId = new Types.ObjectId(data.receiverId);
-    const courseObjectId = new Types.ObjectId(data.courseId);
-    const dto = new CreateDirectChatDto();
-    dto.chatName = data.chatName;
-    dto.receiverId = receiverObjectId;
-    dto.courseId = courseObjectId;
 
-    const newChat = await this.chatService.createDirectChatOrFail(dto, userId);
+    const newChat = await this.chatService.createDirectChatOrFail(data.createDirectChatdto, userId);
 
       this.server.to(data.room).emit('chatCreated', {
         chat_id: (newChat as any)._id,
@@ -111,26 +108,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('sendMessage')
-  @UseGuards(WsAuthorizationGuard)
-  @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor])
+  @UseGuards(WsAuthorizationGuard, InstructorWsGuard, StudentEnrollmentWsGuard, IsChatMemberWsGuard)
+  @SetMetadata(ROLES_KEY, [Role.Student, Role.Instructor])
   async handleMessage( 
-    @MessageBody() data: { room:string, chatId: string, senderId: string, content: string },
+    @MessageBody() data: { room:string, addMessageDto:AddMessageDto },
     @ConnectedSocket() client: AuthenticatedSocket
-  ) {
-    const { room, chatId, senderId, content } = data;
-    const chatObjectId = new Types.ObjectId(chatId);
-    const senderObjectId = new Types.ObjectId(senderId);
-    
+  ) { 
     try {
       // Create and add the new message to the chat
-      const newMessage = await this.chatService.addMessageToChatOrFail(
-        chatObjectId,
-        senderObjectId,
-        content,
-      );
+      const newMessage = await this.chatService.addMessageToChatOrFail(data.addMessageDto);
 
       // Get the sender's name
-      const sender = await this.userService.findUserById(senderId);
+      const sender = await this.userService.findUserById(data.addMessageDto.sender_id.toString());
       const senderName = sender ? sender.name : 'Unknown';
       this.server.to(data.room).emit('receiveMessage', {
         sender: senderName,
@@ -138,10 +127,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         timestamp: newMessage.get('createdAt'),
       });
 
-      this.server.to(room).emit('messageNotification', {
-        title: 'New Message',
-        body: `New message from ${senderName}`,
-      });
+      // Notify all chat members of the new message
+      await this.notificationsService.createNotification(
+        data.addMessageDto.sender_id.toString(),
+        `New message from ${senderName}`,
+        NotificationType.MESSAGE,
+        data.addMessageDto.chat_id,
+      );
+
+      // this.server.to(data.room).emit('messageNotification', {
+      //   title: 'New Message',
+      //   body: `New message from ${senderName}`,
+      // });
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -150,22 +147,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }  
 
   @SubscribeMessage('joinChat')
-  @UseGuards(WsAuthorizationGuard)
-  @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor])
+  @UseGuards(WsAuthorizationGuard, InstructorWsGuard, StudentEnrollmentWsGuard)
+  @SetMetadata(ROLES_KEY, [Role.Student, Role.Instructor])
   async handleJoinChat(
-    @MessageBody() data :{ room:string, chatId: string, senderId: string} , 
+    @MessageBody() data :{ room:string, addParticipantDto:AddParticipantDto} , 
     @ConnectedSocket() client: AuthenticatedSocket) {
-    const { room, chatId, senderId } = data;
+    const room = data.room;
     client.join(room);
-
-    console.log(`User ${senderId} joined chat ${room}`);
-    const chatObjectId = new Types.ObjectId(chatId);
-    const studentObjectId = new Types.ObjectId(senderId);
-    
     try{
     const initiatorId = client.user;
-    await this.chatService.addParticipantToChatOrFail(chatObjectId, studentObjectId, initiatorId);
-    const user = await this.userService.findUserById(senderId);
+    await this.chatService.addParticipantToChatOrFail(data.addParticipantDto, initiatorId);
+    const user = await this.userService.findUserById(data.addParticipantDto.participant.toString());
     const username = user ? user.name : 'Unknown';
 
     this.server.to(room).emit('receiveMessage', {
@@ -182,21 +174,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('leaveChat')
-  @UseGuards(WsAuthorizationGuard)
-  @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor])
+  @UseGuards(WsAuthorizationGuard, IsChatMemberWsGuard)
+  @SetMetadata(ROLES_KEY, [Role.Student, Role.Instructor])
   async handleLeaveChat(
-    @MessageBody() data: { room:string, chatId: string, senderId: string} , 
+    @MessageBody() data: { room : string, leaveChatDto:LeaveChatDto}, 
     @ConnectedSocket() client: AuthenticatedSocket) {
-    const {room, chatId, senderId } = data
+    const room = data.room;
     client.leave(room);
-
-    console.log(`Client ${senderId} left chat ${room}`);
-
-    const chatObjectId = new Types.ObjectId(chatId);
-    const studentObjectId = new Types.ObjectId(senderId);
     try{
-    await this.chatService.leaveChatOrFail(chatObjectId, studentObjectId);
-    const user = await this.userService.findUserById(senderId);
+
+    await this.chatService.leaveChatOrFail(data.leaveChatDto.chat_id, data.leaveChatDto.participant);
+    const user = await this.userService.findUserById(data.leaveChatDto.participant.toString());
     const username = user?.name || 'Unknown';
 
     this.server.to(room).emit('receiveMessage', {
@@ -212,8 +200,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('loadMessages')
-  @UseGuards(WsAuthorizationGuard)
-  @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor])
+  @UseGuards(WsAuthorizationGuard, IsChatMemberWsGuard)
+  @SetMetadata(ROLES_KEY, [Role.Student, Role.Instructor])
   async handleLoadMessages(
     @MessageBody() data: {chatId: string},
     @ConnectedSocket() client: AuthenticatedSocket,

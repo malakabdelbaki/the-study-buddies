@@ -81,6 +81,32 @@ export class ModuleService {
     }
   }
 
+
+  async rateModule(studentid:Types.ObjectId,module_id:Types.ObjectId,rating:number){
+    let module = await this.findOne(module_id);
+    if(!module){
+      throw new Error ('no Module Found with this ID');
+    }
+    
+    if (!rating){
+      throw new Error(' You must Enter a rating');
+    }
+
+    module.ratings.set(studentid,rating)
+    module.save();
+    return module;
+}
+  
+  
+ 
+  
+  
+  //_____________________________________________*Questions*______________________________________________//
+
+
+
+
+
   async addQuestion(createQuestionDto: CreateQuestionDto) {
     try {
       const moduleId = createQuestionDto.module_id;
@@ -167,7 +193,7 @@ export class ModuleService {
   async uploadResource(resourceDto: ResourceDto): Promise<Resource> {
     try{
       const newResource = await this.resourcemodel.create(resourceDto);
-    
+      newResource.save();
       const module = await this.Modulemodel.findById(resourceDto.module_id).populate('resources');
       if (!module) {
         throw new Error('Module not found'); // Handle missing module

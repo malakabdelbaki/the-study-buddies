@@ -1,4 +1,4 @@
-import { IsOptional, IsString , IsEnum, IsArray, ArrayNotEmpty, IsNotEmpty} from 'class-validator';
+import { IsOptional, IsString , IsEnum, IsArray, ArrayNotEmpty, IsNotEmpty, IsMongoId} from 'class-validator';
 //// import { Exists } from '../../common/validators/exists.validator';
 // import { HasRole } from '../../common/validators/has-role.validator';
 import { Role } from '../../../enums/role.enum';
@@ -28,4 +28,13 @@ export class AddMessageDto {
   @IsString()
   @IsNotEmpty()
   content: string;
+
+  @ApiProperty({
+    description: 'The chat ID of the message.',
+    type: String,
+    example: '60a68a37b8b5b8cfe5b5f5c0', // Example ObjectId
+  })
+  @IsMongoId()
+  @ExistsOnDatabase({ modelName: 'Chat', column: '_id' })
+  chat_id: Types.ObjectId;
 }

@@ -21,13 +21,13 @@ export class User {
   @Prop({required: false})
   profilePictureUrl?: string;
   
-  // New rating field for the module (e.g., rating out of 5)
+  // New field to store ratings for the instructor
   @Prop({
-    type: Map,
-    of: Number, // The value type (rating) is a number
-    default: {},
-  })
-  ratings: Map<Types.ObjectId, number>;
+        type: Map,
+        of: Number, // The value type (rating) is a number
+        default: {},
+      })
+  ratings: Map<Types.ObjectId, number>;
 
 }
 

@@ -6,7 +6,7 @@ import { Difficulty } from 'src/enums/difficulty.enum';
 import { Types } from 'mongoose';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
-import { ApiBody, ApiConsumes, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { CoursesService } from 'src/courses/courses.service';
 import { UpdateCourseDto } from 'src/courses/dto/update-course.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -31,11 +31,13 @@ export class ModuleController {
   @Roles(Role.Instructor)
   @UseGuards(authorizationGuard, InstructorGuard)
   @Post() //ok
-  async create(@Body() createModuleDto: CreateModuleDto) {
+  async create(@Req() request,@Body() createModuleDto: CreateModuleDto) {
     try {
+      const instructorId = request.user.userid;
+
       return await this.moduleService.createModule({
         ...createModuleDto,
-        instructor_id:new Types.ObjectId(createModuleDto.instructor_id) ,
+        instructor_id:new Types.ObjectId(instructorId) ,
         course_id:new Types.ObjectId(createModuleDto.course_id)});
     } catch (error) {
       throw new HttpException('Failed to create module: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -44,6 +46,7 @@ export class ModuleController {
 
   @ApiOperation({ summary: 'get a specific module by id' })
   @Get(':ModuleId') //ok
+  @UseGuards(authorizationGuard)
   async getModule(@Param('ModuleId') ModuleId: string) {
     try {
       let ID = new Types.ObjectId(ModuleId);
@@ -56,7 +59,7 @@ export class ModuleController {
       throw new HttpException('Failed to get module: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
+     
   // Update a module's general info
   @Roles(Role.Instructor)
   @UseGuards(authorizationGuard, InstructorGuard)
@@ -78,17 +81,58 @@ export class ModuleController {
     }
   }
 
+
+  @ApiOperation({ summary: 'Rate Module' })
+  @ApiParam({ name: 'id', description: 'Module ID', type: String })
+  @ApiBody({
+    description: 'Rate A module',
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'number', description: 'rating ' },
+      },
+    },
+  })
+  @Roles(Role.Student)
+  @UseGuards(authorizationGuard)
+  @Post(':id/rate')
+  async RateCourse(@Req() request,@Param('id') id: string ,@Body() ratingbody:{rating:number}) {
+    try {
+      const {rating} = ratingbody;
+      const moduleid = new Types.ObjectId(id);
+      const studentid = request.user?.userid; // Extract instructorId
+      if(!studentid || !request.user){
+        throw new HttpException('Error not found a student', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      return await this.moduleService.rateModule(studentid,moduleid,rating);
+    } catch (err) {
+      console.log(err.message);
+      throw new HttpException('Error Rating a Module', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+
+
+
+
   //_________________________________________**QUESTIONS**______________________________________________________//
 
   // Add a question to a module's question bank
   @Roles(Role.Instructor)
   @UseGuards(authorizationGuard, InstructorGuard)
   @Post('question-bank')
-  async addQuestion(@Body() createQuestionDto: CreateQuestionDto) {
+  async addQuestion(@Req() request,@Body() createQuestionDto: CreateQuestionDto) {
     try {
+      let inst = request.user.userid;
+      if (!inst || !request.user) {
+        throw new HttpException('not loged in instructor',HttpStatus.UNAUTHORIZED);
+      }
       const newQuestion = await this.moduleService.addQuestion({
         ...createQuestionDto,
-        module_id:new Types.ObjectId(createQuestionDto.module_id)}
+        module_id:new Types.ObjectId(createQuestionDto.module_id),
+        instructor_id :new Types.ObjectId(inst)
+      }
       );
       if (!newQuestion) {
         throw new HttpException('Failed to add question to the module', HttpStatus.BAD_REQUEST);
@@ -108,6 +152,7 @@ export class ModuleController {
     @Body() updateQuestionDto: UpdateQuestionDto,
   ) {
     try {
+      
       let ID = new Types.ObjectId(quesId);
       const updatedQuestion = await this.moduleService.updateQuestion(ID, updateQuestionDto);
       if (!updatedQuestion) {
@@ -131,6 +176,7 @@ export class ModuleController {
         throw new HttpException('Failed to delete question', HttpStatus.BAD_REQUEST);
       }
       return deletedQuestion;
+     
     } catch (error) {
       throw new HttpException('Failed to delete question: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -155,8 +201,8 @@ export class ModuleController {
   //______________________________________________*RESOURCE*___________________________________________//
 
  @Roles(Role.Instructor)
-@UseGuards(authorizationGuard, InstructorGuard)
-@Post(':Moduleid/resource')
+@UseGuards(authorizationGuard, InstructorGuard)// -> gives me error
+@Post(':module_id/resource')
 @ApiOperation({ summary: 'Upload a resource file' })
 @ApiConsumes('multipart/form-data') // Indicates the endpoint accepts multipart/form-data
 @ApiBody({
@@ -165,7 +211,6 @@ export class ModuleController {
     type: 'object',
     properties: {
       title: { type: 'string', description: 'title ' },
-      moduleid: { type: 'string', description: 'Id of the module' },
       file: {
         type: 'string',
         format: 'binary',
@@ -182,10 +227,10 @@ export class ModuleController {
     callback(null,filename);
   }}
 )}))
-async uploadResource( @Body() body: { moduleid: string; title: string }, @UploadedFile() file: Express.Multer.File) {
-  const { moduleid, title } = body;
-
-  const moduleObjectId = new Types.ObjectId(moduleid);
+async uploadResource(@Param('module_id') module_id :string,@Body() body: { title: string }, @UploadedFile() file: Express.Multer.File) {
+  const {  title } = body;
+  console.log(module_id);
+  const moduleObjectId = new Types.ObjectId(module_id);
 
   if (!Types.ObjectId.isValid(moduleObjectId)) {
     throw new BadRequestException('Invalid Module ID');

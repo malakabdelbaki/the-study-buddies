@@ -13,6 +13,8 @@ import { ChatType } from 'src/enums/chat-type.enum';
 import { CoursesService } from 'src/courses/courses.service';
 import { CreateDirectChatDto } from './dto/create-direct-chat.dto';
 import { CreateGroupChatDto } from './dto/create-group-chat.dto';
+import { AddMessageDto } from './dto/AddMessage.dto';
+import { AddParticipantDto } from './dto/AddParticipant.dto';
 
 @Injectable()
 export class ChatService {
@@ -75,7 +77,7 @@ export class ChatService {
   async createDirectChatOrFail(createDirectChatDto:CreateDirectChatDto , initiator: Types.ObjectId): Promise<Chat> {
     
     const user = await this.userService.findUserById(initiator.toString());
-    const { receiverId, chatName, courseId } = createDirectChatDto;
+    const { receiverId, chatName, course_id } = createDirectChatDto;
     const receiverUser = await this.userService.findUserById(receiverId.toString());
    
     if (!receiverUser) {
@@ -86,9 +88,9 @@ export class ChatService {
       throw new BadRequestException('student cannot chat with instructor or admin');
     }
 
-    const course = await this.coursesService.findOne(courseId);
+    const course = await this.coursesService.findOne(course_id);
     if (!course) {
-      throw new EntityDoesNotExistException('Course', courseId.toString());
+      throw new EntityDoesNotExistException('Course', course_id.toString());
     }
 
     if(user.role == Role.Instructor 
@@ -105,7 +107,7 @@ export class ChatService {
         throw new BadRequestException('Student is not enrolled in this course');
     }
     
-    const newChat = new this.chatModel({ participants: [initiator, receiverId], chat_name: chatName, chat_type: ChatType.Direct, course_id: courseId });  
+    const newChat = new this.chatModel({ participants: [initiator, receiverId], chat_name: chatName, chat_type: ChatType.Direct, course_id: course_id });  
     const savedChat =  await newChat.save();
     return savedChat;
   }
@@ -113,10 +115,10 @@ export class ChatService {
   async createGroupChatOrFail(createGroupChatDto:CreateGroupChatDto, initiator:  Types.ObjectId): Promise<Chat> {
 
     const user = await this.userService.findUserById(initiator.toString());
-    const { chatName, courseId, participants } = createGroupChatDto;
-    const course = await this.coursesService.findOne(courseId);
+    const { chatName, course_id, participants } = createGroupChatDto;
+    const course = await this.coursesService.findOne(course_id);
     if (!course) {
-      throw new EntityDoesNotExistException('Course', courseId.toString());
+      throw new EntityDoesNotExistException('Course', course_id.toString());
     }
 
     if(user.role == Role.Instructor 
@@ -137,21 +139,19 @@ export class ChatService {
       }
     }
 
-    const newChat = new this.chatModel({ validParticipants, chat_name: chatName, chat_type: ChatType.Group, course_id: courseId });
+    const newChat = new this.chatModel({ validParticipants, chat_name: chatName, chat_type: ChatType.Group, course_id: course_id });
     const savedChat = await newChat.save();
     return savedChat;
   }
 
   //7. Add participants to a chat
-  async addParticipantToChatOrFail(chatId: Types.ObjectId, participant: Types.ObjectId, initiator:  Types.ObjectId): Promise<Chat> {
-    console.log('Adding participants to chat:', chatId, participant);
-    const chat = await this.chatModel.findOne({ _id: chatId }).exec();
+  async addParticipantToChatOrFail( addParticipantDto:AddParticipantDto, initiator:  Types.ObjectId): Promise<Chat> {
+    const { chat_id, participant } = addParticipantDto;
+    const chat = await this.chatModel.findOne({ _id: chat_id }).exec();
 
     if (!chat) {
-      throw new EntityDoesNotExistException('Chat', chatId.toString());
+      throw new EntityDoesNotExistException('Chat', chat_id.toString());
     }    
-
-    console.log('Chat found:', chat);
 
     if(chat.chat_type == ChatType.Direct){
       throw new BadRequestException('Cannot add participants to a direct chat');
@@ -172,48 +172,40 @@ export class ChatService {
     const addedUser = await this.userService.findUserById(participant.toString());
 
     const userInChat = await this.userService.findUserById(initiator.toString());
-    if(userInChat.role == Role.Student 
-      && !course.students.some((student) => student._id.toString() === participant.toString())
-    ){
-      throw new IncorrectRoleException('Student not allowed to add participants');
-    }
-    
-    if(userInChat.role == Role.Instructor
-      && course.instructor_id.toString() !== participant.toString()){
-      throw new IncorrectRoleException('Instructor not allowed to add participants');
-    }
+    if(participant.toString()!==initiator.toString()){
 
-    if(addedUser.role==Role.Student && 
-      (!course.students.some((student) => student._id.toString() === participant.toString()))){
-      throw new BadRequestException('Participant is not enrolled in this course or instructor is not allowed to do this'); 
-    }
+      if(addedUser.role==Role.Student 
+        && !course.students.some((student) => student._id.toString() === participant.toString())
+      ){
+        throw new IncorrectRoleException('Student to be added is not enrolled');
+      }
+      if(addedUser.role==Role.Instructor &&
+        (course.instructor_id.toString() !== participant.toString())){
+        throw new BadRequestException('Participant is not the instructor of this course');
+      }
 
-    if(addedUser.role==Role.Instructor &&
-      (course.instructor_id.toString() !== participant.toString())){
-      throw new BadRequestException('Participant is not the instructor of this course');
+      if(userInChat.role == Role.Student
+        && addedUser.role == Role.Instructor){
+          throw new BadRequestException('Student cannot add instructor');
+      }
+      
     }
-
-    chat.participants.push(participant);
-    console.log('Participants added:', chat.participants);
-    
+    chat.participants.push(participant);    
     const chatsaved = await (chat as ChatDocument).save();
-    console.log('Chat saved:', chat);
     return chatsaved;
   }
 
   // 8. Add a message to a chat
-  async addMessageToChatOrFail(chatId: Types.ObjectId, senderId: Types.ObjectId, content: string) {
+  async addMessageToChatOrFail( addMessageDto:AddMessageDto) {
 
-    console.log('Adding message to chat:', chatId, senderId, content);
-
-    const chat = await this.chatModel.findOne({ _id: chatId }).exec();
+    const { chat_id, sender_id, content } = addMessageDto;
+    const chat = await this.chatModel.findOne({ _id: chat_id }).exec();
     if (!chat) {
-      throw new EntityDoesNotExistException('Chat', chatId.toString());
+      throw new EntityDoesNotExistException('Chat', chat_id.toString());
     }
-    const senderObjectId = new Types.ObjectId(senderId);
 
     const participantExists = chat.participants.some(participant =>
-      participant.equals(senderObjectId) 
+      participant.equals(sender_id) 
     );
 
     if (!participantExists) {
@@ -222,7 +214,7 @@ export class ChatService {
 
     // Create a new message
     const message = new this.messageModel({
-      sender_id: senderId,
+      sender_id: sender_id,
       content: content,     
     });
 
