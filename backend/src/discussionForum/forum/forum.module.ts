@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ForumController } from './forum.controller';
 import { ForumService } from './forum.service';
@@ -11,6 +11,9 @@ import { UserModule } from 'src/users/users.module';
 import { CoursesModule } from 'src/courses/courses.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { LogsModule } from 'src/log/log.module';
+import { ThreadsModule } from '../threads/threads.module';
+import { ReplyModule } from '../replies/replies.module';
+import { ModuleModule } from 'src/module/module.module';
 
 @Module({
   imports: [
@@ -24,6 +27,9 @@ import { LogsModule } from 'src/log/log.module';
       CoursesModule,
       AuthModule,
       LogsModule,
+      forwardRef(()=>ThreadsModule),
+      forwardRef(()=>ReplyModule),
+      forwardRef(()=>ModuleModule),
   ],
   providers: [ForumService],
   controllers: [ForumController],

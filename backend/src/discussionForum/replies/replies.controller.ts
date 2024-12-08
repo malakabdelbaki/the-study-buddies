@@ -8,7 +8,10 @@ import { UseGuards, SetMetadata } from '@nestjs/common';
 import { authorizationGuard } from 'src/auth/guards/authorization.guard';
 import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
-
+import { IsMemberGuard } from 'src/auth/guards/IsForumMember.guard';
+import {  isStudentCreator } from 'src/auth/guards/isStudentCreator.guard';
+import { IsInstructorCreator } from 'src/auth/guards/IsInstructorCreator.guard';
+import { IsIn } from 'class-validator';
 @Controller('replies')
 @UseGuards(AuthGuard, authorizationGuard)
 export class RepliesController {
@@ -20,68 +23,53 @@ export class RepliesController {
   @ApiOperation({ summary: 'Create a new reply' })
   @ApiBody({ type: CreateReplyDto })
   @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
-  create(@Body() createReplyDto: CreateReplyDto) {
-    return this.repliesService.create(createReplyDto);
-  }
-
-  @Get('search/:threadId')
-  @ApiOperation({ summary: 'Search replies of a thread' })
-  @ApiQuery({ name: 'query', description: 'The search query' , required: false})
-  @ApiParam({ name: 'threadId', description: 'The ID of the thread' })
-  @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
-
-
-  @Get('thread/:threadId')
-  @ApiOperation({ summary: 'Retrieve all replies on a thread' })
-  @ApiParam({ name: 'threadId', description: 'The ID of the thread' })
-  @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
-
-  findRepliesOnThread(
-    @Param('threadId') threadId: string,
+  @UseGuards(IsMemberGuard)
+  create(
+    @Body() createReplyDto: CreateReplyDto,
     @Req() req: any) {
-    const initiator = req.user.userid; 
-    return this.repliesService.findRepliesOnThread(threadId, initiator);  
+      return this.repliesService.create(createReplyDto, req.user.userid);
   }
 
-  @Get(':id')
+  
+
+  @Get(':reply_id')
   @ApiOperation({ summary: 'Retrieve a reply by its ID' })
   @ApiParam({ name: 'id', description: 'The ID of the reply to retrieve' })
   @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
-  findOne(
-    @Param('id') id: string,
-    @Req() req: any) {
-    const initiator = req.user.userid;
-    return this.repliesService.findOne(id, initiator);
+  @UseGuards(IsMemberGuard)
+  findOne(@Param('reply_id') id: string) {
+    return this.repliesService.findOne(id);
   }
 
-  @Get(':id/sender')
+  @Get(':reply_id/sender')
   @ApiOperation({ summary: 'Retrieve the sender of a reply' })
   @ApiParam({ name: 'id', description: 'The ID of the reply' })
   @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
-  findSender(@Param('id') id: string) {
+  @UseGuards(IsMemberGuard)
+  findSender(@Param('reply_id') id: string) {
     return this.repliesService.findSender(id);
   }
 
-  @Patch(':id')
+  @Patch(':reply_id')
   @ApiOperation({ summary: 'Update a reply' })
   @ApiParam({ name: 'id', description: 'The ID of the reply to update' })
   @ApiBody({ type: UpdateReplyDto })
   @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
+  @UseGuards(isStudentCreator, IsInstructorCreator)
   update(
-    @Param('id') id: string, 
+    @Param('reply_id') id: string, 
     @Body() updateReplyDto: UpdateReplyDto,
-    @Req() req: any) {
-    const initiator = req.user.userid;
-    return this.repliesService.update(id, updateReplyDto, initiator);
+    ) {
+    return this.repliesService.update(id, updateReplyDto);
   }
 
-  @Delete(':id')
+  @Delete(':reply_id')
   @ApiOperation({ summary: 'Delete a reply' })
   @ApiParam({ name: 'id', description: 'The ID of the reply to delete' })
   @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
-  remove(@Param('id') id: string, @Req() req: any) {
-    const initiator = req.user.userid;
-    return this.repliesService.remove(id, initiator);
+  @UseGuards(IsMemberGuard, IsInstructorCreator)
+  remove(@Param('reply_id') id: string) {
+    return this.repliesService.remove(id);
   }
 
 }

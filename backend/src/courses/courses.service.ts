@@ -48,6 +48,7 @@ export class CoursesService {
 
   async findOne(id: Types.ObjectId) {
     try {
+      console.log("in course", id);
       const course = await this.courseModel.findById(id);
       if (!course) {
         throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
@@ -130,7 +131,7 @@ export class CoursesService {
   }
 
   async isStudentEnrolledInCourse(courseId: Types.ObjectId, userId: Types.ObjectId): Promise<boolean> {
-    console.log('Checking if student is enrolled in course...');
+    console.log('Checking if student is enrolled in course...', courseId, userId);  
     const course = await this.courseModel.findById(courseId);
 
     if (!course) {

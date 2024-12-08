@@ -136,4 +136,13 @@ export class NoteService {
     );
   }
   
+  async isCreator(noteId: Types.ObjectId, userId: Types.ObjectId): Promise<boolean> {
+    const note = await this.noteModel.findById(noteId).exec();
+    if (!note) {
+      throw new NotFoundException(`Note #${noteId} not found`);
+    }
+  
+    return note.userId.equals(userId);
+  }
+
 }

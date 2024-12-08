@@ -20,22 +20,34 @@ import { Course } from 'src/Models/course.schema';
 import { CourseSchema } from 'src/Models/course.schema';
 import { Announcement, AnnouncementSchema } from 'src/Models/announcement.schema';
 import { AnnouncementModule } from 'src/announcement/announcement.module';  
+import { ChatService } from '../chat/chat.service';
+import { ModuleModule } from 'src/module/module.module';
+import { Chat } from 'src/Models/chat.schema';
+import { ChatSchema } from 'src/Models/chat.schema';
+import { Message , MessageSchema} from 'src/Models/message.schema';
+import { LogsModule } from 'src/log/log.module';
+import { AuthModule } from 'src/auth/auth.module';
 @Module({
   imports: [
   MongooseModule.forFeature([
     { name: Notification.name, schema: NotificationSchema },
     { name: Thread.name, schema: ThreadSchema },
     { name: Forum.name, schema: ForumSchema } ,
-    { name: Course.name, schema: CourseSchema }
+    { name: Course.name, schema: CourseSchema },
+    { name: Chat.name, schema: ChatSchema },
+    { name: Message.name, schema: MessageSchema },
 
   ]),
   forwardRef(() => UserModule), // Resolve circular dependency
   forwardRef(() => ChatModule), // Resolve circular dependency
   ThreadsModule,
   forwardRef(() => AnnouncementModule),
+  ModuleModule,
+  LogsModule,
+  AuthModule
   ],
   controllers: [ NotificationController],
-  providers: [ NotificationsService, NotificationsGateway, ThreadsService, ForumService, CoursesService],
+  providers: [ NotificationsService, NotificationsGateway, ThreadsService, ForumService, CoursesService, ChatService],
   exports: [NotificationsService, NotificationsGateway, MongooseModule],
 })
 export class NotificationModule {}
