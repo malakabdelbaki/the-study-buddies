@@ -1,9 +1,10 @@
 import { IsNotEmpty, IsMongoId, IsNumber, Min, Max } from 'class-validator';
+import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 
 export class RateDto {
-  @IsNotEmpty()
-  @IsMongoId()
-  studentId: string;
+  // @IsNotEmpty()
+  // @IsMongoId()
+  // studentId: string;
 
   @IsNotEmpty()
   @IsMongoId()
