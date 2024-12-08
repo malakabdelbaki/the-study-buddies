@@ -49,8 +49,24 @@ async function bootstrap() {
     .catch((err) => {
       console.error('Error starting the application:', err);
     });
+
+    //cors
+    const allowedOrigins = [`http://localhost:${port}`]; //to be more dynamic and allow more origins if needed in the future
+    app.enableCors({
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) { //!origin to allow testing like postman as they have no origin
+          callback(null, true); // Allow access
+        } else {
+          callback(new Error('Not allowed by CORS')); // Reject access
+        }
+      },
+      methods:'GET,POST,PUT,PATCH,DELETE', //allowed methods
+      credentials: true, //allows cookies/autorisation headers to be sent with request
+    });
+    //parses cookies from the incoming HTTP requests and makes them available in the request.cookies object
+    app.use(cookieParser())
 }
 
-  //cors
+
 
 bootstrap();

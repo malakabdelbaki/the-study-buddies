@@ -6,19 +6,24 @@ import { JwtModule } from '@nestjs/jwt';
 import * as dotenv from 'dotenv';
 import { WsJwtGuard } from 'src/WebSockets/guards/ws-jwt-authentication.guard';
 import { LogsModule } from 'src/log/log.module';
+import { LogsModule } from 'src/log/log.module';
 dotenv.config();
+import { UserService } from 'src/users/users.service';
+import { IsEmailUniqueConstraint } from 'src/common/validators/is-email-unique.validator';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, WsJwtGuard],
-  imports:[UserModule,
+  providers: [AuthService, WsJwtGuard, IsEmailUniqueConstraint],
+  imports:[
+    UserModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: process.env.JWT_EXPIRES_IN },
     }),
-    LogsModule
+    LogsModule,
+    UserModule,
   ],//export if we'll use one of the services outside.
-  exports:[WsJwtGuard, AuthService]
+  exports:[WsJwtGuard, AuthService, IsEmailUniqueConstraint]
 })
 export class AuthModule {}

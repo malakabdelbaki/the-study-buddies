@@ -6,7 +6,8 @@ import { BackupService } from './backup.service';
 export class BackupScheduler {
   constructor(private readonly backupService: BackupService) {}
 
-  @Cron('0 0 * * *') // Runs daily at midnight
+  //@Cron('0 0 * * *') // Runs daily at midnight
+  @Cron('*/5 * * * *') // Runs every 5 minutes (for testing!)
   async handleCron() {
     await this.backupService.backupDatabase();
   }
