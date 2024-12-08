@@ -23,6 +23,8 @@ export class StudentQuizResultDto {
 
 export class QuizResultDto {
   @ApiProperty()
+  @IsMongoId()
+  @ExistsOnDatabase({ modelName: 'Quiz', column: '_id' })
   quizId: string;
 
   @ApiProperty()

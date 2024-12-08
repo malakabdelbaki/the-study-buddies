@@ -17,6 +17,9 @@ export class MatchInstructorforModuleValidator implements ValidatorConstraintInt
   ) {}
  async validate(moduleId: string, args: ValidationArguments) {
    
+  if(!args.object['instructor_id']){
+    return true;
+  }
     const userId = args.object['instructor_id'];
     const module = await this.moduleService.findOne(new Types.ObjectId(moduleId));
     if (!module) {

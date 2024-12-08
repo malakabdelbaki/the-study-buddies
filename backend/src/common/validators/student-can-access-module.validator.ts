@@ -7,24 +7,25 @@ import {
 import { CoursesService } from '../../courses/courses.service';
 import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { ModuleService } from 'src/module/module.service';
 
 @ValidatorConstraint({ async: true })
 @Injectable()
-export class MatchInstructorForCourseValidator implements ValidatorConstraintInterface {
+export class StudentCanAccessModuleValidator implements ValidatorConstraintInterface {
   constructor(
     private readonly CoursesService: CoursesService,
+    private readonly ModuleService: ModuleService,
   ) {}
- async validate(courseId: string, args: ValidationArguments) {
-  if(!args.object['instructor_id']){
-    return true;
-  }
-    const userId = args.object['instructor_id'];
-    const course = await this.CoursesService.findOne(new Types.ObjectId(courseId));
+ async validate(moduleId: string, args: ValidationArguments) {
+   
+    const userId = args.object['user_id'] || args.object['student_id'];
+    const module = await this.ModuleService.findOne(new Types.ObjectId(moduleId));
+    const course = await this.CoursesService.findOne(module.course_id);
     if (!course) {
       return false; 
     }
 
-    return course.instructor_id.toString() === userId; 
+    return course.students.some(student => student.toString() === userId);
   }
 
   defaultMessage(args: ValidationArguments) {
