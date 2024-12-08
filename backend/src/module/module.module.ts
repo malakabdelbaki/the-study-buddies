@@ -38,6 +38,5 @@ import { ProgressSchema } from 'src/Models/progress.schema';
   controllers: [ModuleController,CoursesController],
   providers: [ModuleService,CoursesService],
   exports: [ModuleService,MongooseModule]
-  exports: [ModuleService,MongooseModule]
 })
 export class ModuleModule {} 
