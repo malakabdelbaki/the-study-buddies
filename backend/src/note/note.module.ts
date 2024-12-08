@@ -7,13 +7,14 @@ import { CoursesModule } from 'src/courses/courses.module';
 import { ModuleModule } from 'src/module/module.module';
 import { NoteSchema } from 'src/Models/notes.schema';
 import { AuthModule } from 'src/auth/auth.module';
-
+import { LogsModule } from 'src/log/log.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Note', schema: NoteSchema }]),
     CoursesModule,
     ModuleModule,
-    AuthModule
+    AuthModule,
+    LogsModule,
   ],
   providers: [NoteService],
   controllers: [NoteController],

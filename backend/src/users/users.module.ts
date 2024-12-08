@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserService } from './users.service';
 import { UserController } from './users.controller';
@@ -12,6 +12,11 @@ import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decor
 import { ExistsOnDatabaseValidator } from 'src/common/validators/exists-on-database.validator';
 import { Thread } from 'src/Models/thread.schema';
 import { ThreadsModule } from 'src/discussionForum/threads/threads.module';
+import { AuthGuard } from 'src/auth/guards/authentication.guard';
+import { AuthModule } from 'src/auth/auth.module';
+
+
+import { LogsModule } from '../log/log.module';
 
 @Module({
   imports :[MongooseModule.forFeature([{ name: 'Module', schema: ModuleSchema }]),
@@ -19,9 +24,11 @@ import { ThreadsModule } from 'src/discussionForum/threads/threads.module';
   MongooseModule.forFeature([{name:'Course',schema:CourseSchema}]),
   MongooseModule.forFeature([{name:'Progress',schema:ProgressSchema}]),
   MongooseModule.forFeature([{name:'User',schema:UserSchema}]),
+  forwardRef(() => AuthModule),
+  LogsModule,
   ],
   controllers: [UserController],
-  providers: [UserService, authorizationGuard, ExistsOnDatabaseValidator],
+  providers: [UserService, authorizationGuard, AuthGuard, ExistsOnDatabaseValidator ],
   exports: [UserService, MongooseModule.forFeature([{name:'user',schema:UserSchema}])], // Export the service if it's needed in other modules
 })
 export class UserModule {}

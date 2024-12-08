@@ -14,6 +14,7 @@ import { ResourceSchema } from 'src/Models/resource.schema';
 import { AuthModule } from 'src/auth/auth.module';
 import { Validator } from 'class-validator';
 import { ValidatorsModule } from 'src/common/validators/validators.module';
+import { LogsModule } from 'src/log/log.module';
 import { UserSchema } from 'src/Models/user.schema';
 import { ProgressSchema } from 'src/Models/progress.schema';
 
@@ -32,7 +33,8 @@ import { ProgressSchema } from 'src/Models/progress.schema';
               serveRoot: '/resources', // URL where files will be served from
             }),
           AuthModule,
-        ValidatorsModule],
+        ValidatorsModule,
+        LogsModule,],
   controllers: [ModuleController,CoursesController],
   providers: [ModuleService,CoursesService],
   exports: [ModuleService,MongooseModule]

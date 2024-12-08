@@ -17,6 +17,7 @@ import { ModuleService } from 'src/module/module.service';
 import { ModuleModule } from 'src/module/module.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { UserModule } from 'src/users/users.module';
+import { LogsModule } from 'src/log/log.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { UserModule } from 'src/users/users.module';
     AuthModule,
     CoursesModule,
     UserModule,
+    LogsModule,
   ],
   controllers: [RepliesController],
   providers: [RepliesService],

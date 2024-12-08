@@ -8,6 +8,7 @@ import { ModuleService } from 'src/module/module.service';
 import { ModuleModule } from 'src/module/module.module';
 import { ValidatorsModule } from 'src/common/validators/validators.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { LogsModule } from 'src/log/log.module';
 import { UserSchema } from 'src/Models/user.schema';
 import { ProgressSchema } from 'src/Models/progress.schema';
 
@@ -20,7 +21,9 @@ import { ProgressSchema } from 'src/Models/progress.schema';
       
       ModuleModule,
       AuthModule ,
-      ValidatorsModule],// Register scheme]
+      ValidatorsModule,
+      LogsModule
+],// Register scheme]
   controllers: [CoursesController],
   providers: [CoursesService,authorizationGuard],
   exports: [CoursesService],

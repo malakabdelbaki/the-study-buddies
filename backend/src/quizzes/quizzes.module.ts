@@ -15,6 +15,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { UserModule } from 'src/users/users.module';
 import { CoursesModule } from 'src/courses/courses.module';
 import { ModuleModule } from 'src/module/module.module';
+import { LogsModule } from 'src/log/log.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ModuleModule } from 'src/module/module.module';
     UserModule,
     CoursesModule,
     ModuleModule,
+    LogsModule
   ],
   controllers: [QuizzesController], // Attach your QuizzesController
   providers: [QuizzesService, AuthService], // Register QuizzesService

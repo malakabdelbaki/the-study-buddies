@@ -22,6 +22,7 @@ import { NoteController } from './note/note.controller';
 import { NoteModule } from './note/note.module';
 import { AuthModule } from './auth/auth.module';
 import { ValidatorsModule } from './common/validators/validators.module';
+import { LogsModule } from './log/log.module';
 
 @Module({
   imports: [
@@ -40,7 +41,8 @@ import { ValidatorsModule } from './common/validators/validators.module';
     QuizzesModule,
     NoteModule,
     AuthModule,
-    ValidatorsModule
+    ValidatorsModule,
+    LogsModule
   ],
   controllers: [AppController, NoteController],
   providers: [AppService],

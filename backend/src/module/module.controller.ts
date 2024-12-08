@@ -46,6 +46,7 @@ export class ModuleController {
 
   @ApiOperation({ summary: 'get a specific module by id' })
   @Get(':ModuleId') //ok
+  @UseGuards(authorizationGuard)
   async getModule(@Param('ModuleId') ModuleId: string) {
     try {
       let ID = new Types.ObjectId(ModuleId);
@@ -121,11 +122,17 @@ export class ModuleController {
   @Roles(Role.Instructor)
   @UseGuards(authorizationGuard, InstructorGuard)
   @Post('question-bank')
-  async addQuestion(@Body() createQuestionDto: CreateQuestionDto) {
+  async addQuestion(@Req() request,@Body() createQuestionDto: CreateQuestionDto) {
     try {
+      let inst = request.user.userid;
+      if (!inst || !request.user) {
+        throw new HttpException('not loged in instructor',HttpStatus.UNAUTHORIZED);
+      }
       const newQuestion = await this.moduleService.addQuestion({
         ...createQuestionDto,
-        module_id:new Types.ObjectId(createQuestionDto.module_id)}
+        module_id:new Types.ObjectId(createQuestionDto.module_id),
+        instructor_id :new Types.ObjectId(inst)
+      }
       );
       if (!newQuestion) {
         throw new HttpException('Failed to add question to the module', HttpStatus.BAD_REQUEST);
