@@ -10,6 +10,8 @@ import { Course, CourseSchema } from '../Models/course.schema';
 import { Quiz, QuizSchema } from '../Models/quiz.schema';
 import { Response, ResponseSchema } from '../Models/response.schema';
 import { Module, ModuleSchema } from '../Models/modules.schema';
+import { AuthModule } from 'src/auth/auth.module';
+import { LogsModule } from 'src/log/log.module';
 
 
 
@@ -23,6 +25,8 @@ import { Module, ModuleSchema } from '../Models/modules.schema';
       { name: Response.name, schema: ResponseSchema },
       { name: Module.name, schema: ModuleSchema }
     ]),
+    AuthModule,
+    LogsModule
   ],
   providers: [PerformanceService],
   controllers: [PerformanceController]
