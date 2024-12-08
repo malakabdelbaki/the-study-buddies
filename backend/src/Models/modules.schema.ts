@@ -33,8 +33,12 @@ export class Module {
     module_difficulty: Difficulty;
 
     // New rating field for the module (e.g., rating out of 5)
-    @Prop({ type: [Number], default: [] ,required:false}) // Array of ratings given by students
-    ratings: number[];
+    @Prop({
+        type: Map,
+        of: Number, // The value type (rating) is a number
+        default: {},
+      })
+      ratings: Map<Types.ObjectId, number>;
 
     @Prop({required:true,default:10})
     quiz_length: number; // Number of questions in the quiz

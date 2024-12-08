@@ -128,4 +128,20 @@ export class CoursesService {
       throw new HttpException('Error deleting course', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+
+  async rateCourse(course_id:Types.ObjectId,rating:number){
+      let course = await this.findOne(course_id);
+      if(!course){
+        throw new Error ('no Course Found with this ID');
+      }
+      
+      if (!rating){
+        throw new Error(' You must Enter a rating');
+      }
+
+      course.ratings.push(rating);
+      course.save();
+      return course;
+  }
 }

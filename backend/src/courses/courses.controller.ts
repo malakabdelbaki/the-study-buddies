@@ -1,6 +1,7 @@
 import {  Controller, 
   Get,  Post, Body,  Patch, Param, Delete, Query, HttpException,  HttpStatus, 
-  UseGuards
+  UseGuards,
+  Req
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -22,10 +23,14 @@ export class CoursesController {
   @Roles(Role.Instructor)
   @UseGuards(authorizationGuard)
   @Post()
-  async create(@Body() createCourseDto: CreateCourseDto) {
+  async create(@Req() request,@Body() createCourseDto: CreateCourseDto) {
     try {
+      const instructorId = request.user?.userid; // Extract instructorId
+      if(!instructorId || !request.user){
+        throw new HttpException('Error not found an instructor', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
       return await this.coursesService.create({...createCourseDto,
-        instructor_id:new Types.ObjectId(createCourseDto.instructor_id)});
+        instructor_id: new Types.ObjectId(instructorId)});
     } catch (err) {
       console.error('Error creating course:', err.message);
       throw new HttpException('Error creating course', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -112,4 +117,25 @@ export class CoursesController {
       throw new HttpException('Error deleting course', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  @ApiOperation({ summary: 'Rate Course' })
+  @ApiParam({ name: 'id', description: 'Course ID', type: String })
+  @Roles(Role.Student)
+  @UseGuards(authorizationGuard)
+  @Post(':id/rate')
+  async RateCourse(@Req() request,@Param('id') id: string ,@Body() ratingbody:{rating:number}) {
+    try {
+      const {rating} = ratingbody;
+      const courseid = new Types.ObjectId(id);
+      const studentid = request.user?.userid; // Extract instructorId
+      if(!studentid || !request.user){
+        throw new HttpException('Error not found a student', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      return await this.coursesService.rateCourse(courseid,rating);
+    } catch (err) {
+      console.log(err.message);
+      throw new HttpException('Error Rating a Course', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 }
