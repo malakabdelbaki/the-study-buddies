@@ -10,21 +10,19 @@ import { Types } from 'mongoose';
 
 @ValidatorConstraint({ async: true })
 @Injectable()
-export class MatchInstructorForCourseValidator implements ValidatorConstraintInterface {
+export class StudentEnrolledInCourseValidator implements ValidatorConstraintInterface {
   constructor(
     private readonly CoursesService: CoursesService,
   ) {}
  async validate(courseId: string, args: ValidationArguments) {
-  if(!args.object['instructor_id']){
-    return true;
-  }
-    const userId = args.object['instructor_id'];
+   
+    const userId = args.object['user_id'] || args.object['student_id'];
     const course = await this.CoursesService.findOne(new Types.ObjectId(courseId));
     if (!course) {
       return false; 
     }
 
-    return course.instructor_id.toString() === userId; 
+    return course.students.some(student => student.toString() === userId);
   }
 
   defaultMessage(args: ValidationArguments) {

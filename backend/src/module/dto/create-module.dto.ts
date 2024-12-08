@@ -14,7 +14,7 @@ export class CreateModuleDto {
   })
   @IsMongoId()
   @ExistsOnDatabase({ modelName: 'Course', column: '_id' })
-  //@MatchInstructor() //Malak will change it
+  @MatchInstructor() //Malak will change it
   course_id: Types.ObjectId;
 
 

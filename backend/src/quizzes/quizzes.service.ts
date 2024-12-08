@@ -241,7 +241,7 @@ export class QuizzesService {
     console.log("progress: ", progress);
 
     const studentGrade = progress.AverageGrade;
-    if (!studentGrade) {
+    if (!studentGrade && studentGrade !== 0) {
       throw new NotFoundException(`Student grade not found for User ID ${user_id}`);
     }
     

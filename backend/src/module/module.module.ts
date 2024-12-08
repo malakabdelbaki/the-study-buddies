@@ -14,12 +14,18 @@ import { ResourceSchema } from 'src/Models/resource.schema';
 import { AuthModule } from 'src/auth/auth.module';
 import { Validator } from 'class-validator';
 import { ValidatorsModule } from 'src/common/validators/validators.module';
+import { UserSchema } from 'src/Models/user.schema';
+import { ProgressSchema } from 'src/Models/progress.schema';
 
 @Module({
   imports :[MongooseModule.forFeature([{ name: 'Module', schema: ModuleSchema }]),
             MongooseModule.forFeature([{name:'Question',schema:QuestionSchema}]),         
             MongooseModule.forFeature([{name:'Course',schema:CourseSchema}]),
             MongooseModule.forFeature([{name:'Resource',schema:ResourceSchema}]),
+            MongooseModule.forFeature([{name:'User',schema:UserSchema}]),
+            MongooseModule.forFeature([{name:'Progress',schema:ProgressSchema}]),
+
+
             MulterModule.register({ dest: './uploads' }),
             ServeStaticModule.forRoot({
               rootPath: './uploads', // Path to the uploads folder

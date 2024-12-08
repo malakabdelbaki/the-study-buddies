@@ -12,6 +12,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { authorizationGuard } from 'src/auth/guards/authorization.guard';
 import { Role } from 'src/enums/role.enum';
 import { AuthGuard } from '../auth/guards/authentication.guard';
+import { InstructorGuard } from 'src/auth/guards/instructor.guard';
 
 @ApiTags('Courses') // Tag for Swagger grouping
 @UseGuards(AuthGuard)
@@ -79,8 +80,11 @@ export class CoursesController {
   @Roles(Role.Instructor)
 @UseGuards(authorizationGuard)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
+  async update(@Req() request,@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
     try {
+      if (!request.user || !request.user.userid)
+        throw new HttpException('You Can not update this Course!', HttpStatus.INTERNAL_SERVER_ERROR);
+      
       const objectId = new Types.ObjectId(id);
       return await this.coursesService.update(objectId, updateCourseDto);
     } catch (err) {
@@ -91,12 +95,17 @@ export class CoursesController {
 
   @ApiOperation({ summary: 'Retrieve modules of a course with optional difficulty filter' })
   @ApiParam({ name: 'id', description: 'Course ID', type: String })
-  @ApiQuery({ name: 'difficulty', required: false, description: 'Filter modules by difficulty' })
   @Get(':id/modules')
-  async getModules(@Param('id') id: string, @Query('difficulty') difficulty?: string) {
+  async getModules(@Req() request,@Param('id') id: string) {
     try {
-      const objectId = new Types.ObjectId(id);
-      return await this.coursesService.getModules(objectId, difficulty);
+      
+      const user_id = request.user?.userid; // Extract instructorId
+      if(!user_id || !request.user){
+        throw new HttpException('Error not found an instructor', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      const courseId = new Types.ObjectId(id);
+      const user = new Types.ObjectId(user_id)
+      return await this.coursesService.getModules(user,courseId);
     } catch (err) {
       console.error('Error fetching modules:', err.message);
       throw new HttpException('Error fetching modules', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -131,7 +140,7 @@ export class CoursesController {
       if(!studentid || !request.user){
         throw new HttpException('Error not found a student', HttpStatus.INTERNAL_SERVER_ERROR);
       }
-      return await this.coursesService.rateCourse(courseid,rating);
+      return await this.coursesService.rateCourse(studentid,courseid,rating);
     } catch (err) {
       console.log(err.message);
       throw new HttpException('Error Rating a Course', HttpStatus.INTERNAL_SERVER_ERROR);
