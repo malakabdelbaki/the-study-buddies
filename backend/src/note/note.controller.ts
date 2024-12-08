@@ -7,9 +7,9 @@ import { AuthGuard } from 'src/auth/guards/authentication.guard';
 import { authorizationGuard } from 'src/auth/guards/authorization.guard';
 import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
+import { IsNoteCreatorGuard } from 'src/auth/guards/IsNoteCreator.guard';
 
-
-@UseGuards(AuthGuard, authorizationGuard)
+@UseGuards(AuthGuard, authorizationGuard, IsNoteCreatorGuard)
 @SetMetadata(ROLES_KEY, [Role.Student])
 @Controller('note')
 export class NoteController {
@@ -21,8 +21,7 @@ export class NoteController {
   async getNotes(
     @Req() req,
   ) {
-    const userId = req.user.userid;
-    return this.noteService.getNotes(userId);
+    return this.noteService.getNotes(req.user.userid);
   }
 
   @Get('course/:courseId')
@@ -30,8 +29,7 @@ export class NoteController {
     @Param('courseId') courseId: string,
     @Req() req,
   ) {
-    const userId = req.user.userid;
-    return this.noteService.getCourseNotes(userId, courseId);
+    return this.noteService.getCourseNotes( req.user.userid, courseId);
   }
 
 
@@ -40,8 +38,7 @@ export class NoteController {
     @Param('noteId') noteId: string,
     @Req() req,
   ) {
-    const userId = req.user.userid;
-    return this.noteService.getNote(userId, noteId);
+    return this.noteService.getNote(req.user.userid, noteId);
   }
 
   @Get('course/:courseId/module/:moduleId') 
@@ -50,8 +47,7 @@ export class NoteController {
     @Param('moduleId') moduleId: string,
     @Req() req,
   ) {
-    const userId = req.user.userid;
-    return this.noteService.getModuleNotes(userId, courseId, moduleId);
+    return this.noteService.getModuleNotes(req.user.userid, courseId, moduleId);
   }
 
   @Post()
@@ -59,10 +55,7 @@ export class NoteController {
     @Body() createNoteDto: CreateNoteDto,
     @Req() req,
   ) {
-    const userId = req.user.userid;
-    console.log(userId);
-    console.log(createNoteDto.courseId);
-    return this.noteService.createNote(userId, createNoteDto);
+    return this.noteService.createNote(req.user.userid, createNoteDto);
   }
 
 
@@ -72,8 +65,7 @@ export class NoteController {
     updateNoteDto: UpdateNoteDto,
     @Req() req,
   ) {
-    const userId = req.user.userid;
-    return this.noteService.updateNote(userId, noteId, updateNoteDto);
+    return this.noteService.updateNote(req.user.userid, noteId, updateNoteDto);
   }
 
   @Delete(':noteId')
@@ -81,8 +73,7 @@ export class NoteController {
     @Param('noteId') noteId: string,
     @Req() req,
   ) {
-    const userId = req.user.userid;
-    return this.noteService.deleteNote(userId, noteId);
+    return this.noteService.deleteNote(req.user.userid, noteId);
   } 
 
 
@@ -92,12 +83,10 @@ export class NoteController {
     @Body() body: { content: string; clientUpdatedAt: string },
     @Req() req,
   ) {
-    const userId = req.user.userid; // Extract user ID from JWT or session
-
     try {
       const updatedNote = await this.noteService.autoSaveNote(
         noteId,
-        userId,
+        req.user.userid,
         { content: body.content },
         new Date(body.clientUpdatedAt),
       );

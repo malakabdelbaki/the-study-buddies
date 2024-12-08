@@ -22,61 +22,32 @@ export class ForumService {
     private readonly userService: UserService
   ) {}
 
-  async validateInitiator(initiator: Types.ObjectId, courseId: Types.ObjectId): Promise<Boolean> {
-    const user = await this.userService.findUserById(initiator.toString());
-    const course = await this.courseService.findOne(new Types.ObjectId(courseId));
-    if (user.role === Role.Student
-      && !course.students.some(student => student.equals((user as any)._id))
-    ) {
-      throw new NotFoundException('Student is not enrolled in the course');
-    }
-
-    if (user.role === Role.Instructor
-      && !course.instructor_id.equals((user as any)._id)
-    ) {
-      throw new NotFoundException('Instructor is not teaching the course');
-    }
-    return true;
-  }
-
-  async create(createForumDto: CreateForumDto) {
-    const {course_id, created_by} = createForumDto;
-    const user = await this.userService.findUserById(created_by.toString());
-    const course = await this.courseService.findOne(course_id);
-    if (!course || !user) {
-      throw new NotFoundException(`Course #${course_id} or user not found`);
-    }
-    if(!this.validateInitiator(new Types.ObjectId(created_by), course_id)) {
-      throw new NotFoundException('User not authorized to create forum');
-    }
-
-    const createdForum = new this.forumModel(createForumDto);
+  async create(createForumDto: CreateForumDto, user: Types.ObjectId): Promise<Forum> {
+    const { title, description, course_id, created_by } = createForumDto;
+    const courseObjId = new Types.ObjectId(course_id);
+    const createdForum = new this.forumModel({ title: title, description : description, course_id : courseObjId, created_by: user });
     return createdForum.save();
   }
 
   
-  async findByCourse(courseId: Types.ObjectId , initiator: Types.ObjectId) {
+  async findByCourse(courseId: Types.ObjectId) {
     const course = await this.courseService.findOne(new Types.ObjectId(courseId));
     if (!course) {
       throw new NotFoundException(`Course #${courseId} not found`);
     }
-
-    if(!this.validateInitiator(new Types.ObjectId(initiator), courseId)) {
-      throw new NotFoundException('User not authorized to create forum');
-    }
-
     const forums = await this.forumModel.find({ course_id: courseId }).exec();
     console.log(forums);
     return forums;
   }
 
   async findByInstructor(instructorId: string) {
-    const instructorObjectId = new Types.ObjectId(instructorId);
-    const courses = await this.courseModel.find({ instructor_id: instructorObjectId }).exec();
+    const courses = await this.courseModel.find({ instructor_id: new Types.ObjectId(instructorId) }).exec();
     const forums = [];
     for (const course of courses) {
-      const courseForums = await await this.forumModel.find({ course_id: course._id }).exec();
-      forums.push(...courseForums); // Use spread to flatten results into the forums array
+      const courseForums = await this.forumModel.find({      
+        course_id: new Types.ObjectId(course._id) 
+      }).exec();
+      forums.push(...courseForums); 
     }
     return forums;
   }
@@ -86,51 +57,37 @@ export class ForumService {
     const forums = [];
     for (const course of enrolledCourses) {
       const courseForums =  await this.forumModel.find({ course_id: (course as any)._id }).exec();
-      forums.push(...courseForums); // Use spread to flatten results into the forums array
+      forums.push(...courseForums); 
     }
     return forums;  
   }
 
-  async findThreads(forumId: string, initiator: Types.ObjectId) {
+  async findThreads(forumId: string) {
     const forum = await this.forumModel.findById(forumId).exec();
-    const course = await this.courseService.findOne(forum.course_id);
     if (!forum) {
       throw new NotFoundException(`Forum #${forumId} not found`);
     }
-    if(!this.validateInitiator(new Types.ObjectId(initiator), (course as any)._id)) { 
-      throw new NotFoundException('User not authorized to create forum');
-    }
-
     const threadIds = forum.threads.map(thread => (thread as any)._id);
     const threads = await this.threadModel.find({ _id: { $in: threadIds } }).exec();
     return threads;
   }
 
-  async findOne(id: string, initiator: Types.ObjectId) {
+  async findOne(id: string) {
     const forum = await this.forumModel.findById(id).exec();
     if (!forum) {
       throw new NotFoundException(`Forum #${id} not found`);
     }
-
-    if(!this.validateInitiator(new Types.ObjectId(initiator), forum.course_id)) {
-      throw new NotFoundException('User not authorized to create forum');
-    }
-
     return forum;
   }
 
   async update(id: string, updateForumDto: UpdateForumDto): Promise<Forum> {
-    const {created_by} = updateForumDto;
-    const user = await this.userService.findUserById(created_by.toString());
+
     const forum = await this.forumModel.findById(id).exec();
     
     if (!forum) {
       throw new NotFoundException('Forum not found');
     }
-    if(!created_by.equals(forum.created_by)) {
-      throw new NotFoundException('User not authorized to update forum');
-    }
-
+   
     const Updatedforum = await this.forumModel.findByIdAndUpdate(id, updateForumDto, { new: true }).exec();
     return Updatedforum.save();
   }
@@ -148,7 +105,7 @@ export class ForumService {
     }
 
     forum.is_active = false;
-    const threads = await this.findThreads(id, initiator);
+    const threads = await this.findThreads(id);
     for (const thread of threads) {
       thread.isResolved = true;
       await thread.save();
@@ -157,16 +114,41 @@ export class ForumService {
     
   }
 
-  async remove(id: string, initiator:Types.ObjectId ): Promise<void> {
-    const user = await this.userService.findUserById(initiator.toString());
-    if(user.role == Role.Student) {
-      throw new NotFoundException('User not authorized to delete forum');
-    }
-
-    const forum = await this.forumModel.findByIdAndUpdate(id).exec();
-    if (!forum) {
+  async remove(id: string ): Promise<Forum> {
+    const deletedForum = await this.forumModel.findByIdAndDelete(new Types.ObjectId(id)).exec();
+   
+    if (!deletedForum) {
       throw new NotFoundException('Forum not found');
     }
+    return deletedForum;
   }
 
+  async isCreator(forumId: string, userId: string): Promise<boolean> {
+    const forum = await this.forumModel.findById(forumId).exec();
+    
+    if (!forum) {
+      throw new NotFoundException(`Forum #${forumId} not found`);
+    }
+    console.log(forum);
+    console.log(userId);
+    return forum.created_by.toString() === userId;
+  }
+
+  async isMember(forumId: Types.ObjectId, userId: Types.ObjectId): Promise<boolean> {
+    console.log("ISMEMBER");
+    const forum = await this.forumModel.findById(forumId).exec();
+    if (!forum) {
+      throw new NotFoundException(`Forum #${forumId} not found`);
+    }
+    
+    const course = await this.courseService.findOne(forum.course_id);
+    console.log(course);
+    console.log(userId);
+    console.log(forum);
+    if (course.instructor_id.toString()===userId.toString()) {
+      return true;
+    }
+    const enrolledStudents = await this.userService.getAllStudentsInCourse(course._id.toString());
+    return enrolledStudents.some(student => (student as any)._id.equals(userId));
+  }
 }

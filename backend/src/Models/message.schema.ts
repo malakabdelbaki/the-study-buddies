@@ -13,6 +13,14 @@ export class Message {
 
   @Prop({ type: Date, default: Date.now })
   timestamp: Date;
+
+  @Prop({ 
+    type: Types.ObjectId, 
+    ref: 'Chat',  
+    required: true,
+    index: true
+  })
+  chat_id: Types.ObjectId;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

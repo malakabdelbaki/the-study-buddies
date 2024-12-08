@@ -10,6 +10,8 @@ import { ForumService } from '../forum/forum.service';
 import { Role } from '../../enums/role.enum';
 import mongoose from 'mongoose';
 import { ThreadsService } from '../threads/threads.service';
+import { NotificationsService } from 'src/WebSockets/notification/notification.service';
+import { NotificationType } from 'src/enums/notification-type.enum';
 @Injectable()
 export class RepliesService {
   constructor(
@@ -18,9 +20,10 @@ export class RepliesService {
     private readonly userService: UserService,
     private readonly forumService: ForumService,
     private readonly threadService: ThreadsService,
+    private readonly notificationService: NotificationsService,
   ) {}
 
-  async create(createReplyDto: CreateReplyDto): Promise<Reply> {
+  async create(createReplyDto: CreateReplyDto, user:Types.ObjectId): Promise<Reply> {
     const { thread_id } = createReplyDto;
     const thread = await this.threadModel.findById(thread_id).exec();
     if (!thread) {
@@ -29,56 +32,44 @@ export class RepliesService {
     if (thread.isResolved) {
       throw new NotFoundException(`Thread #${thread_id} is resolved`);
     }
-    const user = await this.userService.findUserById(createReplyDto.user_id);
-    const threadForum = await this.forumService.findOne(thread.forumId.toString(), new Types.ObjectId(createReplyDto.user_id));
-
-    if (user.role === 'student') {
-      const studentForums = await this.forumService.findForumsOfStudent(createReplyDto.user_id.toString());
-
-      if (!studentForums.some(forum => forum._id.equals(threadForum._id))) {
-        throw new NotFoundException(`Student is not enrolled in the course`);
-      }
-    }
-    if (user.role === 'instructor') {
-      const instructorForums = await this.forumService.findByInstructor(createReplyDto.user_id.toString());
-      if (!instructorForums.some(forum => forum._id.equals(threadForum._id))) {
-        throw new NotFoundException(`Instructor is not teaching the course`);
-      }
-    }
-    const createdReply = new this.replyModel(createReplyDto);
+   
+    const createdReply = new this.replyModel({ ...createReplyDto, createdBy: user });
     thread.replies.push(createdReply._id as Types.ObjectId);
+
     await thread.save();
     await createdReply.save();
+
+    this.notificationService.createNotification(
+      thread.createdBy.toString(), 
+      `New reply on thread: ${thread.title}`, 
+      NotificationType.REPLY, 
+      createdReply._id as Types.ObjectId);
+      
     return createdReply;
   }
 
-  async findRepliesOnThread(threadId: string, initiator: Types.ObjectId): Promise<Reply[]> {
-    const thread = await this.threadService.findOne(threadId , initiator);
-    console.log(thread);
+  async findRepliesOnThread(threadId: string): Promise<Reply[]> {
+    const thread = await this.threadService.findOne(threadId);
     if (!thread) {
       throw new NotFoundException(`Thread #${threadId} not found`);
     }
+
     const replies = await this.replyModel.find({ _id: { $in: thread.replies } }).exec();
     return replies;
   }
 
-  async findOne(reply_id: string, initiator: Types.ObjectId): Promise<Reply> {
-    const user = await this.userService.findUserById(initiator.toString());
+  async findOne(reply_id: string): Promise<Reply> {
     const reply = await this.replyModel.findById(reply_id);
     if (!reply) {
       throw new NotFoundException(`Reply #${reply_id} not found`);
     }
-    const thread = await this.threadService.findOne(reply.thread_id.toString(), initiator);
     return reply;
   }
 
-  async update(reply_id: string, updateReplyDto: UpdateReplyDto, initiator:Types.ObjectId): Promise<Reply> {
+  async update(reply_id: string, updateReplyDto: UpdateReplyDto): Promise<Reply> {
     const reply = await this.replyModel.findById(reply_id).exec();
     if (!reply) {
       throw new NotFoundException(`Reply #${reply_id} not found`);
-    }
-    if(!reply.user_id.equals(initiator)) {
-      throw new NotFoundException('User not authorized to update reply');
     }
 
     const updatedReply = await this.replyModel.findByIdAndUpdate(reply_id, updateReplyDto, { new: true }).exec();
@@ -109,26 +100,36 @@ export class RepliesService {
     }).exec();
   }
 
-  async remove(reply_id: string, initiator: Types.ObjectId): Promise<Reply> {
-    const user = await this.userService.findUserById(initiator.toString());
+  async remove(reply_id: string): Promise<Reply> {
     const reply = await this.replyModel.findById(reply_id).exec();
     if (!reply) {
       throw new NotFoundException(`Reply #${reply_id} not found`);
     }
-
-    if(user.role === Role.Student && !reply.user_id.equals(initiator)) {
-      throw new NotFoundException('User not authorized to delete reply');
-    }
-    const thread = await this.threadService.findOne(reply.thread_id.toString(), initiator);
-    const forum = await this.forumService.findOne(thread.forumId.toString(), initiator);
-
-    if(user.role === Role.Instructor) {
-      if(!this.forumService.validateInitiator(initiator, forum.course_id)) {
-        throw new NotFoundException('User not authorized to delete reply');
-    }
-  }
     const deletedReply = await this.replyModel.findByIdAndDelete(reply_id).exec();
-    
-    return reply;
+    return deletedReply;
   }
+
+  async isCreator(reply_id: string, userId: Types.ObjectId): Promise<boolean> {
+    const reply = await this.replyModel.findById(reply_id).exec();
+    if (!reply) {
+      throw new NotFoundException(`Reply #${reply_id} not found`);
+    }
+    if(reply.user_id.toString()===userId.toString()) {
+      return true;
+    }
+    return false;
+  }
+
+  async getThreadOfReply(reply_id: string): Promise<Thread> {
+    const reply = await this.replyModel.findById(reply_id).exec();
+    if (!reply) {
+      throw new NotFoundException(`Reply #${reply_id} not found`);
+    }
+    const thread = await this.threadModel.findById(reply.thread_id).exec();
+    if (!thread) {
+      throw new NotFoundException(`Thread #${reply.thread_id} not found`);
+    }
+    return thread;
+  }
+
 }

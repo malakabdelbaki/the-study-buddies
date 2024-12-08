@@ -13,9 +13,10 @@ import { AuthGuard } from 'src/auth/guards/authentication.guard';
 import { authorizationGuard } from 'src/auth/guards/authorization.guard';
 import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
+import { IsChatMemberHttpGuard } from 'src/auth/guards/IsChatMember.guard';
 
 
-@UseGuards(AuthGuard, authorizationGuard)
+@UseGuards(AuthGuard, authorizationGuard, IsChatMemberHttpGuard)
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService,
@@ -25,14 +26,12 @@ export class ChatController {
   @Get('/history:chatId')
   @ApiOperation({ summary: 'Get all chats with messages' })
   @ApiResponse({ status: 200, description: 'List of all chats' })
-  @ApiParam({ name: 'chatId', type: String, description: 'The ID of the chat' })
+  @ApiParam({ name: 'chat_id', type: String, description: 'The ID of the chat' })
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
   async getAllChatHistory(
-    @Param('chatId') chatId: string,
+    @Param('chat_id') chat_id: Types.ObjectId,
     @Req() req: any) {
-    const chatObjectId = new Types.ObjectId(chatId)
-    const initiator = req.user.userid;
-    return await this.chatService.getMessagesByChatId(chatObjectId, initiator);
+    return await this.chatService.getMessagesByChatId(chat_id, req.user.userid);
   }
 
   // 1. Get all chats in which the student is a participant
@@ -41,8 +40,7 @@ export class ChatController {
   @ApiResponse({ status: 200, description: 'List of chats for the student' })
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
   async getChatsOfUser(@Req() req: any) {
-    const initiator = req.user.userid;
-    return await this.chatService.getChatsOfAStudentOrFail((initiator as any)._id);
+    return await this.chatService.getChatsOfAStudentOrFail( req.user.userid);
 
   }
 
@@ -53,9 +51,8 @@ export class ChatController {
   @ApiParam({ name: 'studentId', type: String, description: 'The ID of the student' })
   @ApiParam({ name: 'chatId', type: String, description: 'The ID of the chat' })
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
-  async getChatOfStudentById(@Param('chatId') chatId: string) {
-    const chatObjectId = new Types.ObjectId(chatId);
-    return await this.chatService.getChatByIdOrFail(chatObjectId);
+  async getChatOfStudentById(@Param('chat_id') chat_id: Types.ObjectId) {
+    return await this.chatService.getChatByIdOrFail(chat_id);
   }
 
 
@@ -68,8 +65,7 @@ export class ChatController {
   async createGroupChat(
     @Body() createGroupChatDto: CreateGroupChatDto,
     @Req() req: any) : Promise<Chat> {
-    const initiator = req.user.userid;
-    return this.chatService.createGroupChatOrFail(createGroupChatDto, initiator);
+    return this.chatService.createGroupChatOrFail(createGroupChatDto,  req.user.userid);
   }
 
   @Post('direct')
@@ -81,8 +77,7 @@ export class ChatController {
   async createDirectChat(
     @Body() createDirectChatDto: CreateDirectChatDto,
     @Req() req: any) : Promise<Chat> {
-      const initiator = req.user.userid;
-      return await this.chatService.createDirectChatOrFail(createDirectChatDto, initiator);
+      return await this.chatService.createDirectChatOrFail(createDirectChatDto,  req.user.userid);
   }
 
 
@@ -98,9 +93,7 @@ export class ChatController {
     @Param('chatId') chatId: string,
     @Body() addParticipantDto: AddParticipantDto,
     @Req() req: any) {
-    const chatObjectId = new Types.ObjectId(chatId);
-    const initiator = req.user.userid;
-    return await this.chatService.addParticipantToChatOrFail(chatObjectId, addParticipantDto.participant, initiator);
+    return await this.chatService.addParticipantToChatOrFail(addParticipantDto, req.user.userid);
   }
 
   // 8. Update a chat to include new messages
@@ -112,9 +105,7 @@ export class ChatController {
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
 
   async addMessage(@Param('chatId') chatId: string, @Body() addMessageDto: AddMessageDto) {
-    const chatObjectId = new Types.ObjectId(chatId);
-    const senderObjectId = new Types.ObjectId(addMessageDto.sender_id);
-    return await this.chatService.addMessageToChatOrFail(chatObjectId, senderObjectId, addMessageDto.content);
+    return await this.chatService.addMessageToChatOrFail(addMessageDto);
   }
 
   // 9. Update chat name (public or private) of a chat
@@ -126,11 +117,10 @@ export class ChatController {
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
 
   async updateChatName(
-    @Param('chatId') chatId: string, @Body() updateChatNameDto: UpdateChatNameDto,
+    @Param('chatId') chatId: Types.ObjectId, @Body() updateChatNameDto: UpdateChatNameDto,
     @Req() req: any) {
-    const chatObjectId = new Types.ObjectId(chatId);
     const initiator = req.user.userid;
-    return await this.chatService.updateChatNameOrFail(chatObjectId, updateChatNameDto.chatName, initiator); 
+    return await this.chatService.updateChatNameOrFail(chatId, updateChatNameDto.chatName, initiator); 
   }
 
   // 10. Leave a chat (remove student ID from participants list and if a chat has no participants it is archived)
@@ -141,10 +131,8 @@ export class ChatController {
   @ApiParam({ name: 'studentId', type: String, description: 'The ID of the student leaving the chat' })
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
 
-  async leaveChat(@Param('chatId') chatId: string, @Param('studentId') studentId: string) {
-    const chatObjectId = new Types.ObjectId(chatId);
-    const studentObjectId = new Types.ObjectId(studentId);
-    return this.chatService.leaveChatOrFail(chatObjectId, studentObjectId);
+  async leaveChat(@Param('chatId') chatId: Types.ObjectId, @Param('studentId') studentId: Types.ObjectId) {
+    return this.chatService.leaveChatOrFail(chatId, studentId);
   }
 
 }

@@ -1,4 +1,4 @@
-import sanitizeHtml from 'sanitize-html';
+import * as sanitizeHtml from 'sanitize-html';
 
 // * Sanitizes a string to remove control characters and scripts.
 // * @param input - The string to sanitize.
