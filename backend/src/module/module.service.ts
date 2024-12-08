@@ -127,6 +127,16 @@ export class ModuleService {
       throw new InternalServerErrorException('Error updating question', error.message);
     }
   }
+  async findQuestion(quesId: Types.ObjectId) {
+    try {
+      const question = await this.Questionmodel.findById(quesId);
+      if (!question) throw new NotFoundException('Question not found');
+
+      return question;
+    } catch (error) {
+      throw new InternalServerErrorException('Error updating question', error.message);
+    }
+  }
 
   async getQuestionBank(Moduleid: Types.ObjectId) {
     try {

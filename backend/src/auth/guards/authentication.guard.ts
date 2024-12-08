@@ -10,11 +10,20 @@ import { Request } from 'express';
 import * as dotenv from 'dotenv';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { AuthService } from '../auth.service';
+import { LogsService } from '../../log/log.service';
 dotenv.config();
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-    constructor(private jwtService: JwtService,private reflector: Reflector) { }
+    constructor(
+        
+        private jwtService: JwtService,
+        
+        private reflector: Reflector,
+        private authService: AuthService,
+        private logsService: LogsService //to allow automatic logging during auth
+    ) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
@@ -27,8 +36,14 @@ export class AuthGuard implements CanActivate {
         const request = context.switchToHttp().getRequest();
         const token = this.extractTokenFromHeader(request);
         if (!token) {
+            this.logsService.logError('Unauthorized access attempt: Missing token', { ip: request.ip }); //error log!
             throw new UnauthorizedException('No token, please login');
         }
+
+        if (this.authService.isTokenBlacklisted(token)) {
+            throw new UnauthorizedException('Token is invalidated');
+        }
+
         try {
             const payload = await this.jwtService.verifyAsync(
                 token,
@@ -40,6 +55,7 @@ export class AuthGuard implements CanActivate {
             // so that we can access it in our route handlers
             request['user'] = payload;
         } catch {
+            this.logsService.logError('Unauthorized access attempt: Invalid token', { ip: request.ip }); //error log!
             throw new UnauthorizedException('invalid token');
         }
         return true;

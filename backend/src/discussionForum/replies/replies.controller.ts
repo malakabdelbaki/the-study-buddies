@@ -10,6 +10,7 @@ import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
 
 @Controller('replies')
+@UseGuards(AuthGuard, authorizationGuard)
 export class RepliesController {
   constructor(
     private readonly repliesService: RepliesService,
@@ -29,11 +30,6 @@ export class RepliesController {
   @ApiParam({ name: 'threadId', description: 'The ID of the thread' })
   @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
 
-  // search(
-  //   @Param('threadId') threadId: string ,
-  //   @Query('query') query?: string) {
-  //   return this.repliesService.searchReplies(query, threadId);
-  // }
 
   @Get('thread/:threadId')
   @ApiOperation({ summary: 'Retrieve all replies on a thread' })
@@ -43,7 +39,7 @@ export class RepliesController {
   findRepliesOnThread(
     @Param('threadId') threadId: string,
     @Req() req: any) {
-    const initiator = req.user; 
+    const initiator = req.user.userid; 
     return this.repliesService.findRepliesOnThread(threadId, initiator);  
   }
 
@@ -54,7 +50,7 @@ export class RepliesController {
   findOne(
     @Param('id') id: string,
     @Req() req: any) {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return this.repliesService.findOne(id, initiator);
   }
 
@@ -75,7 +71,7 @@ export class RepliesController {
     @Param('id') id: string, 
     @Body() updateReplyDto: UpdateReplyDto,
     @Req() req: any) {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return this.repliesService.update(id, updateReplyDto, initiator);
   }
 
@@ -84,7 +80,7 @@ export class RepliesController {
   @ApiParam({ name: 'id', description: 'The ID of the reply to delete' })
   @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
   remove(@Param('id') id: string, @Req() req: any) {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return this.repliesService.remove(id, initiator);
   }
 

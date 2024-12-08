@@ -1,10 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsNumber, Min, Max, IsDate, IsOptional } from 'class-validator';
+import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 
 export class StudentProgressDto {
   @ApiProperty({ description: 'The ID of the course' })
   @IsString()
   @IsNotEmpty()
+  @ExistsOnDatabase({ modelName: 'Course', column: '_id' })
   courseId: string;
 
   @ApiProperty({ description: 'The name of the course' })

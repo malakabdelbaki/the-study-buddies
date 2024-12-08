@@ -1,15 +1,21 @@
 // src/performance/dto/quiz-result.dto.ts
 
 import { ApiProperty } from '@nestjs/swagger';
+import { IsMongoId, IsNumber, IsString } from 'class-validator';
+import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 
 export class StudentQuizResultDto {
   @ApiProperty()
+  @IsMongoId()
+  @ExistsOnDatabase({ modelName: 'User', column: '_id' })
   studentId: string;
 
   @ApiProperty()
+  @IsString()
   studentName: string;
 
   @ApiProperty()
+  @IsNumber()
   score: number;
 
 
@@ -17,6 +23,8 @@ export class StudentQuizResultDto {
 
 export class QuizResultDto {
   @ApiProperty()
+  @IsMongoId()
+  @ExistsOnDatabase({ modelName: 'Quiz', column: '_id' })
   quizId: string;
 
   @ApiProperty()

@@ -10,6 +10,7 @@ import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
 import { Types } from 'mongoose';
 @Controller('threads')
+@UseGuards(AuthGuard, authorizationGuard)
 export class ThreadsController {
   constructor(private readonly threadService: ThreadsService) {}
 
@@ -31,7 +32,7 @@ async search(
   @Param('forumId') forumId: Types.ObjectId,
   @Query('query') query: string,
   @Req () req: any) {
-  const initiator = req.user; 
+  const initiator = req.user.userid; 
   return this.threadService.searchThreads(query, forumId, initiator); 
 }
 
@@ -42,7 +43,7 @@ async search(
   findOne(
     @Param('id') id: string,
     @Req() req: any) {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return this.threadService.findOne(id,initiator);
   }
 
@@ -65,7 +66,7 @@ async search(
   resolve(
     @Param('id') id: string,
     @Req() req: any) {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return this.threadService.resolve(id, initiator);
   }
 
@@ -77,7 +78,7 @@ async search(
   remove(
     @Param('id') id: string,
     @Req() req: any) {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return this.threadService.remove(id, initiator);
   }
 

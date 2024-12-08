@@ -11,7 +11,7 @@ import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { Role } from '../enums/role.enum';
 import { Types } from 'mongoose';
 import { ChangePasswordDto } from './dtos/change-password-dto';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { RateDto } from './dtos/rate-dto';
 import { EnrollInCourseDto } from './dtos/enroll-in-course-dto';
 import { CreateProgressDto } from './dtos/create-progress-dto';
@@ -75,10 +75,14 @@ export class UserService {
       if (!user) {
         throw new NotFoundException(`User with ID ${userId} not found`);
       }
-  
+
+      const isSameAsOldPassword = await bcrypt.compare(changeDto.newPassword, user.passwordHash);
+      if (isSameAsOldPassword) {
+          throw new BadRequestException('New password cannot be the same as the old password');
+      }
       // Hash the new password
       const hashedPassword = await bcrypt.hash(changeDto.newPassword, 10);
-  
+     
       // Update the password hash
       user.passwordHash = hashedPassword;
       await user.save();
@@ -125,7 +129,17 @@ export class UserService {
       // Convert studentIds to ObjectIds
       const objectIds =  studentIds.map(id => new Types.ObjectId(id));
 
-      course.students.push(...objectIds);
+      // Remove already assigned students from the studentIds array
+      const newStudents = objectIds.filter(studentId => !course.students.includes(studentId));
+
+      if (newStudents.length === 0) {
+        throw new BadRequestException('All students are already assigned to the course.');
+      }
+
+      // Add all new students to the course
+      course.students.push(...newStudents);
+
+      // Save the updated course
       return await course.save();
     } catch (error) {
         throw new InternalServerErrorException('Error assigning students to course', error.message);
@@ -200,15 +214,14 @@ export class UserService {
       if (existingUser) {
         throw new BadRequestException('Email already in use.');
       }
-  
-      // Hash the user's password
-      const passwordHash = await bcrypt.hash(createUserDto.password, 10);
-  
+        
       // Create a new user document
       const newUser = new this.userModel({
-        ...createUserDto,
-        passwordHash,
+        ...createUserDto
       });
+      if(createUserDto.role === Role.Instructor){
+        newUser.ratings = [];
+      }
   
       // Save and return the new user
       return await newUser.save();
@@ -230,7 +243,7 @@ export class UserService {
   }
 
   // Update user information
-  async updateUserInfo(
+  async updatePersonalInfo(
     userId: string,
     updateDto: UpdateUserInfoDto, // Use DTO to update user info
   ): Promise<User> {
@@ -249,7 +262,7 @@ export class UserService {
   }
 
   // View enrolled courses of a student
-  async getEnrolledCoursesOfStudent(userId: string): Promise<Course[]> {
+  async getEnrolledCoursesOfStudent(userId: string): Promise<any> {
     try {
 
       const studentObjectId = new mongoose.Types.ObjectId(userId);
@@ -258,7 +271,10 @@ export class UserService {
 
       if (!courses.length) throw new NotFoundException('No courses found for this user.');
 
-      return courses; // No need for select() or populate() if just titles and descriptions are needed
+      return courses.map(course => ({
+        title: course.title,
+        id: course._id, 
+      }));
     } catch (error) {
         throw new InternalServerErrorException('Error fetching enrolled courses', error.message);
       }
@@ -332,20 +348,23 @@ export class UserService {
   }
   
   // get all courses taught by a certain instructor
-  async getCoursesByInstructor(instructorId: string): Promise<string[]> {
+  async getCoursesByInstructor(instructorId: string): Promise<any> {
     try {
       // Ensure the instructor ID is a valid ObjectId
       const instructorObjectId = new Types.ObjectId(instructorId);
 
       // Fetch all courses taught by the instructor
-      const courses = await this.courseModel.find({ instructor_id: instructorObjectId }).select('title -_id');
+      const courses = await this.courseModel.find({ instructor_id: instructorObjectId }).select('title _id');
 
       if (!courses.length) {
         throw new NotFoundException(`No courses found for the instructor with ID: ${instructorId}`);
       }
 
-      // Extract and return the titles
-      return courses.map(course => course.title);
+      // Return an array of objects containing both title and id
+      return courses.map(course => ({
+        title: course.title,
+        id: course._id, 
+      }));
     } catch (error) {
       throw new NotFoundException('Error fetching courses', error.message);
     }
@@ -363,30 +382,52 @@ export class UserService {
   }
 
   // Rate a Course
-  async rateCourse(dto: RateDto) {
+  async rateCourse(studentId: string, dto: RateDto) {
     const course = await this.courseModel.findById(dto.targetId);
     if (!course) throw new NotFoundException('Course not found');
+
+    // Check if the studentId is in the students array of the course
+    if (!course.students.includes(new Types.ObjectId(studentId))) {
+      throw new BadRequestException('You are not enrolled in this course in order to rate it');
+    }
+
     course.ratings.push(dto.rating);
     await course.save();
     return { message: 'Course rated successfully', ratings: course.ratings };
   }
 
   // Rate an Instructor
-  async rateInstructor(dto: RateDto) {
+  async rateInstructor(studentId: string,dto: RateDto) {
     const instructor = await this.userModel.findById(dto.targetId);
     if (!instructor || instructor.role !== 'instructor')
       throw new NotFoundException('Instructor not found');
+
+    // Fetch all courses taught by the instructor
+    const instructorCourses = await this.getCoursesByInstructor(dto.targetId);
+
+    // Fetch all courses the student is enrolled in
+    const studentCourses = await this.getEnrolledCoursesOfStudent(studentId);
+
+    // Check if there is any overlap between student's courses and instructor's courses
+    const hasCommonCourse = studentCourses.some(studentCourse =>
+      instructorCourses.some(instructorCourse => instructorCourse.id.toString() === studentCourse.id.toString())
+    );
+
+    if (!hasCommonCourse) {
+      throw new BadRequestException(`You are not enrolled in any course taught by this instructor.`);
+    }
+
     instructor.ratings.push(dto.rating);
     await instructor.save();
     return { message: 'Instructor rated successfully', ratings: instructor.ratings };
   }
 
   // Enroll in a Course and create progress automatically
-  async enrollInCourse(dto: EnrollInCourseDto) {
+  async enrollInCourse(studentId: string, dto: EnrollInCourseDto) {
     const course = await this.courseModel.findById(dto.courseId);
     if (!course) throw new NotFoundException('Course not found');
   
-    const studentObjectId = new mongoose.Types.ObjectId(dto.studentId);
+    const studentObjectId = new mongoose.Types.ObjectId(studentId);
   
     // Check if the student is already enrolled
     if (course.students.includes(studentObjectId))
@@ -398,12 +439,10 @@ export class UserService {
   
     // Create progress for the enrolled student
     try {
-      await this.createProgress({
-        userId: dto.studentId,
+      await this.createProgress(studentId,{
         courseId: dto.courseId,
       });
     } catch (error) {
-      // Handle potential errors from createProgress
       throw new BadRequestException('Failed to create progress: ' + error.message);
     }
   
@@ -412,16 +451,16 @@ export class UserService {
   
 
   // Create Progress
-  async createProgress(dto: CreateProgressDto) {
+  async createProgress(studentId: string, dto: CreateProgressDto) {
     const existingProgress = await this.progressModel.findOne({
-      userId: dto.userId,
+      userId: studentId,
       courseId: dto.courseId,
     });
 
     if (existingProgress)
       throw new BadRequestException('Progress for this course already exists');
 
-    const userObjectId = new Types.ObjectId(dto.userId);
+    const userObjectId = new Types.ObjectId(studentId);
     const courseObjectId = new Types.ObjectId(dto.courseId);
 
     const progress = new this.progressModel({

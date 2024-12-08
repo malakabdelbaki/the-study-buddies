@@ -11,6 +11,10 @@ import { CourseSchema } from 'src/Models/course.schema';
 import { MulterModule } from '@nestjs/platform-express';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ResourceSchema } from 'src/Models/resource.schema';
+import { AuthModule } from 'src/auth/auth.module';
+import { Validator } from 'class-validator';
+import { ValidatorsModule } from 'src/common/validators/validators.module';
+import { LogsModule } from 'src/log/log.module';
 
 @Module({
   imports :[MongooseModule.forFeature([{ name: 'Module', schema: ModuleSchema }]),
@@ -21,7 +25,10 @@ import { ResourceSchema } from 'src/Models/resource.schema';
             ServeStaticModule.forRoot({
               rootPath: './uploads', // Path to the uploads folder
               serveRoot: '/resources', // URL where files will be served from
-            }),],
+            }),
+          AuthModule,
+        ValidatorsModule,
+        LogsModule,],
   controllers: [ModuleController,CoursesController],
   providers: [ModuleService,CoursesService],
   exports: [ModuleService,MongooseModule]

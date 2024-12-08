@@ -9,6 +9,8 @@ import { UserService } from 'src/users/users.service';
 import { Thread, ThreadSchema } from '../../Models/thread.schema';
 import { UserModule } from 'src/users/users.module';
 import { CoursesModule } from 'src/courses/courses.module';
+import { AuthModule } from 'src/auth/auth.module';
+import { LogsModule } from 'src/log/log.module';
 
 @Module({
   imports: [
@@ -19,7 +21,9 @@ import { CoursesModule } from 'src/courses/courses.module';
         { name: Thread.name, schema: ThreadSchema  },
       ]), // Register ForumModel
       UserModule,
-      CoursesModule
+      CoursesModule,
+      AuthModule,
+      LogsModule,
   ],
   providers: [ForumService],
   controllers: [ForumController],

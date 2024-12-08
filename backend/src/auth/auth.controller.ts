@@ -2,28 +2,37 @@ import { Body, Controller, HttpStatus, Post, HttpException, Res, Req } from '@ne
 import { AuthService } from './auth.service';
 import { RegisterRequestDto } from './dto/RegisterRequestDto';
 import { SignInDto } from './dto/SignInDto';
+import { Response, Request } from 'express';
+import { LogsService } from 'src/log/log.service';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService) {}
+    constructor(
+      private authService: AuthService,
+      private logsService: LogsService, //added log!
+    ) {}
+
   @Post('login')
   async signIn(@Body() signInDto: SignInDto, @Res({ passthrough: true }) res) {
     try {
-      console.log('helllo')
       const result = await this.authService.signIn(signInDto.email, signInDto.password);
 
       res.cookie('token', result.access_token, {
         httpOnly: true, // Prevents client-side JavaScript access
         secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-        maxAge: 3600 * 1000, // Cookie expiration time in milliseconds
+        maxAge: 3600 * 1000, // Cookie expiration time in milliseconds (1hr)
+        //sameSite: 'strict', // Prevent CSRF
       });
       // Return success response
+      this.logsService.logInfo('User logged in successfully', { email: signInDto.email, userId: result.payload.userid, }); //all successful logins!! (log their uid & email)
       return {
         statusCode: HttpStatus.OK,
         message: 'Login successful',
         user: result.payload,
       };
+
     } catch (error) {
+      this.logsService.logError('Login failed', { email: signInDto.email, reason: error.message }); //failed logins and why?, should we also record ip?
         console.log(error)
       // Handle specific errors
       if (error instanceof HttpException) {
@@ -77,6 +86,23 @@ export class AuthController {
   }
 
   
+  @Post('logout')
+  async logout(@Req() request: Request, @Res() res: Response): Promise<void> {
+      // Extract the token from the request
+      const token = request.cookies?.token || request.headers['authorization']?.split(' ')[1];
+      console.log('token:', token);
+      if (!token) {
+          res.status(HttpStatus.BAD_REQUEST).send({ message: 'No token provided' });
+          return;
+      }
 
+      // Blacklist the token (or clear client-side token)
+      await this.authService.logout(token);
+
+      // Clear the token cookie (if applicable)
+      res.clearCookie('token', { httpOnly: true });
+      
+      res.send({ message: 'Logged out successfully' });
+  }
 
 }
