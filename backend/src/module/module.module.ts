@@ -14,6 +14,7 @@ import { ResourceSchema } from 'src/Models/resource.schema';
 import { AuthModule } from 'src/auth/auth.module';
 import { Validator } from 'class-validator';
 import { ValidatorsModule } from 'src/common/validators/validators.module';
+import { LogsModule } from 'src/log/log.module';
 
 @Module({
   imports :[MongooseModule.forFeature([{ name: 'Module', schema: ModuleSchema }]),
@@ -26,7 +27,8 @@ import { ValidatorsModule } from 'src/common/validators/validators.module';
               serveRoot: '/resources', // URL where files will be served from
             }),
           AuthModule,
-        ValidatorsModule],
+        ValidatorsModule,
+        LogsModule,],
   controllers: [ModuleController,CoursesController],
   providers: [ModuleService,CoursesService],
   exports: [ModuleService,MongooseModule]

@@ -12,6 +12,7 @@ import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decor
 import { ExistsOnDatabaseValidator } from 'src/common/validators/exists-on-database.validator';
 import { Thread } from 'src/Models/thread.schema';
 import { ThreadsModule } from 'src/discussionForum/threads/threads.module';
+import { LogsModule } from '../log/log.module';
 
 @Module({
   imports :[MongooseModule.forFeature([{ name: 'Module', schema: ModuleSchema }]),
@@ -19,6 +20,7 @@ import { ThreadsModule } from 'src/discussionForum/threads/threads.module';
   MongooseModule.forFeature([{name:'Course',schema:CourseSchema}]),
   MongooseModule.forFeature([{name:'Progress',schema:ProgressSchema}]),
   MongooseModule.forFeature([{name:'User',schema:UserSchema}]),
+  LogsModule,
   ],
   controllers: [UserController],
   providers: [UserService, authorizationGuard, ExistsOnDatabaseValidator],

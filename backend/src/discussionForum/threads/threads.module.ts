@@ -11,6 +11,7 @@ import { UserModule } from 'src/users/users.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 import { ExistsOnDatabaseValidator } from 'src/common/validators/exists-on-database.validator';
+import { LogsModule } from 'src/log/log.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { ExistsOnDatabaseValidator } from 'src/common/validators/exists-on-datab
     ForumModule,
     CoursesModule,
     UserModule,
-    AuthModule
+    AuthModule,
+    LogsModule,
   ],
   controllers: [ThreadsController],
   providers: [ThreadsService, ExistsOnDatabaseValidator],

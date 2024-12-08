@@ -8,6 +8,7 @@ import { ModuleService } from 'src/module/module.service';
 import { ModuleModule } from 'src/module/module.module';
 import { ValidatorsModule } from 'src/common/validators/validators.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { LogsModule } from 'src/log/log.module';
 
 @Module({
   imports:[
@@ -16,7 +17,9 @@ import { AuthModule } from 'src/auth/auth.module';
       
       ModuleModule,
       AuthModule ,
-      ValidatorsModule],// Register scheme]
+      ValidatorsModule,
+      LogsModule
+],// Register scheme]
   controllers: [CoursesController],
   providers: [CoursesService,authorizationGuard],
   exports: [CoursesService],
