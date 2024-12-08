@@ -147,7 +147,7 @@
     })
     // @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor, Role.Student])
     async createUser(@Body() createUserDto: CreateUserDto, @Req() req: any) {
-      const currentUser = req.user; // Assuming JWT payload contains user info
+      const currentUser = req.user.userid; // Assuming JWT payload contains user info
       return this.userService.createUser(createUserDto);
     }
 
@@ -177,7 +177,7 @@
       @Body() updateDto: UpdateUserInfoDto,
       @Req() req: any,
     ) {
-      const currentUser = req.user;
+      const currentUser = req.user.userid;
   
       return this.userService.updateUserInfo(userId, updateDto);
     }
@@ -189,7 +189,7 @@
     @ApiParam({ name: 'userId', description: 'The ID of the user' })
     // @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor, Role.Student])
     async getEnrolledCoursesOfStudent(@Param('userId') userId: string, @Req() req: any) {
-      const currentUser = req.user;
+      const currentUser = req.user.userid;
   
       return this.userService.getEnrolledCoursesOfStudent(userId);
     }
@@ -201,7 +201,7 @@
     @ApiParam({ name: 'userId', description: 'The ID of the user' })
     // @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor, Role.Student])
     async getCompletedCoursesOfStudent(@Param('userId') userId: string, @Req() req: any) {
-      const currentUser = req.user;
+      const currentUser = req.user.userid;
   
       return this.userService.getCompletedCoursesOfStudent(userId);
     }
@@ -213,7 +213,7 @@
     @ApiParam({ name: 'studentId', description: 'The ID of the student' })
     // @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor, Role.Student])
     async getStudentAverageScore(@Param('studentId') studentId: string, @Req() req: any) {
-      const currentUser = req.user;
+      const currentUser = req.user.userid;
   
     //   // Students can only view their own scores
     //   if (currentUser.role === Role.Student && currentUser.id !== studentId) {
@@ -231,7 +231,7 @@
     @ApiParam({ name: 'studentId', description: 'The ID of the student' })
     // @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor, Role.Student])
     async getStudentProgress(@Param('courseId') courseId: string, @Param('studentId') studentId: string, @Req() req: any, ) {
-      const currentUser = req.user;
+      const currentUser = req.use.useridr;
   
     //   // Students can only view their own progress
     //   if (currentUser.role === Role.Student && currentUser.id !== studentId) { 

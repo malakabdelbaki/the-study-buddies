@@ -5,6 +5,7 @@ import { Role } from '../../../enums/role.enum';
 import {Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 
 export class AddMessageDto {
   @ApiProperty({
@@ -16,6 +17,7 @@ export class AddMessageDto {
   @Transform(({ value }) => {
     return new Types.ObjectId(value); // Ensure it's converted to an ObjectId
   })
+  @ExistsOnDatabase({ modelName: 'User', column: '_id' })
   sender_id: Types.ObjectId;
 
   @ApiProperty({

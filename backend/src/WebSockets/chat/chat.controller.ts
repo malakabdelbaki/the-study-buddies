@@ -31,7 +31,7 @@ export class ChatController {
     @Param('chatId') chatId: string,
     @Req() req: any) {
     const chatObjectId = new Types.ObjectId(chatId)
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return await this.chatService.getMessagesByChatId(chatObjectId, initiator);
   }
 
@@ -41,7 +41,7 @@ export class ChatController {
   @ApiResponse({ status: 200, description: 'List of chats for the student' })
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
   async getChatsOfUser(@Req() req: any) {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return await this.chatService.getChatsOfAStudentOrFail((initiator as any)._id);
 
   }
@@ -68,7 +68,7 @@ export class ChatController {
   async createGroupChat(
     @Body() createGroupChatDto: CreateGroupChatDto,
     @Req() req: any) : Promise<Chat> {
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return this.chatService.createGroupChatOrFail(createGroupChatDto, initiator);
   }
 
@@ -81,7 +81,7 @@ export class ChatController {
   async createDirectChat(
     @Body() createDirectChatDto: CreateDirectChatDto,
     @Req() req: any) : Promise<Chat> {
-      const initiator = req.user;
+      const initiator = req.user.userid;
       return await this.chatService.createDirectChatOrFail(createDirectChatDto, initiator);
   }
 
@@ -99,7 +99,7 @@ export class ChatController {
     @Body() addParticipantDto: AddParticipantDto,
     @Req() req: any) {
     const chatObjectId = new Types.ObjectId(chatId);
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return await this.chatService.addParticipantToChatOrFail(chatObjectId, addParticipantDto.participant, initiator);
   }
 
@@ -129,7 +129,7 @@ export class ChatController {
     @Param('chatId') chatId: string, @Body() updateChatNameDto: UpdateChatNameDto,
     @Req() req: any) {
     const chatObjectId = new Types.ObjectId(chatId);
-    const initiator = req.user;
+    const initiator = req.user.userid;
     return await this.chatService.updateChatNameOrFail(chatObjectId, updateChatNameDto.chatName, initiator); 
   }
 

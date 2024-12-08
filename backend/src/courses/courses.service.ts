@@ -128,4 +128,16 @@ export class CoursesService {
       throw new HttpException('Error deleting course', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  async isStudentEnrolledInCourse(courseId: Types.ObjectId, userId: Types.ObjectId): Promise<boolean> {
+    console.log('Checking if student is enrolled in course...');
+    const course = await this.courseModel.findById(courseId);
+
+    if (!course) {
+      console.log('Course not found');
+      return false;
+    }
+
+    return course.students.some((student) => student.toString() === userId.toString());
+  }
 }

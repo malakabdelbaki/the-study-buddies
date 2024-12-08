@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Body, Patch, Param, Delete, HttpException, HttpStatus, UseGuards, UseInterceptors, UploadedFile, Res, BadRequestException } from '@nestjs/common';
+import { Req, Controller, Get, Post, Query, Body, Patch, Param, Delete, HttpException, HttpStatus, UseGuards, UseInterceptors, UploadedFile, Res, BadRequestException } from '@nestjs/common';
 import { ModuleService } from './module.service';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
@@ -19,15 +19,17 @@ import { ResourceDto } from './dto/create-resource.dto';
 import { Response } from 'express';
 import * as fs from 'fs';
 import { UpdateResourceDto } from './dto/update-resource.dto';
-
-
+import { AuthGuard } from 'src/auth/guards/authentication.guard';
+import { UsePipes } from '@nestjs/common';
+import { InstructorGuard } from 'src/auth/guards/instructor.guard';
 @Controller('modules')
+@UseGuards(AuthGuard)
 export class ModuleController {
   constructor(private readonly moduleService: ModuleService, private readonly courseService: CoursesService) {}
 
   @ApiOperation({ summary: 'create a new module' })
   @Roles(Role.Instructor)
-  @UseGuards(authorizationGuard)
+  @UseGuards(authorizationGuard, InstructorGuard)
   @Post() //ok
   async create(@Body() createModuleDto: CreateModuleDto) {
     try {
@@ -57,15 +59,15 @@ export class ModuleController {
 
   // Update a module's general info
   @Roles(Role.Instructor)
-  @UseGuards(authorizationGuard)
+  @UseGuards(authorizationGuard, InstructorGuard)
   @ApiOperation({ summary: 'update general info of a specific module' })
-  @Patch(':moduleId')
+  @Patch(':module_id')
   async update(
-    @Param('moduleId') moduleId: string,
+    @Param('module_id') module_id: string,
     @Body() updateModuleDto: UpdateModuleDto,
   ) {
     try {
-      let ID = new Types.ObjectId(moduleId);
+      let ID = new Types.ObjectId(module_id);
       const updatedModule = await this.moduleService.updateModule(ID, updateModuleDto);
       if (!updatedModule) {
         throw new HttpException('Module update failed', HttpStatus.BAD_REQUEST);
@@ -80,7 +82,7 @@ export class ModuleController {
 
   // Add a question to a module's question bank
   @Roles(Role.Instructor)
-  @UseGuards(authorizationGuard)
+  @UseGuards(authorizationGuard, InstructorGuard)
   @Post('question-bank')
   async addQuestion(@Body() createQuestionDto: CreateQuestionDto) {
     try {
@@ -99,7 +101,7 @@ export class ModuleController {
 
   // Update a question in the module's question bank
   @Roles(Role.Instructor)
-  @UseGuards(authorizationGuard)
+  @UseGuards(authorizationGuard, InstructorGuard)
   @Patch('question-bank/:quesId')
   async updateQuestion(
     @Param('quesId') quesId: string,
@@ -119,7 +121,7 @@ export class ModuleController {
 
   // Delete a question from the module's question bank
   @Roles(Role.Instructor)
-  @UseGuards(authorizationGuard)
+  @UseGuards(authorizationGuard, InstructorGuard)
   @Delete('question-bank/:quesId')
   async deleteQuestion(@Param('quesId') quesId: string) {
     try {
@@ -135,11 +137,11 @@ export class ModuleController {
   }
 
   @Roles(Role.Instructor)
-  @UseGuards(authorizationGuard)
-  @Get(':moduleId/question-bank')
-  async getQuestionBank(@Param('moduleId') moduleId: string) {
+  @UseGuards(authorizationGuard, InstructorGuard)
+  @Get(':module_id/question-bank')
+  async getQuestionBank(@Param('module_id') module_id: string) {
     try {
-      let ID = new Types.ObjectId(moduleId);
+      let ID = new Types.ObjectId(module_id);
       const questionBank = await this.moduleService.getQuestionBank(ID);
       if (!questionBank) {
         throw new HttpException('No questions found for this module', HttpStatus.NOT_FOUND);
@@ -153,7 +155,7 @@ export class ModuleController {
   //______________________________________________*RESOURCE*___________________________________________//
 
  @Roles(Role.Instructor)
-@UseGuards(authorizationGuard)
+@UseGuards(authorizationGuard, InstructorGuard)
 @Post(':Moduleid/resource')
 @ApiOperation({ summary: 'Upload a resource file' })
 @ApiConsumes('multipart/form-data') // Indicates the endpoint accepts multipart/form-data
@@ -198,7 +200,7 @@ async uploadResource( @Body() body: { moduleid: string; title: string }, @Upload
 
 @ApiOperation({ summary: 'Delete a resource by its ID ' })
 @Roles(Role.Instructor)
-@UseGuards(authorizationGuard)
+@UseGuards(authorizationGuard, InstructorGuard)
 @Delete('resources/:id')
 async deleteResource(@Param('id') id: string) {
   try{
@@ -212,11 +214,11 @@ catch(err){
 
 @ApiOperation({ summary: 'Get all resources for a specific module' })
 @Roles(Role.Instructor)
-@UseGuards(authorizationGuard)
-@Get(':Moduleid/resources')
-async getAllRecourses(@Param('Moduleid') moduleid: string) {
+@UseGuards(authorizationGuard, InstructorGuard)
+@Get(':Module_id/resources')
+async getAllRecourses(@Param('Module_id') module_id: string) {
   try{
-  let ID = new Types.ObjectId(moduleid);
+  let ID = new Types.ObjectId(module_id);
   return await this.moduleService.getAllRecourses(ID);
 }
 catch(err){
@@ -225,10 +227,10 @@ catch(err){
 }
 
 @ApiOperation({ summary: 'Get available resources for a specific module' })
-@Get(':Moduleid/resources/available')
-async getAvailableResources(@Param('Moduleid') moduleId: string) {
+@Get(':Module_id/resources/available')
+async getAvailableResources(@Param('Module_id') module_id: string) {
   try{
-  let ID = new Types.ObjectId(moduleId);
+  let ID = new Types.ObjectId(module_id);
   return this.moduleService.getAvailableResources(ID);
 }
 catch(err){
@@ -280,7 +282,7 @@ catch(err){
 
 @ApiOperation({ summary: 'Update a resource' })
 @Roles(Role.Instructor)
-@UseGuards(authorizationGuard)
+@UseGuards(authorizationGuard, InstructorGuard)
 @ApiBody({
   description: 'update a resource (title/description)',
   schema: {

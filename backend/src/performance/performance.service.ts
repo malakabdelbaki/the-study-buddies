@@ -1,5 +1,5 @@
 
-import { Injectable } from '@nestjs/common';
+import { Injectable , NotFoundException,ForbiddenException, InternalServerErrorException, BadRequestException} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, Types } from 'mongoose';
 import { Progress, ProgressDocument } from '../models/progress.schema';
@@ -62,95 +62,106 @@ export class PerformanceService {
 
 
 
-  // Fetch the student dashboard
+//  Fetch the student dashboard
 async getStudentDashboard(studentId: string): Promise<StudentProgressDto[]> {
-  
-  // Convert studentId to ObjectId
-  const objectIdStudentId = new mongoose.Types.ObjectId(studentId);
+  try {
+    // Validate and convert studentId to ObjectId
+    if (!mongoose.Types.ObjectId.isValid(studentId)) {
+      throw new NotFoundException('Invalid student ID format');
+    }
 
-  // Perform the query with ObjectId
-  const progressData = await this.progressModel
-    .find({ userId: objectIdStudentId })
-    .populate({ path: 'courseId', select: 'title' }) as unknown as PopulatedProgress[];
+    const objectIdStudentId = new mongoose.Types.ObjectId(studentId);
 
-    // Step 2: If no progress found for the student, return an empty array
-  if (!progressData || progressData.length === 0) {
-    return [];
+    // Verify the user role if not student
+    const user = await this.userModel.findById(objectIdStudentId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.role !== 'student') {
+      throw new ForbiddenException('This dashboard is only accessible for students');
+    }
+
+    // Fetch progress data
+    const progressData = await this.progressModel
+      .find({ userId: objectIdStudentId })
+      .populate({ path: 'courseId', select: 'title' }) as unknown as PopulatedProgress[];
+
+    // Handle case where no progress data is found
+    if (!progressData || progressData.length === 0) {
+      throw new NotFoundException('No progress data found for the student');
+    }
+
+    const dashboardData = await Promise.all(progressData.map(async (progress) => {
+      try {
+        // Find all modules associated with the current course
+        const modules = await this.ModuleModel.find({ course_id: progress.courseId._id }).exec();
+
+        if (!modules.length) {
+          return {
+            courseId: progress.courseId._id.toString(),
+            courseName: progress.courseId.title,
+            averageScore: 0,
+            completionPercentage: progress.completionPercentage,
+            lastAccessed: progress.lastAccessed,
+          };
+        }
+
+        // Get all quizzes related to the modules of the course
+        const quizzes = await this.quizModel.find({ module_id: { $in: modules.map((module) => module._id) } }).exec();
+
+        if (!quizzes.length) {
+          return {
+            courseId: progress.courseId._id.toString(),
+            courseName: progress.courseId.title,
+            averageScore: 0,
+            completionPercentage: progress.completionPercentage,
+            lastAccessed: progress.lastAccessed,
+          };
+        }
+
+        // Get all quiz responses for the student
+        const responses = await this.responseModel.find({
+          quiz_id: { $in: quizzes.map((quiz) => quiz._id) },
+          user_id: objectIdStudentId,
+        }).exec();
+
+        if (responses.length === 0) {
+          return {
+            courseId: progress.courseId._id.toString(),
+            courseName: progress.courseId.title,
+            averageScore: 0,
+            completionPercentage: progress.completionPercentage,
+            lastAccessed: progress.lastAccessed,
+          };
+        }
+
+        // Calculate the total score and average score for the course
+        const totalScore = responses.reduce((acc, response) => acc + response.score, 0);
+        const averageScore = totalScore / responses.length;
+
+        return {
+          courseId: progress.courseId._id.toString(),
+          courseName: progress.courseId.title,
+          averageScore: parseFloat(averageScore.toFixed(2)),
+          completionPercentage: progress.completionPercentage,
+          lastAccessed: progress.lastAccessed,
+        };
+      } catch (error) {
+        //An InternalServerErrorException is thrown with a detailed message to help with debugging for  unexpected internal error
+        throw new InternalServerErrorException(`Error processing course data: ${error.message}`);
+      }
+    }));
+
+    return dashboardData;
+  } catch (error) {
+    if (error instanceof NotFoundException) {
+      throw error;
+    }
+    throw new InternalServerErrorException(`Error fetching student dashboard: ${error.message}`);
   }
-   
-   
-  const dashboardData = await Promise.all(progressData.map(async (progress) => {
-    // Step 3a: Find all modules associated with the current course
-    const modules = await this.ModuleModel.find({ course_id: progress.courseId._id }).exec();
-
-    if (!modules.length) {
-      return {
-        courseId: progress.courseId._id.toString(),
-        courseName: progress.courseId.title,
-        averageScore: 0,  // If no modules no quizzes ,so score is 0
-        completionPercentage: progress.completionPercentage,
-        lastAccessed: progress.lastAccessed,
-       
-      };
-    }
-
-    // Step 3b: Get all quizzes related to the modules of the course
-    const quizzes = await this.quizModel.find({ module_id: { $in: modules.map((module) => module._id) } }).exec();
-    //console.log('Fetched quizzes:', quizzes);
-    
-
-    if (!quizzes.length) {
-      return {
-        courseId: progress.courseId._id.toString(),
-        courseName: progress.courseId.title,
-        averageScore: 0,  // If no quizzes, score is 0
-        completionPercentage: progress.completionPercentage,
-        lastAccessed: progress.lastAccessed,
-       
-      };
-    }
-
-    // Step 3c: Get all quiz responses for the student
-    const responses = await this.responseModel.find({
-      quiz_id: { $in: quizzes.map((quiz) => quiz._id) },
-      user_id: objectIdStudentId,
-    }).exec();
-
-    //console.log('Fetched responses:', responses); // Log the responses
-
-    if (responses.length === 0) {
-      //console.log('No responses found for this student and quizzes');
-      return {
-        courseId: progress.courseId._id.toString(),
-        courseName: progress.courseId.title,
-        averageScore: 0,  // If no responses, score is 0
-        completionPercentage: progress.completionPercentage,
-        lastAccessed: progress.lastAccessed,
-     
-      };
-    }
-// Step 3d: Calculate the total score and average score for the course
-const totalScore = responses.reduce((acc, response) => acc + response.score, 0);
-const averageScore = totalScore / responses.length;
-
-
-return {
-  courseId: progress.courseId._id.toString(),
-  courseName: progress.courseId.title,
-  averageScore: parseFloat(averageScore.toFixed(2)),  // Round to 2 decimal places
-  completionPercentage: progress.completionPercentage,
-  lastAccessed: progress.lastAccessed,
-   
-};
-}));
-
-return dashboardData;
-
-
 }
 
-
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -160,10 +171,27 @@ return dashboardData;
 
   // Get instructor analytics for course (student engagement)
   async getInstructorAnalytics(instructorId: string): Promise<InstructorAnalyticsDto[]> {
-    //console.log('Received instructorId:', instructorId);
+    
+    try {
+    if (!mongoose.Types.ObjectId.isValid(instructorId)) {
+      throw new BadRequestException('Invalid instructor ID format'); // Added validation
+    }
     
     const objectIdInstructorId = new mongoose.Types.ObjectId(instructorId);
+    // Fetch user details to validate the role
+    const instructor = await this.userModel.findById(objectIdInstructorId).exec();
+    if (!instructor) {
+      throw new NotFoundException('Instructor not found');
+    }
+    if (instructor.role !== 'instructor') {
+      throw new ForbiddenException('The provided ID does not belong to an instructor');
+    }
+
+    // Fetch courses for the instructor
     const courses = await this.courseModel.find({ instructor_id: objectIdInstructorId });
+    if (!courses || courses.length === 0) {
+      throw new NotFoundException('No courses found for the instructor'); // Added error handling for empty courses
+    }
     //console.log('Courses for instructor:', courses);
 
 
@@ -171,7 +199,7 @@ return dashboardData;
     const analytics = await Promise.all(
       courses.map(async (course) => {
         //console.log('Fetching progress for course:', course._id);
-        
+        try {//Error Handling for Each Course
         // Fetch progress data for the course
         const progressData = (await this.progressModel
           .find({ courseId: course._id })
@@ -214,7 +242,7 @@ return dashboardData;
       }; 
           
           
-          // Categorize students into performance categories based on completion rate
+        // Categorize students into performance categories based on completion rate
         progressData.forEach((p) => {
         totalCompletion += p.completionPercentage;
         if (p.completionPercentage < 50) {
@@ -235,8 +263,8 @@ return dashboardData;
       // Initialize an array to hold module performance data and student performance data
       const modulesPerformance = await Promise.all(
         modules.map(async (module) => {
-          //console.log('Fetching quizzes for module:', module._id);
-
+       
+          try { // error handling each module
           // Get all quizzes for this module
           const quizzes = await this.quizModel.find({ module_id: module._id }).exec();
 
@@ -297,6 +325,9 @@ return dashboardData;
           performanceCategories,
 
         };
+      } catch (moduleError) {
+        throw new InternalServerErrorException(`Error processing module: ${module.title}`);
+      }
       }),
     );
 
@@ -338,13 +369,22 @@ const overallstudentPerformance = {
     overallstudentPerformance,
     CompletionPerformanceCategories
   };
+} catch (courseError) {
+  throw new InternalServerErrorException(`Error processing course: ${course.title}`); // Added specific error handling for courses
+}
 })
 );
   
     return analytics;
+  } catch (error) {
+    if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      throw error;
+    }
+    throw new InternalServerErrorException(`Error fetching instructor analytics: ${error.message}`);
+  }
   }
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -365,7 +405,7 @@ const overallstudentPerformance = {
         studentId: student._id.toString(),
         studentName: student.name,
         score: response.score,
-        //answers: response.answers.map(answer => answer.toString()), // Assuming `answers` is an array of strings
+    
       });
     }
 
@@ -373,9 +413,22 @@ const overallstudentPerformance = {
   }
 
   async getQuizResultsReport(instructorId: string): Promise<QuizResultDto[]> {
+    try {
+
+    if (!mongoose.Types.ObjectId.isValid(instructorId)) {
+      throw new BadRequestException('Invalid instructor ID format');
+    }
     const objectIdInstructorId = new mongoose.Types.ObjectId(instructorId);
 
-    //console.log('Instructor ID:', objectIdInstructorId);
+    // Check if the user is an instructor
+    const instructor = await this.userModel.findById(objectIdInstructorId).exec();
+    if (!instructor) {
+      throw new NotFoundException('Instructor not found');
+    }
+
+    if (instructor.role !== 'instructor') {
+      throw new ForbiddenException('The provided ID does not belong to an instructor');
+    }
 
     // Find all quizzes created by this instructor
     const quizzes = await this.quizModel
@@ -383,7 +436,9 @@ const overallstudentPerformance = {
       .populate('questions') // Populate any necessary question details if needed
       .exec();
 
-      //console.log('Quizzes:', quizzes);
+      if (!quizzes || quizzes.length === 0) {
+        throw new NotFoundException('No quizzes found for the instructor');
+      }
 
     const reports: QuizResultDto[] = [];
 
@@ -393,8 +448,9 @@ const overallstudentPerformance = {
         .find({ quiz_id: quiz._id })
         .populate('user_id') // Populate the student data for quiz results
         .exec();
+      
 
-        //console.log('Responses:', responses);
+    
       const averageScore = await this.calculateAverageScore(responses);
       const studentResults = await this.getStudentResults(responses);
 
@@ -409,8 +465,21 @@ const overallstudentPerformance = {
     }
 
     return reports;
+  } catch (error) {
+    if (
+      error instanceof NotFoundException ||
+      error instanceof BadRequestException ||
+      error instanceof ForbiddenException
+    ) {
+      throw error;
+    }
+    throw new InternalServerErrorException(`Error fetching quiz results report: ${error.message}`);
+  }
   }
 
+  
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -423,62 +492,92 @@ const overallstudentPerformance = {
     const total = ratings.reduce((sum, rating) => sum + rating, 0);
     return parseFloat((total / ratings.length).toFixed(2));
   }
-
+  
   async getContentEffectivenessReport(instructorId: string): Promise<any> {
-    const objectIdInstructorId = new mongoose.Types.ObjectId(instructorId);
-    
-    // Step 1: Find all courses for this instructor
-    const courses = await this.courseModel.find({ instructor_id: objectIdInstructorId})
-    .populate('modules')
-    .exec();
-  
-    //console.log('Courses:', courses);
-
-    const reports = [];
-  
-    // Step 2: Loop through each course and its modules to get ratings
-    for (const course of courses) {
-
-      //console.log('Course:', course);
-      let courseRatings = course.ratings; // Course ratings
-      const courseRating = this.calculateAverageRating(courseRatings); // Calculate course rating
-  
-      const modulesReport = [];
-  
-      // Step 3: Loop through each module in the course and get ratings
-      for (const moduleId of course.modules) {
-        const module = await this.ModuleModel.findById(moduleId);
-        //console.log('Module:', module);  // Log module details to verify
-        const moduleRating = this.calculateAverageRating(module.ratings); // Calculate module rating
-  
-        modulesReport.push({
-          moduleId: module._id.toString(),
-          moduleTitle: module.title,
-          moduleRating,
-        });
+    try {
+      // Validate the instructorId format
+      if (!mongoose.Types.ObjectId.isValid(instructorId)) {
+        throw new BadRequestException('Invalid instructor ID format');
       }
   
-      // Step 4: Get instructor's average rating (based on course ratings)
-      const instructor = await this.userModel.findById(instructorId);
-      //console.log('Instructor:', instructor);
-      const instructorRating = this.calculateAverageRating(instructor.ratings); // Calculate instructor rating
-      
-
-
-      reports.push({
-        courseId: course._id.toString(),
-        courseTitle: course.title,
-        courseRating,
-        instructorRating,
-        modules: modulesReport,
-      });
-    }
+      const objectIdInstructorId = new mongoose.Types.ObjectId(instructorId);
   
-    return reports;
+      // Validate if the user is an instructor
+      const instructor = await this.userModel.findById(objectIdInstructorId).exec();
+      if (!instructor) {
+        throw new NotFoundException('Instructor not found');
+      }
+      if (instructor.role !== 'instructor') {
+        throw new ForbiddenException('The provided ID does not belong to an instructor');
+      }
+  
+      //Find all courses for this instructor
+      const courses = await this.courseModel.find({ instructor_id: objectIdInstructorId })
+        .populate('modules')
+        .exec();
+  
+      if (!courses || courses.length === 0) {
+        throw new NotFoundException('No courses found for the instructor');
+      }
+  
+      const reports = [];
+  
+      // Loop through each course and its modules to get ratings
+      for (const course of courses) {
+        try {
+          let courseRatings = course.ratings;
+          const courseRating = this.calculateAverageRating(courseRatings);
+  
+          const modulesReport = [];
+  
+          //  Loop through each module in the course and get ratings
+          for (const moduleId of course.modules) {
+            const module = await this.ModuleModel.findById(moduleId).exec();
+            if (!module) {
+              throw new NotFoundException(`Module with ID ${moduleId} not found`);
+            }
+  
+            const moduleRating = this.calculateAverageRating(module.ratings);
+            modulesReport.push({
+              moduleId: module._id.toString(),
+              moduleTitle: module.title,
+              moduleRating,
+            });
+          }
+  
+          // Calculate the instructor's average rating
+          const instructorRating = this.calculateAverageRating(instructor.ratings);
+  
+          reports.push({
+            courseId: course._id.toString(),
+            courseTitle: course.title,
+            courseRating,
+            instructorRating,
+            modules: modulesReport,
+          });
+        } catch (courseError) {
+          throw new InternalServerErrorException(
+            `Error processing course with ID ${course._id}: ${courseError.message}`
+          );
+        }
+      }
+  
+      return reports;
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException(`Error generating content effectiveness report: ${error.message}`);
+    }
   }
   
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -487,131 +586,238 @@ const overallstudentPerformance = {
 
 
 
-
-
-
-
-
-
-
-  
-  // // Generate a downloadable analytics report (e.g., CSV)
-  // async generateAnalyticsReport(instructorId: string): Promise<string> {
+  // async generateDownloadableAnalytics(
+  //   instructorId: string,
+  //   format: 'csv' | 'json',
+  // ): Promise<{ filePath: string; fileName: string }> {
   //   const analytics = await this.getInstructorAnalytics(instructorId);
 
-  //   const headers = [
-  //     'Course ID',
-  //     'Course Title',
-  //     'Total Students',
-  //     'completed students',
-  //     'Average Completion rate(%)',
-  //     'course student performance',
-  //     'completion student performance',
-  //     'Modules perforemance'
-  //   ];
-  //   const rows = analytics.map((course) => [
-  //     course.courseId,
-  //     course.courseTitle,
-  //     course.totalStudents,
-  //     course.completedStudents,
-  //     course.averageCompletion,
-  //     course.overallstudentPerformance,
-  //     course.CompletionPerformanceCategories,
-  //     course.modulesPerformance
-  
-  //   ]);
+  //   let fileContent: string;
+  //   let fileName: string;
 
-  //   return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+  //   if (format === 'csv') {
+  //     const parser = new Parser(); // json2csv library
+  //     fileContent = parser.parse(analytics);
+  //     fileName = `instructor_analytics_${instructorId}.csv`;
+  //   } else {
+  //     fileContent = JSON.stringify(analytics, null, 2); // Pretty-print JSON
+  //     fileName = `instructor_analytics_${instructorId}.json`;
+  //   }
+
+  //   const filePath = path.join(__dirname, '../downloads', fileName);
+
+  //   // Ensure the directory exists
+  //   fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+  //   // Write the file to the filesystem
+  //   fs.writeFileSync(filePath, fileContent);
+
+  //   return { filePath, fileName };
   // }
+
+
+
+
+  // async generateDownloadableQuizResults(
+  //   instructorId: string,
+  //   format: 'csv' | 'json',
+  // ): Promise<{ filePath: string; fileName: string }> {
+  //   const quizResults = await this.getQuizResultsReport(instructorId);
+
+  //   let fileContent: string;
+  //   let fileName: string;
+
+  //   if (format === 'csv') {
+  //     const parser = new Parser(); // json2csv library
+  //     fileContent = parser.parse(quizResults);
+  //     fileName = `quiz_results_${instructorId}.csv`;
+  //   } else {
+  //     fileContent = JSON.stringify(quizResults, null, 2); // Pretty-print JSON
+  //     fileName = `quiz_results_${instructorId}.json`;
+  //   }
+
+  //   const filePath = path.join(__dirname, '../downloads', fileName);
+
+  //   // Ensure the directory exists
+  //   fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+  //   // Write the file to the filesystem
+  //   fs.writeFileSync(filePath, fileContent);
+
+  //   return { filePath, fileName };
+  // }
+
+  // async generateDownloadableContentEffectivenessReport(
+  //   instructorId: string,
+  //   format: 'csv' | 'json',
+  // ): Promise<{ filePath: string; fileName: string }> {
+  //   const report = await this.getContentEffectivenessReport(instructorId);
+
+  //   let fileContent: string;
+  //   let fileName: string;
+
+  //   if (format === 'csv') {
+  //     const parser = new Parser(); // json2csv library
+  //     fileContent = parser.parse(report);
+  //     fileName = `content_effectiveness_${instructorId}.csv`;
+  //   } else {
+  //     fileContent = JSON.stringify(report, null, 2); // Pretty-print JSON
+  //     fileName = `content_effectiveness_${instructorId}.json`;
+  //   }
+
+  //   const filePath = path.join(__dirname, '../downloads', fileName);
+
+  //   fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  //   fs.writeFileSync(filePath, fileContent);
+
+  //   return { filePath, fileName };
+  // }
+
 
 
   async generateDownloadableAnalytics(
     instructorId: string,
     format: 'csv' | 'json',
   ): Promise<{ filePath: string; fileName: string }> {
-    const analytics = await this.getInstructorAnalytics(instructorId);
-
-    let fileContent: string;
-    let fileName: string;
-
-    if (format === 'csv') {
-      const parser = new Parser(); // json2csv library
-      fileContent = parser.parse(analytics);
-      fileName = `instructor_analytics_${instructorId}.csv`;
-    } else {
-      fileContent = JSON.stringify(analytics, null, 2); // Pretty-print JSON
-      fileName = `instructor_analytics_${instructorId}.json`;
+    try {
+      // Validate the instructor ID
+      if (!mongoose.Types.ObjectId.isValid(instructorId)) {
+        throw new BadRequestException('Invalid instructor ID format');
+      }
+  
+      // Fetch analytics data
+      const analytics = await this.getInstructorAnalytics(instructorId);
+      if (!analytics || analytics.length === 0) {
+        throw new NotFoundException('No analytics data found for the instructor');
+      }
+  
+      let fileContent: string;
+      let fileName: string;
+  
+      if (format === 'csv') {
+        const parser = new Parser();
+        fileContent = parser.parse(analytics);
+        fileName = `instructor_analytics_${instructorId}.csv`;
+      } else {
+        fileContent = JSON.stringify(analytics, null, 2);
+        fileName = `instructor_analytics_${instructorId}.json`;
+      }
+  
+      const filePath = path.join(__dirname, '../downloads', fileName);
+  
+      // Ensure the directory exists
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  
+      // Write the file to the filesystem
+      fs.writeFileSync(filePath, fileContent);
+  
+      return { filePath, fileName };
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException(`Error generating analytics file: ${error.message}`);
     }
-
-    const filePath = path.join(__dirname, '../downloads', fileName);
-
-    // Ensure the directory exists
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-
-    // Write the file to the filesystem
-    fs.writeFileSync(filePath, fileContent);
-
-    return { filePath, fileName };
   }
-
-
-
-
+  
   async generateDownloadableQuizResults(
     instructorId: string,
     format: 'csv' | 'json',
   ): Promise<{ filePath: string; fileName: string }> {
-    const quizResults = await this.getQuizResultsReport(instructorId);
-
-    let fileContent: string;
-    let fileName: string;
-
-    if (format === 'csv') {
-      const parser = new Parser(); // json2csv library
-      fileContent = parser.parse(quizResults);
-      fileName = `quiz_results_${instructorId}.csv`;
-    } else {
-      fileContent = JSON.stringify(quizResults, null, 2); // Pretty-print JSON
-      fileName = `quiz_results_${instructorId}.json`;
+    try {
+      // Validate the instructor ID
+      if (!mongoose.Types.ObjectId.isValid(instructorId)) {
+        throw new BadRequestException('Invalid instructor ID format');
+      }
+  
+      // Fetch quiz results
+      const quizResults = await this.getQuizResultsReport(instructorId);
+      if (!quizResults || quizResults.length === 0) {
+        throw new NotFoundException('No quiz results found for the instructor');
+      }
+  
+      let fileContent: string;
+      let fileName: string;
+  
+      if (format === 'csv') {
+        const parser = new Parser();
+        fileContent = parser.parse(quizResults);
+        fileName = `quiz_results_${instructorId}.csv`;
+      } else {
+        fileContent = JSON.stringify(quizResults, null, 2);
+        fileName = `quiz_results_${instructorId}.json`;
+      }
+  
+      const filePath = path.join(__dirname, '../downloads', fileName);
+  
+      // Ensure the directory exists
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  
+      // Write the file to the filesystem
+      fs.writeFileSync(filePath, fileContent);
+  
+      return { filePath, fileName };
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException(`Error generating quiz results file: ${error.message}`);
     }
-
-    const filePath = path.join(__dirname, '../downloads', fileName);
-
-    // Ensure the directory exists
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-
-    // Write the file to the filesystem
-    fs.writeFileSync(filePath, fileContent);
-
-    return { filePath, fileName };
   }
-
+  
   async generateDownloadableContentEffectivenessReport(
     instructorId: string,
     format: 'csv' | 'json',
   ): Promise<{ filePath: string; fileName: string }> {
-    const report = await this.getContentEffectivenessReport(instructorId);
-
-    let fileContent: string;
-    let fileName: string;
-
-    if (format === 'csv') {
-      const parser = new Parser(); // json2csv library
-      fileContent = parser.parse(report);
-      fileName = `content_effectiveness_${instructorId}.csv`;
-    } else {
-      fileContent = JSON.stringify(report, null, 2); // Pretty-print JSON
-      fileName = `content_effectiveness_${instructorId}.json`;
+    try {
+      // Validate the instructor ID
+      if (!mongoose.Types.ObjectId.isValid(instructorId)) {
+        throw new BadRequestException('Invalid instructor ID format');
+      }
+  
+      // Fetch content effectiveness report
+      const report = await this.getContentEffectivenessReport(instructorId);
+      if (!report || report.length === 0) {
+        throw new NotFoundException('No content effectiveness data found for the instructor');
+      }
+  
+      let fileContent: string;
+      let fileName: string;
+  
+      if (format === 'csv') {
+        const parser = new Parser();
+        fileContent = parser.parse(report);
+        fileName = `content_effectiveness_${instructorId}.csv`;
+      } else {
+        fileContent = JSON.stringify(report, null, 2);
+        fileName = `content_effectiveness_${instructorId}.json`;
+      }
+  
+      const filePath = path.join(__dirname, '../downloads', fileName);
+  
+      // Ensure the directory exists
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  
+      // Write the file to the filesystem
+      fs.writeFileSync(filePath, fileContent);
+  
+      return { filePath, fileName };
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException(`Error generating content effectiveness file: ${error.message}`);
     }
-
-    const filePath = path.join(__dirname, '../downloads', fileName);
-
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, fileContent);
-
-    return { filePath, fileName };
-  }
-
+  }  
 
 }
 

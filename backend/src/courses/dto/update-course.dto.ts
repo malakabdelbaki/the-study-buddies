@@ -1,10 +1,11 @@
 import { PartialType } from '@nestjs/swagger';
 import { CreateCourseDto } from './create-course.dto';
-import { IsString, IsEnum, IsArray, IsMongoId, IsOptional } from 'class-validator';
+import { IsString, IsEnum, IsArray, IsMongoId, IsOptional, Validate } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Course_diff } from 'src/enums/course-diff.enum';
 import { Types } from 'mongoose';
 import { User } from 'src/models/user.schema';
+import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 
 export class UpdateCourseDto extends PartialType(CreateCourseDto) {
 
@@ -42,6 +43,10 @@ export class UpdateCourseDto extends PartialType(CreateCourseDto) {
   @IsArray()
   @IsMongoId({ each: true }) // Validates each item in the array is a valid ObjectId
   @IsOptional()
+  @Validate(ExistsOnDatabase, [{ modelName: 'User', column: '_id' }], {
+    each: true, // Applies the `ExistsOnDatabase` validator to each element in the array
+    message: 'One or more student IDs do not exist in the database',
+  })
   students?: Types.ObjectId[];
 
   @ApiProperty({
@@ -52,6 +57,10 @@ export class UpdateCourseDto extends PartialType(CreateCourseDto) {
   @IsArray()
   @IsMongoId({ each: true }) // Validates each item in the array is a valid ObjectId
   @IsOptional()
+  @Validate(ExistsOnDatabase, [{ modelName: 'Module', column: '_id' }], {
+    each: true, // Applies the `ExistsOnDatabase` validator to each element in the array
+    message: 'One or more module IDs do not exist in the database',
+  })
   modules?: Types.ObjectId[];
 
 

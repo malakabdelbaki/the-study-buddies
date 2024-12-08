@@ -14,6 +14,7 @@ import { LogsService } from 'src/log/log.service';
 
 @Injectable()
 export class AuthService{
+  private blacklistedTokens = new Set<string>();
     constructor(
         private usersService: UserService, //i assume it will be added
         private jwtService: JwtService,
@@ -33,10 +34,10 @@ export class AuthService{
         const createUserDto: CreateUserDto = {
           name: user.name, // Access instance properties of the DTO
           email: user.email,
-          password: await bcrypt.hash(user.password, 10), // Hash the password
+          passwordHash: await bcrypt.hash(user.password, 10), // Hash the password
           role: user.role,
         };
-
+        console.log('createUserDto:', createUserDto);
         await this.usersService.createUser(createUserDto); //normal creation
         this.logsService.logInfo('User registered successfully', { email: user.email }); //info login! (everything is ok)
         return 'registered successfully';
@@ -57,7 +58,7 @@ export class AuthService{
         }
       console.log("password: ", user.passwordHash);
       const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-        console.log( await bcrypt.compare(password, user.passwordHash))
+        console.log( await bcrypt.compare(password, user.passwordHash));
       if (!isPasswordValid) {
           this.logsService.logError('Login attempt failed: Invalid credentials', { email }); //error log!
           throw new UnauthorizedException('Invalid credentials');
@@ -66,10 +67,22 @@ export class AuthService{
       this.logsService.logInfo('User logged in successfully', { email, userId: user._id }); //info log! (everything is ok)
 
       const payload = { userid: user._id, role: user.role };
-
+      const token = await this.jwtService.signAsync(payload, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '1h',
+      });
       return {
-          access_token: await this.jwtService.signAsync(payload), //this creates a token for the user
+          access_token:token, //this creates a token for the user
           payload //payload has the userid and role which will be needed in the guards
       };
+  }
+  async logout(token: string): Promise<void> {
+    // Add token to the blacklist
+    this.blacklistedTokens.add(token);
+}
+
+  // Validate token against blacklist
+  isTokenBlacklisted(token: string): boolean {
+      return this.blacklistedTokens.has(token);
   }
 }
