@@ -23,6 +23,9 @@ export class CoursesController {
   @ApiOperation({ summary: 'Create a new course' })
   @Roles(Role.Instructor)
   @UseGuards(authorizationGuard)
+  @ApiOperation({ summary: 'Create a new course' })
+  @Roles(Role.Instructor)
+  @UseGuards(authorizationGuard)
   @Post()
   async create(@Req() request,@Body() createCourseDto: CreateCourseDto) {
     try {
@@ -59,6 +62,7 @@ export class CoursesController {
       throw new HttpException('Error fetching courses', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
 
   @ApiOperation({ summary: 'Retrieve a course by ID' })
   @ApiParam({ name: 'id', description: 'Course ID', type: String })

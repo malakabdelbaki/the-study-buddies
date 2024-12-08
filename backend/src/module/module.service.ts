@@ -92,7 +92,7 @@ export class ModuleService {
       throw new Error(' You must Enter a rating');
     }
 
-    module.ratings.set(studentid,rating);
+    module.ratings.set(studentid,rating)
     module.save();
     return module;
 }

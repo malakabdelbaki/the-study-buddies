@@ -59,7 +59,7 @@ export class ModuleController {
       throw new HttpException('Failed to get module: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
+     
   // Update a module's general info
   @Roles(Role.Instructor)
   @UseGuards(authorizationGuard, InstructorGuard)
@@ -152,6 +152,7 @@ export class ModuleController {
     @Body() updateQuestionDto: UpdateQuestionDto,
   ) {
     try {
+      
       let ID = new Types.ObjectId(quesId);
       const updatedQuestion = await this.moduleService.updateQuestion(ID, updateQuestionDto);
       if (!updatedQuestion) {
@@ -175,6 +176,7 @@ export class ModuleController {
         throw new HttpException('Failed to delete question', HttpStatus.BAD_REQUEST);
       }
       return deletedQuestion;
+     
     } catch (error) {
       throw new HttpException('Failed to delete question: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

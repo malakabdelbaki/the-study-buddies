@@ -82,6 +82,7 @@ export class CoursesService {
       throw new HttpException('Error updating course', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+   
 
   async getModules(user_id:Types.ObjectId,courseid: Types.ObjectId) {
     try {
