@@ -1,6 +1,7 @@
 import {  Controller, 
   Get,  Post, Body,  Patch, Param, Delete, Query, HttpException,  HttpStatus, 
-  UseGuards
+  UseGuards,
+  Req
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -11,6 +12,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { authorizationGuard } from 'src/auth/guards/authorization.guard';
 import { Role } from 'src/enums/role.enum';
 import { AuthGuard } from '../auth/guards/authentication.guard';
+import { InstructorGuard } from 'src/auth/guards/instructor.guard';
 
 @ApiTags('Courses') // Tag for Swagger grouping
 @UseGuards(AuthGuard)
@@ -21,11 +23,18 @@ export class CoursesController {
   @ApiOperation({ summary: 'Create a new course' })
   @Roles(Role.Instructor)
   @UseGuards(authorizationGuard)
+  @ApiOperation({ summary: 'Create a new course' })
+  @Roles(Role.Instructor)
+  @UseGuards(authorizationGuard)
   @Post()
-  async create(@Body() createCourseDto: CreateCourseDto) {
+  async create(@Req() request,@Body() createCourseDto: CreateCourseDto) {
     try {
+      const instructorId = request.user?.userid; // Extract instructorId
+      if(!instructorId || !request.user){
+        throw new HttpException('Error not found an instructor', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
       return await this.coursesService.create({...createCourseDto,
-        instructor_id:new Types.ObjectId(createCourseDto.instructor_id)});
+        instructor_id: new Types.ObjectId(instructorId)});
     } catch (err) {
       console.error('Error creating course:', err.message);
       throw new HttpException('Error creating course', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -54,6 +63,7 @@ export class CoursesController {
     }
   }
 
+
   @ApiOperation({ summary: 'Retrieve a course by ID' })
   @ApiParam({ name: 'id', description: 'Course ID', type: String })
   @Get(':id')
@@ -74,8 +84,11 @@ export class CoursesController {
   @Roles(Role.Instructor)
 @UseGuards(authorizationGuard)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
+  async update(@Req() request,@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
     try {
+      if (!request.user || !request.user.userid)
+        throw new HttpException('You Can not update this Course!', HttpStatus.INTERNAL_SERVER_ERROR);
+      
       const objectId = new Types.ObjectId(id);
       return await this.coursesService.update(objectId, updateCourseDto);
     } catch (err) {
@@ -86,12 +99,17 @@ export class CoursesController {
 
   @ApiOperation({ summary: 'Retrieve modules of a course with optional difficulty filter' })
   @ApiParam({ name: 'id', description: 'Course ID', type: String })
-  @ApiQuery({ name: 'difficulty', required: false, description: 'Filter modules by difficulty' })
   @Get(':id/modules')
-  async getModules(@Param('id') id: string, @Query('difficulty') difficulty?: string) {
+  async getModules(@Req() request,@Param('id') id: string) {
     try {
-      const objectId = new Types.ObjectId(id);
-      return await this.coursesService.getModules(objectId, difficulty);
+      
+      const user_id = request.user?.userid; // Extract instructorId
+      if(!user_id || !request.user){
+        throw new HttpException('Error not found an instructor', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      const courseId = new Types.ObjectId(id);
+      const user = new Types.ObjectId(user_id)
+      return await this.coursesService.getModules(user,courseId);
     } catch (err) {
       console.error('Error fetching modules:', err.message);
       throw new HttpException('Error fetching modules', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -112,4 +130,25 @@ export class CoursesController {
       throw new HttpException('Error deleting course', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  @ApiOperation({ summary: 'Rate Course' })
+  @ApiParam({ name: 'id', description: 'Course ID', type: String })
+  @Roles(Role.Student)
+  @UseGuards(authorizationGuard)
+  @Post(':id/rate')
+  async RateCourse(@Req() request,@Param('id') id: string ,@Body() ratingbody:{rating:number}) {
+    try {
+      const {rating} = ratingbody;
+      const courseid = new Types.ObjectId(id);
+      const studentid = request.user?.userid; // Extract instructorId
+      if(!studentid || !request.user){
+        throw new HttpException('Error not found a student', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      return await this.coursesService.rateCourse(studentid,courseid,rating);
+    } catch (err) {
+      console.log(err.message);
+      throw new HttpException('Error Rating a Course', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 }

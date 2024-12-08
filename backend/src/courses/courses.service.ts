@@ -4,15 +4,22 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Course, CourseDocument } from 'src/Models/course.schema';
-import { User } from 'src/models/user.schema';
+import { User, UserDocument } from 'src/models/user.schema';
 import { ModuleService } from 'src/module/module.service';
 import { CreateModuleDto } from 'src/module/dto/create-module.dto';
 import { Module } from 'src/Models/modules.schema';
+import { Role } from 'src/enums/role.enum';
+import { ProgressDocument } from 'src/Models/progress.schema';
+import { Difficulty } from 'src/enums/difficulty.enum';
 
 @Injectable()
 export class CoursesService {
   constructor(
     @InjectModel('Course') private readonly courseModel: Model<CourseDocument>,
+    @InjectModel('User') private readonly userModel: Model<UserDocument>,
+    @InjectModel('Progress') private readonly progressModel: Model<ProgressDocument>,
+
+
     private readonly moduleService: ModuleService,
   ) {}
 
@@ -36,7 +43,7 @@ export class CoursesService {
       if (instructor) {
         courses = courses.filter((course) => {
           const instructorDetails = course.instructor_id as unknown as User; // Assert type
-          return instructorDetails.name === instructor;
+          return instructorDetails&& instructorDetails.name &&instructorDetails.name === instructor ;
         });
       }
       return courses;
@@ -75,24 +82,56 @@ export class CoursesService {
       throw new HttpException('Error updating course', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+   
 
-  async getModules(id: Types.ObjectId, difficulty?: string) {
+  async getModules(user_id:Types.ObjectId,courseid: Types.ObjectId) {
     try {
-      const course = await this.courseModel.findById(id).populate<{ modules: Module[] }>('modules');
+      const course = await this.courseModel.findById(courseid).populate('modules','students');
       if (!course) {
         throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
       }
+      console.log(user_id._id.toString());
+      let User = await this.userModel.findById(user_id._id.toString());
+      if (!User){
+        console.log(User)
+        throw new HttpException('No User is logged in', HttpStatus.NOT_FOUND);
+      }
 
       let modules = course.modules;
-      if (!modules || modules.length === 0) {
-        throw new HttpException('No modules found for this course', HttpStatus.NOT_FOUND);
+      if(!modules)
+        throw new HttpException('No modules found for this course', HttpStatus.UNAUTHORIZED);
+
+      
+      
+      if (User.role === Role.Instructor){
+          console.log(user_id);
+          console.log(course.instructor_id);
+          if (course.instructor_id.toString() !== user_id.toString())
+            throw new HttpException('this instructor is not authorized', HttpStatus.UNAUTHORIZED);
+
       }
 
-      if (difficulty) {
-        modules = modules.filter((module) => module.module_difficulty === difficulty);
-      }
+      else if (User.role === Role.Student){
 
+        const isEnrolled = course.students.includes(user_id);
+        if (!isEnrolled) {
+          throw new HttpException('Student not enrolled in this course', HttpStatus.FORBIDDEN);
+        }
+
+        let StudentPerformance = await this.progressModel.findOne({userId:user_id,courseId:courseid})
+        if(!StudentPerformance)
+          throw new HttpException('Not Found The Progress Of the student', HttpStatus.INTERNAL_SERVER_ERROR);
+
+        if (StudentPerformance.studentLevel === 'beginner')
+            modules = modules.filter((module:any) => module.module_difficulty === Difficulty.EASY)
+      
+        else if (StudentPerformance.studentLevel === 'intermediate')
+            modules = modules.filter((module:any) => module.module_difficulty === Difficulty.MEDIUM || 
+                                module.module_difficulty === Difficulty.EASY );
+
+      }
       return modules;
+    
     } catch (err) {
       console.error('Error retrieving modules:', err.message);
       throw new HttpException('Error retrieving modules', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -140,5 +179,21 @@ export class CoursesService {
     }
 
     return course.students.some((student) => student.toString() === userId.toString());
+  }
+
+
+  async rateCourse(student_id:Types.ObjectId,course_id:Types.ObjectId,rating:number){
+      let course = await this.findOne(course_id);
+      if(!course){
+        throw new Error ('no Course Found with this ID');
+      }
+      
+      if (!rating){
+        throw new Error(' You must Enter a rating');
+      }
+
+      course.ratings.set(student_id,rating);
+      course.save();
+      return course;
   }
 }

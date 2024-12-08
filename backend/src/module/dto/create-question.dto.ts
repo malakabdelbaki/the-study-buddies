@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsEnum, IsMongoId, IsString } from "class-validator";
+import { IsArray, IsEnum, IsMongoId, IsOptional, IsString } from "class-validator";
 import { Types } from "mongoose";
 import { Choice } from "src/enums/Choice.enum";
 import { Difficulty } from "src/enums/difficulty.enum";
@@ -25,6 +25,7 @@ export class CreateQuestionDto {
     })
     @IsMongoId()
     @ExistsOnDatabase({ modelName: 'User', column: '_id' })
+    @IsOptional()
     instructor_id: Types.ObjectId; // Reference to the instructor who created it
   
     @ApiProperty({

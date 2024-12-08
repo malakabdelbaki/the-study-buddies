@@ -16,6 +16,7 @@ export class CreateCourseDto {
 
     @IsMongoId()
     @ExistsOnDatabase({modelName:'User',column:'_id'})
+    @IsOptional()
     instructor_id: Types.ObjectId;
     
     @IsEnum(Course_diff,{message:'It must be of type course difficulty'})
