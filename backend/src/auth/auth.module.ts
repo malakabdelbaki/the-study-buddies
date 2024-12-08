@@ -6,7 +6,6 @@ import { JwtModule } from '@nestjs/jwt';
 import * as dotenv from 'dotenv';
 import { WsJwtGuard } from 'src/WebSockets/guards/ws-jwt-authentication.guard';
 import { LogsModule } from 'src/log/log.module';
-import { LogsModule } from 'src/log/log.module';
 dotenv.config();
 import { UserService } from 'src/users/users.service';
 import { IsEmailUniqueConstraint } from 'src/common/validators/is-email-unique.validator';
