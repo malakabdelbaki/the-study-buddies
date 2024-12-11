@@ -6,6 +6,8 @@ import mongoose from 'mongoose';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import {useContainer, Validator} from "class-validator";
+import { IoAdapter } from '@nestjs/platform-socket.io';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -50,6 +52,8 @@ async function bootstrap() {
       console.error('Error starting the application:', err);
     });
 
+    const adapter = new IoAdapter(app);
+    app.useWebSocketAdapter(adapter);    
     //cors
     const allowedOrigins = [`http://localhost:${port}`]; //to be more dynamic and allow more origins if needed in the future
     app.enableCors({

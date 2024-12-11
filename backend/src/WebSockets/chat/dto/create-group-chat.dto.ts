@@ -6,6 +6,8 @@ import {Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 import { Transform } from 'class-transformer';
+import { Chat } from 'src/Models/chat.schema';
+import { ChatVisibility } from 'src/enums/chat-visibility.enum';
 
 export class CreateGroupChatDto{
   @ApiProperty({
@@ -32,6 +34,15 @@ export class CreateGroupChatDto{
     message: 'One or more student IDs do not exist in the database',
   })
   participants: Types.ObjectId[]
+
+  @ApiProperty({
+    description: 'The type of chat',
+    type: String,
+  })
+  @IsEnum(ChatVisibility)
+  chat_type: ChatVisibility;
+
+
 
   
 }

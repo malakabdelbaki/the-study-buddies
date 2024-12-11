@@ -135,6 +135,25 @@ export class ChatController {
     return this.chatService.leaveChatOrFail(chatId, studentId);
   }
 
+ 
+  //axios.get('/api/chats/public-groups'),
+  @Get('public-groups')
+  @ApiOperation({ summary: 'Get all public group chats' })
+  @ApiResponse({ status: 200, description: 'List of all public group chats' })
+  @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
+  async getPublicGroupChats( @Req() req: any) {
+    return await this.chatService.getPublicGroupChats(req.user.userid);
+  }
+  
+  //axios.get('/api/users')
+  @Get('potential-participants')
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({ status: 200, description: 'List of all users' })
+  @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
+  async getAllPotentialParticipants( @Req() req: any) {
+    return await this.chatService.getPotentialParticipants(req.user.userid);
+  }
+
 }
 
 
