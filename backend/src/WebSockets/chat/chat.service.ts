@@ -15,6 +15,7 @@ import { CreateDirectChatDto } from './dto/create-direct-chat.dto';
 import { CreateGroupChatDto } from './dto/create-group-chat.dto';
 import { AddMessageDto } from './dto/AddMessage.dto';
 import { AddParticipantDto } from './dto/AddParticipant.dto';
+import { ChatVisibility } from 'src/enums/chat-visibility.enum';
 
 @Injectable()
 export class ChatService {
@@ -285,5 +286,51 @@ export class ChatService {
   
     return messages;
   }
-  
+  async getPublicChatsOfCourse(courseId:Types.ObjectId){
+    const course = await this.coursesService.findOne(courseId);
+    if (!course) {
+      throw new EntityDoesNotExistException('Course', courseId.toString());
+    }
+    return this.chatModel.find({ course_id: course._id, chat_type: ChatType.Group, visibility:ChatVisibility.PUBLIC }).exec();
+  }
+
+  async getPublicGroupChats(userId:string){
+    const user = await this.userService.findUserById(userId);
+    if (!user) {
+      throw new EntityDoesNotExistException('User', userId);
+    }
+    const chats = []
+    if(user.role == Role.Student){
+    const courses = this.userService.getEnrolledCoursesOfStudent(userId);
+    for(const course in courses){
+      chats.push(this.getPublicChatsOfCourse((course as any)._id)); 
+    }
+  }
+  if(user.role == Role.Instructor){
+    const courses = this.userService.getCoursesByInstructor(userId);
+    for(const course in courses){
+      chats.push(this.getPublicChatsOfCourse((course as any)._id)); 
+    }
+  }
+  return chats;
+} 
+
+async getPotentialParticipants(userId:string){
+  const user = await this.userService.findUserById(userId);
+  if (!user) {
+    throw new EntityDoesNotExistException('User', userId);
+  }
+  const participants = [];
+  let courses = [];
+  if(user.role == Role.Student){
+    courses = await this.userService.getEnrolledCoursesOfStudent(userId);
+  }
+  if(user.role == Role.Instructor){
+    courses = await this.userService.getCoursesByInstructor(userId);
+  }
+  for(const course in courses){
+    participants.push(await this.userService.getAllStudentsInCourse((course as any)._id));
+  }
+  return participants;
+}
 }

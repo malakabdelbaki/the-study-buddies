@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { ChatType } from '../enums/chat-type.enum';
+import { ChatVisibility } from 'src/enums/chat-visibility.enum';
 
 export type ChatDocument = Chat & Document;
 
@@ -24,6 +25,9 @@ export class Chat {
 
   @Prop({ type: String, required: true, enum: Object.values(ChatType) })
   chat_type: ChatType;
+
+  @Prop({ type: String, enum: Object.values(ChatVisibility), required: true })
+  visibility: ChatVisibility;
 
 }
 

@@ -23,6 +23,7 @@ import { NoteModule } from './note/note.module';
 import { AuthModule } from './auth/auth.module';
 import { ValidatorsModule } from './common/validators/validators.module';
 import { LogsModule } from './log/log.module';
+import { WebSocketsModule } from './WebSockets/web-sockets.module';
 
 @Module({
   imports: [
@@ -42,7 +43,8 @@ import { LogsModule } from './log/log.module';
     NoteModule,
     AuthModule,
     ValidatorsModule,
-    LogsModule
+    LogsModule,
+    WebSocketsModule
   ],
   controllers: [AppController, NoteController],
   providers: [AppService],
