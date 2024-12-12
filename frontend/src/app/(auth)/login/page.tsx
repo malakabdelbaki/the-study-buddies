@@ -1,7 +1,7 @@
 //this file contains client-side
 //allows user to enter their creds, submit login form, trigger login server action
 
-'use client' //marker: code runs on client side (enables: react hooks, browser apis, client-side interactivity)
+'use client'; //marker: code runs on client side (enables: react hooks, browser apis, client-side interactivity)
 import { useActionState, useState } from "react"; //useActionState: helps manage submissions
 //useState: manages local state of email and pass inputs
 import { useRouter } from "next/navigation"; //allows page to redirect after sucessful login
@@ -16,7 +16,9 @@ export default function LoginPage() {
   const router = useRouter();
   const [state,formAction]=useActionState(login,{message:''})
   //initalise login with a default message, and return state, formAction =>handles form submission
-
+  if (state.success) {
+    router.push('/about')
+  }
  //redundant! this contains the logic that is in the login.server.tsx 
   // const handleLogin = async (e: React.FormEvent) => {
   //   e.preventDefault();

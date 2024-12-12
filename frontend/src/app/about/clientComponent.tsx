@@ -1,6 +1,6 @@
 //client-side: interacts with cookies, renders UI
 
-'use client' //Marker: client-side
+'use client'; //Marker: client-side
 import { getCookie, setCookie } from 'cookies-next' //cookies-next package manages cookies
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
