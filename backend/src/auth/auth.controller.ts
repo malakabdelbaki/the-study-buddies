@@ -21,7 +21,7 @@ export class AuthController {
         httpOnly: true, // Prevents client-side JavaScript access
         secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
         maxAge: 3600 * 1000, // Cookie expiration time in milliseconds (1hr)
-        //sameSite: 'strict', // Prevent CSRF
+        sameSite: 'strict', // Prevent CSRF
       });
       // Return success response
       this.logsService.logInfo('User logged in successfully', { email: signInDto.email, userId: result.payload.userid, }); //all successful logins!! (log their uid & email)
@@ -51,7 +51,7 @@ export class AuthController {
   }
 
   @Post('register')
-  async signup(@Body() registerRequestDto: RegisterRequestDto) {
+  async register(@Body() registerRequestDto: RegisterRequestDto) {
     try {
       // Call the AuthService to handle registration
       const result = await this.authService.register(registerRequestDto);
