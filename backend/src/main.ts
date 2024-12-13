@@ -23,6 +23,8 @@ async function bootstrap() {
   // Enable validation container
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
+  app.setGlobalPrefix('api'); // Set global prefix for all routes
+
   // Swagger configuration
   const config = new DocumentBuilder()
     .setTitle('The Study Buddies')
