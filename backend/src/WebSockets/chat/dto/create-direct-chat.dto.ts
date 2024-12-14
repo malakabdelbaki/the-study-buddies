@@ -13,6 +13,7 @@ export class CreateDirectChatDto{
     type: String,
   })
   @IsString()
+  @IsOptional()
   chatName: string;
 
   @ApiProperty({
@@ -29,5 +30,5 @@ export class CreateDirectChatDto{
   })
   @IsMongoId()
   @ExistsOnDatabase({ modelName: 'User', column: '_id' })
-  receiverId: Types.ObjectId;
+  receiver_id: Types.ObjectId;
 }

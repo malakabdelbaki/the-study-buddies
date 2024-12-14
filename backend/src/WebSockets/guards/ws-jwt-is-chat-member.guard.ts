@@ -1,42 +1,48 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext
-} from '@nestjs/common';
-import { CoursesService } from '../../courses/courses.service';
-import { Types } from 'mongoose';
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
-import { Role } from 'src/enums/role.enum';
+import { Types } from 'mongoose';
 import { ChatService } from '../chat/chat.service';
+import { AuthenticatedSocket } from '../authenticated.socket';
 
 @Injectable()
 export class IsChatMemberWsGuard implements CanActivate {
   constructor(private readonly chatService: ChatService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const client = context.switchToWs().getClient(); 
-    const data = context.switchToWs().getData(); 
+    try {
+      const client: AuthenticatedSocket = context.switchToWs().getClient();
+      const data = context.switchToWs().getData();
 
-    const userId = client.user?.userid; 
-    if (!userId) {
-      throw new WsException('Invalid request. Missing user ID.');
+      if (!client.user?.userid) {
+        throw new WsException('User not authenticated');
+      }
+
+      const chatId = this.extractChatId(data);
+      if (!chatId) {
+        throw new WsException('Chat ID is required');
+      }
+
+      const chat = await this.chatService.getChatByIdOrFail(new Types.ObjectId(chatId));
+      
+      const isParticipant = chat.participants.some(
+        p => p.toString() === client.user.userid.toString()
+      );
+
+      if (!isParticipant) {
+        throw new WsException('User is not a member of this chat');
+      }
+
+      return true;
+    } catch (error) {
+      if (error instanceof WsException) {
+        throw error;
+      }
+      throw new WsException('Failed to verify chat membership');
     }
+  }
 
-    const chat_id = data.chat_id; 
-    if (!chat_id) {
-      throw new WsException('Invalid request. Missing chat ID.');
-    }
-
-    // Validate course and instructor
-    const chat = await this.chatService.getChatByIdOrFail(new Types.ObjectId(chat_id));
-    if (!chat) {
-      throw new WsException('chat does not exist.');
-    }
-
-    if (!chat.participants.some(p => p.toString() === userId)) {
-      throw new WsException('You are not authorized to perform this action.');
-    }
-
-    return true; // Allow the WebSocket event to proceed
+  private extractChatId(data: any): string | undefined {
+    return data.chat_id || data.chatId || (data.room && data.room !== 'global' ? data.room : undefined);
   }
 }
+

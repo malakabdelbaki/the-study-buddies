@@ -13,6 +13,7 @@ import { NotificationModule } from 'src/WebSockets/notification/notification.mod
 import { forwardRef } from '@nestjs/common';  
 import { AuthModule } from 'src/auth/auth.module';
 import { LogsModule } from 'src/log/log.module';
+import { ChatModule } from 'src/WebSockets/chat/chat.module';
 
 @Module({
   imports: [

@@ -16,18 +16,27 @@ import { Role } from 'src/enums/role.enum';
 import { IsChatMemberHttpGuard } from 'src/auth/guards/IsChatMember.guard';
 
 
-@UseGuards(AuthGuard, authorizationGuard, IsChatMemberHttpGuard)
+@UseGuards(AuthGuard, authorizationGuard)
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService,
   ) {}
 
-
-  @Get('/history:chatId')
+  @Get('publicGroups')
+    @ApiOperation({ summary: 'Get all public group chats' })
+    @ApiResponse({ status: 200, description: 'List of all public group chats' })
+    @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
+    async getPublicGroupChats(@Req() req: any) {
+        console.log('req.user.userid', req.user.userid);
+        return await this.chatService.getPublicGroupChats(req.user.userid);
+    }
+    
+  @Get('/history/:chat_id')
   @ApiOperation({ summary: 'Get all chats with messages' })
   @ApiResponse({ status: 200, description: 'List of all chats' })
   @ApiParam({ name: 'chat_id', type: String, description: 'The ID of the chat' })
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
+  @UseGuards(IsChatMemberHttpGuard)
   async getAllChatHistory(
     @Param('chat_id') chat_id: Types.ObjectId,
     @Req() req: any) {
@@ -45,14 +54,15 @@ export class ChatController {
   }
 
   // 2. Get a certain chat by ID
-  @Get(':chatId')
+  @Get(':chat_id')
   @ApiOperation({ summary: 'Get a specific chat for a student by ID' })
   @ApiResponse({ status: 200, description: 'The requested chat' })
   @ApiParam({ name: 'studentId', type: String, description: 'The ID of the student' })
-  @ApiParam({ name: 'chatId', type: String, description: 'The ID of the chat' })
+  @ApiParam({ name: 'chat_id', type: String, description: 'The ID of the chat' })
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
-  async getChatOfStudentById(@Param('chat_id') chat_id: Types.ObjectId) {
-    return await this.chatService.getChatByIdOrFail(chat_id);
+  @UseGuards(IsChatMemberHttpGuard)
+  async getChatOfStudentById(@Param('chat_id') chat_id: string) {
+    return await this.chatService.getChatByIdOrFail(new Types.ObjectId(chat_id));
   }
 
 
@@ -82,77 +92,77 @@ export class ChatController {
 
 
   // 7. Update a chat to include new participants 
-  @Patch('add-participant/:chatId')
+  @Patch('add-participant/:chat_id')
   @ApiOperation({ summary: 'Add new participants to a chat' })
   @ApiResponse({ status: 200, description: 'Chat updated with new participants' })
-  @ApiParam({ name: 'chatId', type: String, description: 'The ID of the chat to update' })
+  @ApiParam({ name: 'chat_id', type: String, description: 'The ID of the chat to update' })
   @ApiBody({ type: AddParticipantDto, description: 'Participants to add to the chat' })
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
-
+  @UseGuards(IsChatMemberHttpGuard)
   async addParticipant(
-    @Param('chatId') chatId: string,
+    @Param('chat_id') chat_id: string,
     @Body() addParticipantDto: AddParticipantDto,
     @Req() req: any) {
-    return await this.chatService.addParticipantToChatOrFail(addParticipantDto, req.user.userid);
+    return await this.chatService.addParticipantToChatOrFail(new Types.ObjectId(chat_id), addParticipantDto, req.user.userid);
   }
 
   // 8. Update a chat to include new messages
-  @Patch('add-message/:chatId')
+  @Patch('add-message/:chat_id')
   @ApiOperation({ summary: 'Add a new message to a chat' })
   @ApiResponse({ status: 200, description: 'Message added to the chat' })
-  @ApiParam({ name: 'chatId', type: String, description: 'The ID of the chat to update' })
+  @ApiParam({ name: 'chat_id', type: String, description: 'The ID of the chat to update' })
   @ApiBody({ type: AddMessageDto, description: 'Message details to add to the chat' })
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
+  @UseGuards(IsChatMemberHttpGuard)
 
-  async addMessage(@Param('chatId') chatId: string, @Body() addMessageDto: AddMessageDto) {
-    return await this.chatService.addMessageToChatOrFail(addMessageDto);
+  async addMessage(
+    @Param('chat_id') chat_id: string, 
+    @Body() addMessageDto: AddMessageDto,
+    @Req() req: any) {
+      console.log('addMessageDto', addMessageDto);
+    return await this.chatService.addMessageToChatOrFail(new Types.ObjectId(chat_id), addMessageDto, new Types.ObjectId(req.user.userid));
   }
 
-  // 9. Update chat name (public or private) of a chat
+  // 9. Update chat name of a chat
   @ApiOperation({ summary: 'Update the chat name' })
   @ApiResponse({ status: 200, description: 'Chat type updated' })
-  @ApiParam({ name: 'chatId', type: String, description: 'The ID of the chat to update' })
+  @ApiParam({ name: 'chat_id', type: String, description: 'The ID of the chat to update' })
   @ApiBody({ type: UpdateChatNameDto, description: 'New chat type to set' })
-  @Patch('update-type/:chatId')
+  @Patch('update-name/:chat_id')
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
+  @UseGuards(IsChatMemberHttpGuard)
 
   async updateChatName(
-    @Param('chatId') chatId: Types.ObjectId, @Body() updateChatNameDto: UpdateChatNameDto,
+    @Param('chat_id') chat_id: Types.ObjectId, @Body() updateChatNameDto: UpdateChatNameDto,
     @Req() req: any) {
     const initiator = req.user.userid;
-    return await this.chatService.updateChatNameOrFail(chatId, updateChatNameDto.chatName, initiator); 
+    return await this.chatService.updateChatNameOrFail(chat_id, updateChatNameDto.chatName, initiator); 
   }
 
   // 10. Leave a chat (remove student ID from participants list and if a chat has no participants it is archived)
-  @Patch('leave/:chatId/:studentId')
+  @Patch('leave/:chat_id/:studentId')
   @ApiOperation({ summary: 'Remove a student from a chat (leave chat)' })
   @ApiResponse({ status: 200, description: 'Student removed from the chat' })
-  @ApiParam({ name: 'chatId', type: String, description: 'The ID of the chat to leave' })
+  @ApiParam({ name: 'chat_id', type: String, description: 'The ID of the chat to leave' })
   @ApiParam({ name: 'studentId', type: String, description: 'The ID of the student leaving the chat' })
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
+  @UseGuards(IsChatMemberHttpGuard)
 
-  async leaveChat(@Param('chatId') chatId: Types.ObjectId, @Param('studentId') studentId: Types.ObjectId) {
-    return this.chatService.leaveChatOrFail(chatId, studentId);
+  async leaveChat(@Param('chat_id') chat_id: Types.ObjectId, @Param('studentId') studentId: Types.ObjectId) {
+    return this.chatService.leaveChatOrFail(chat_id, studentId);
   }
 
  
-  //axios.get('/api/chats/public-groups'),
-  @Get('public-groups')
-  @ApiOperation({ summary: 'Get all public group chats' })
-  @ApiResponse({ status: 200, description: 'List of all public group chats' })
-  @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
-  async getPublicGroupChats( @Req() req: any) {
-    return await this.chatService.getPublicGroupChats(req.user.userid);
-  }
   
-  //axios.get('/api/users')
-  @Get('potential-participants')
-  @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({ status: 200, description: 'List of all users' })
-  @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
-  async getAllPotentialParticipants( @Req() req: any) {
-    return await this.chatService.getPotentialParticipants(req.user.userid);
-  }
+  
+  // //axios.get('/api/users')
+  // @Get('potential-participants')
+  // @ApiOperation({ summary: 'Get all users' })
+  // @ApiResponse({ status: 200, description: 'List of all users' })
+  // @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
+  // async getAllPotentialParticipants( @Req() req: any) {
+  //   return await this.chatService.getPotentialParticipants(req.user.userid);
+  // }
 
 }
 

@@ -133,7 +133,7 @@ export class AnnouncementService {
     const course = await this.courseService.findOne(announcement.course_id);
     if(user.role === 'student') {
       const enrolledStudents = await this.userService.getAllStudentsInCourse(course._id.toString());
-      if (!enrolledStudents.some(student => (student as any)._id.equals(initiator))) {
+      if (enrolledStudents.some(student => (student as any)._id.toString()!==initiator.toString())) {
         throw new NotFoundException(`Student is not enrolled in the course`);
       }
     } else if(user.role === 'instructor') {

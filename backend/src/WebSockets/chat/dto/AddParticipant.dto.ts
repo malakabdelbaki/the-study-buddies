@@ -1,4 +1,4 @@
-import { IsOptional, IsString , IsEnum, IsArray, ArrayNotEmpty, IsMongoId} from 'class-validator';
+import { IsOptional, IsString , IsEnum, IsArray, ArrayNotEmpty, IsMongoId, Validate} from 'class-validator';
 //// import { Exists } from '../../common/validators/exists.validator';
 // import { HasRole } from '../../common/validators/has-role.validator';
 import { Role } from '../../../enums/role.enum';
@@ -14,18 +14,10 @@ export class AddParticipantDto{
   })
   @IsArray()
   @ArrayNotEmpty()
-  @Transform(({ value }) => {
-    return new Types.ObjectId(value); // Ensure it's converted to an ObjectId
+  @Validate(ExistsOnDatabase, [{ modelName: 'User', column: '_id' }], {
+    each: true, 
+    message: 'One or more student IDs do not exist in the database',
   })  
-  @ExistsOnDatabase({ modelName: 'User', column: '_id' })
-  participant: Types.ObjectId;
+  participants: Types.ObjectId[];
 
-  @ApiProperty({
-    description: 'The chat ID to add the participants to.',
-    type: String,
-    example: '60a68a37b8b5b8cfe5b5f5c0', // Example ObjectId
-  })
-  @IsMongoId()
-  @ExistsOnDatabase({ modelName: 'Chat', column: '_id' })
-  chat_id: Types.ObjectId;
 }

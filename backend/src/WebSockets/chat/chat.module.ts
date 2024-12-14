@@ -27,9 +27,10 @@ import { NotificationModule } from '../notification/notification.module';
     CoursesModule,
     AuthModule,
     LogsModule,
-    NotificationModule,
+    NotificationModule
   ],
   controllers: [ChatController],
   providers: [ChatGateway, ChatService, WsJwtGuard, WsAuthorizationGuard],
+  exports: [ChatService]
 })
 export class ChatModule {}

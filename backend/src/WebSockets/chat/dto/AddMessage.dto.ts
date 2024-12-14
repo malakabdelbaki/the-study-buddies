@@ -8,18 +8,7 @@ import { Transform } from 'class-transformer';
 import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 
 export class AddMessageDto {
-  @ApiProperty({
-    description: 'The sender ID of the message.',
-    type: String,
-    example: '60a68a37b8b5b8cfe5b5f5c0', // Example ObjectId
-  })
-
-  @Transform(({ value }) => {
-    return new Types.ObjectId(value); // Ensure it's converted to an ObjectId
-  })
-  @ExistsOnDatabase({ modelName: 'User', column: '_id' })
-  sender_id: Types.ObjectId;
-
+  
   @ApiProperty({
     description: 'The content of the message.',
     type: String,
@@ -29,12 +18,4 @@ export class AddMessageDto {
   @IsNotEmpty()
   content: string;
 
-  @ApiProperty({
-    description: 'The chat ID of the message.',
-    type: String,
-    example: '60a68a37b8b5b8cfe5b5f5c0', // Example ObjectId
-  })
-  @IsMongoId()
-  @ExistsOnDatabase({ modelName: 'Chat', column: '_id' })
-  chat_id: Types.ObjectId;
 }
