@@ -7,7 +7,7 @@ export class CreateQuizDto {
     @IsString()
     @IsMongoId()
     @ExistsOnDatabase({modelName:'Module',column:'_id'})
-    @Validate(StudentCanAccessModuleValidator)
+    // @Validate(StudentCanAccessModuleValidator)
         module_id: string;
 
     @IsString()

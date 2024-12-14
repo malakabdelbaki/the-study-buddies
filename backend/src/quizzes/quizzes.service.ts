@@ -393,13 +393,38 @@ export class QuizzesService {
       console.log("module: ", module);
       //get progress by user_id and course_id - working
       const progress = await this.progressModel.findOne({userId: student._id, courseId: module.course_id }).exec();
+      if (!progress) {
+        throw new NotFoundException(`Progress not found for User ID ${user_id} and Course ID ${module.course_id}`);
+      }
       console.log("progress: ", progress);
       console.log("############ 1 ##############");
+
       //update progress - working
       progress.AccumilativeGrade += scorePercentage;
       progress.totalNumberOfQuizzes += 1;
       progress.AverageGrade = progress.AccumilativeGrade / progress.totalNumberOfQuizzes;
       console.log("############ 2 ##############");
+
+      //updating the student level based on the AverageGrade for the adaptive modules - working
+      //if a beginner student Average grade is higher than 40% then becomes an Intermediate student - working
+      if(progress.AverageGrade > 40 && progress.studentLevel == "Beginner" ){
+        progress.studentLevel = "Intermediate" 
+      }else{
+        //if an Intermediate student Average grade is higher than 70% then becomes an Advanced student - working
+        if(progress.AverageGrade > 70 && progress.studentLevel == "Intermediate" ){
+          progress.studentLevel = "Advanced" 
+        }
+      }
+
+      // adding modules to student progress - working
+      if(progress.completedModules.includes(module._id as Types.ObjectId)){
+        console.log(`Module ${module._id} already found in the completed Modules`)
+      }
+      if(!progress.completedModules.includes(module._id as Types.ObjectId)){
+        progress.completedModules.push(module._id as Types.ObjectId)
+        console.log(`Module ${module._id} added in the completed Modules`)
+      }
+        
       //save progress to the database - working
       progress.save();
       console.log("progress: ", progress);

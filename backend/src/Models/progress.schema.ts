@@ -2,6 +2,8 @@ import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
 import {Document, Types} from 'mongoose';
 import {User} from './user.schema';
 import { Course } from './course.schema';
+import { Course_diff } from 'src/enums/course-diff.enum';
+
 
 export type ProgressDocument = Progress & Document;
 
@@ -38,8 +40,11 @@ export class Progress {
   @Prop({ required: true ,default: 0 })
   AverageGrade : number;
 
-  @Prop({required:true,default:'beginner'})
+  @Prop({required:true,enum: Object.values(Course_diff),default:'Beginner'})
   studentLevel: string;
+
+  @Prop({ type: [Types.ObjectId], ref: 'Module', required: true , default: [] })
+  completedModules: Types.ObjectId[];
 }
 
 //SchemaFactory.createForClass(): Converts the decorated Progress class into a Mongoose schema
