@@ -424,6 +424,15 @@ export class QuizzesService {
         progress.completedModules.push(module._id as Types.ObjectId)
         console.log(`Module ${module._id} added in the completed Modules`)
       }
+
+      // updating the completion percentage
+      let totalNumberOfModules = await this.moduleModel.countDocuments({ course_id: module.course_id }).exec();
+      console.log("totalNumberOfModules: ", totalNumberOfModules);
+      let completedModules = progress.completedModules.length;
+      console.log("completedModules: ", completedModules);
+      progress.completionPercentage = (completedModules / totalNumberOfModules) * 100;
+      console.log("progress.completionPercentage: ", progress.completionPercentage);
+
         
       //save progress to the database - working
       progress.save();
@@ -431,6 +440,7 @@ export class QuizzesService {
       console.log("progress.AccumilativeGrade: ", progress.AccumilativeGrade);
       console.log("progress.totalNumberOfQuizzes: ", progress.totalNumberOfQuizzes);
       console.log("progress.AverageGrade: ", progress.AverageGrade);
+      console.log("progress.completionPercentage: ", progress.completionPercentage);
       console.log("############ 3 ##############");
 
 
