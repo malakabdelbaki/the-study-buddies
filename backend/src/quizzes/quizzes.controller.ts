@@ -11,8 +11,8 @@ import { SetMetadata } from '@nestjs/common';
 import { Role } from 'src/enums/role.enum';
 import { EnrolledGuard } from 'src/auth/guards/enrolled.guard';
 
-@UseGuards(AuthGuard, authorizationGuard, EnrolledGuard)
-@SetMetadata(ROLES_KEY, Role.Student)
+// @UseGuards(AuthGuard, authorizationGuard, EnrolledGuard)
+// @SetMetadata(ROLES_KEY, Role.Student)
 @Controller('quizzes')
 export class QuizzesController {
     constructor(private readonly quizzesService: QuizzesService) {}
