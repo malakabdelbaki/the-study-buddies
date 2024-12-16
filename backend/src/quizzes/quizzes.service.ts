@@ -364,14 +364,12 @@ export class QuizzesService {
 
       //calculate the score of the student - working
       let score = 0;
-      for(var index in quiz.questions){
+      for (const answer of answers) {
         console.log("entered score calculation loop");
-        const question_id = quiz.questions[index]; 
-        //find answer by question_id
-        const answer = await this.answerModel.findOne({question_id: question_id}).exec();
-        // console.log("answer for score : ", answer); - working
-        if(answer.isCorrect)
+        console.log("answer for score:", answer);
+        if (answer.isCorrect === true) { 
           score++;
+        }
       }
 
 
@@ -420,9 +418,10 @@ export class QuizzesService {
       if(progress.completedModules.includes(module._id as Types.ObjectId)){
         console.log(`Module ${module._id} already found in the completed Modules`)
       }
-      if(!progress.completedModules.includes(module._id as Types.ObjectId)){
+      //if the student has not completed the module and the score is greater than 30% then add the module to the completed modules
+      if(!progress.completedModules.includes(module._id as Types.ObjectId) && scorePercentage >= 30){
         progress.completedModules.push(module._id as Types.ObjectId)
-        console.log(`Module ${module._id} added in the completed Modules`)
+        console.log(`Module ${module._id} added to the completed Modules`)
       }
 
       // updating the completion percentage
