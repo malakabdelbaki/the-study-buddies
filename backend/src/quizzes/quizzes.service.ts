@@ -364,14 +364,12 @@ export class QuizzesService {
 
       //calculate the score of the student - working
       let score = 0;
-      for(var index in quiz.questions){
+      for (const answer of answers) {
         console.log("entered score calculation loop");
-        const question_id = quiz.questions[index]; 
-        //find answer by question_id
-        const answer = await this.answerModel.findOne({question_id: question_id}).exec();
-        // console.log("answer for score : ", answer); - working
-        if(answer.isCorrect)
+        console.log("answer for score:", answer);
+        if (answer.isCorrect === true) { 
           score++;
+        }
       }
 
 
@@ -393,19 +391,55 @@ export class QuizzesService {
       console.log("module: ", module);
       //get progress by user_id and course_id - working
       const progress = await this.progressModel.findOne({userId: student._id, courseId: module.course_id }).exec();
+      if (!progress) {
+        throw new NotFoundException(`Progress not found for User ID ${user_id} and Course ID ${module.course_id}`);
+      }
       console.log("progress: ", progress);
       console.log("############ 1 ##############");
+
       //update progress - working
       progress.AccumilativeGrade += scorePercentage;
       progress.totalNumberOfQuizzes += 1;
       progress.AverageGrade = progress.AccumilativeGrade / progress.totalNumberOfQuizzes;
       console.log("############ 2 ##############");
+
+      //updating the student level based on the AverageGrade for the adaptive modules - working
+      //if a beginner student Average grade is higher than 40% then becomes an Intermediate student - working
+      if(progress.AverageGrade > 40 && progress.studentLevel == "Beginner" ){
+        progress.studentLevel = "Intermediate" 
+      }else{
+        //if an Intermediate student Average grade is higher than 70% then becomes an Advanced student - working
+        if(progress.AverageGrade > 70 && progress.studentLevel == "Intermediate" ){
+          progress.studentLevel = "Advanced" 
+        }
+      }
+
+      // adding modules to student progress - working
+      if(progress.completedModules.includes(module._id as Types.ObjectId)){
+        console.log(`Module ${module._id} already found in the completed Modules`)
+      }
+      //if the student has not completed the module and the score is greater than 30% then add the module to the completed modules
+      if(!progress.completedModules.includes(module._id as Types.ObjectId) && scorePercentage >= 30){
+        progress.completedModules.push(module._id as Types.ObjectId)
+        console.log(`Module ${module._id} added to the completed Modules`)
+      }
+
+      // updating the completion percentage
+      let totalNumberOfModules = await this.moduleModel.countDocuments({ course_id: module.course_id }).exec();
+      console.log("totalNumberOfModules: ", totalNumberOfModules);
+      let completedModules = progress.completedModules.length;
+      console.log("completedModules: ", completedModules);
+      progress.completionPercentage = (completedModules / totalNumberOfModules) * 100;
+      console.log("progress.completionPercentage: ", progress.completionPercentage);
+
+        
       //save progress to the database - working
       progress.save();
       console.log("progress: ", progress);
       console.log("progress.AccumilativeGrade: ", progress.AccumilativeGrade);
       console.log("progress.totalNumberOfQuizzes: ", progress.totalNumberOfQuizzes);
       console.log("progress.AverageGrade: ", progress.AverageGrade);
+      console.log("progress.completionPercentage: ", progress.completionPercentage);
       console.log("############ 3 ##############");
 
 

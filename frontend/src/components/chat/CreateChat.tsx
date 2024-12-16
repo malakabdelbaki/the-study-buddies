@@ -1,12 +1,15 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { User } from '../../types/User';
-import { Course } from '../../types/Course';
 import { fetchPotentialParticipants } from './FetchPotentialParticipants';
 
+export interface CourseInfo {
+  id: string;
+  title: string;
+}
 interface CreateChatProps {
   userId: string;
-  courseList: Course[];
+  courseList: CourseInfo[];
   userRole: 'student' | 'instructor';
   onCreateChat: (userId: string, chatType: 'direct' | 'group', chatName: string, visibility: 'private' | 'public', courseId: string) => void;
 }

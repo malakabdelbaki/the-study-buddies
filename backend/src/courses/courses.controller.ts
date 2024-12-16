@@ -15,24 +15,25 @@ import { AuthGuard } from '../auth/guards/authentication.guard';
 import { InstructorGuard } from 'src/auth/guards/instructor.guard';
 
 @ApiTags('Courses') // Tag for Swagger grouping
-@UseGuards(AuthGuard)
+//@UseGuards(AuthGuard)
 @Controller('courses')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @ApiOperation({ summary: 'Create a new course' })
-  @Roles(Role.Instructor)
+  //@Roles(Role.Instructor)
   @UseGuards(authorizationGuard)
-  @ApiOperation({ summary: 'Create a new course' })
-  @Roles(Role.Instructor)
-  @UseGuards(authorizationGuard)
+  @ApiOperation({ summary: 'Creat e a new course' })
+  //@Roles(Role.Instructor)
+  //@UseGuards(authorizationGuard)
   @Post()
   async create(@Req() request,@Body() createCourseDto: CreateCourseDto) {
     try {
-      const instructorId = request.user?.userid; // Extract instructorId
-      if(!instructorId || !request.user){
-        throw new HttpException('Error not found an instructor', HttpStatus.INTERNAL_SERVER_ERROR);
-      }
+      const instructorId = '675467bea5b439cd11141846'; // Extract instructorId
+      console.log('kk');
+      // if(!instructorId || !request.user){
+      //   throw new HttpException('Error not found an instructor', HttpStatus.INTERNAL_SERVER_ERROR);
+      // }
       return await this.coursesService.create({...createCourseDto,
         instructor_id: new Types.ObjectId(instructorId)});
     } catch (err) {
@@ -56,7 +57,11 @@ export class CoursesController {
     @Query('instructor') instructor?: string,
   ) {
     try {
-      return await this.coursesService.findAll(title, category, key_word, difficulty, instructor);
+      console.log('entered');
+      let courses = await this.coursesService.findAll(title, category, key_word, difficulty, instructor);
+      console.log(courses);
+      return courses;
+
     } catch (err) {
       console.error('Error fetching courses:', err.message);
       throw new HttpException('Error fetching courses', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -69,6 +74,7 @@ export class CoursesController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
+      console.log(id);
       const objectId = new Types.ObjectId(id);
       return await this.coursesService.findOne(objectId);
     } catch (err) {
