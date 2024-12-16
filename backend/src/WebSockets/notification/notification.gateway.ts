@@ -11,12 +11,7 @@ import { CoursesService } from '../../courses/courses.service';
 export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
-  constructor(private userService: UserService,
-    private chatService: ChatService,
-    private threadsService: ThreadsService,
-    private forumService: ForumService,
-    private courseService: CoursesService
-  ) {}
+  constructor() {}
 
   private onlineUsers = new Map<string, string>(); // Map userId to socketId
 

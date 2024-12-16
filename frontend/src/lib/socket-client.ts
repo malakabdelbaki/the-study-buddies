@@ -1,120 +1,73 @@
-'use client';
+import { io, Socket } from 'socket.io-client';
 
-import { io, Socket } from "socket.io-client";
-import { useState, useEffect } from 'react';
+const SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000";
-
-export const socket: Socket = io(SOCKET_URL, {
-  reconnection: true,
-  reconnectionAttempts: Infinity,
-  reconnectionDelay: 1000,
-  reconnectionDelayMax: 5000,
-  timeout: 20000,
-  transports: ['websocket', 'polling'],
-  autoConnect: false, // Prevent auto-connection on import
-  withCredentials: true,
-});
+let socket: Socket | null = null;
 
 export const initializeSocket = () => {
-  if (!socket.connected) {
-    socket.connect();
+  const token  = localStorage.getItem('token');
+  if (!socket) {
+    socket = io(SOCKET_SERVER_URL, {
+      auth: {
+        token: `Bearer ${token}`
+      },
+      transports: ['websocket'],
+      reconnection: true, // Enable automatic reconnection
+      reconnectionAttempts: 5, // Number of attempts before failing
+    });
+
+    socket.on('connect', () => {
+      console.log('Connected to WebSocket server');
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Connection error:', error.message);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from WebSocket server');
+    });
   }
 
-  socket.on('connect', () => {
-    console.log('Socket connected successfully');
-  });
-
-  socket.on('connect_error', (error: any) => {
-    console.error('Socket connection error:', error);
-    if (error.description) {
-      console.error('Error description:', error.description);
-    }
-    // Implement exponential backoff for reconnection
-    const reconnectDelay = Math.min(1000 * Math.pow(2, socket.io.opts.reconnectionAttempts || 0), 60000);
-    setTimeout(() => {
-      console.log(`Attempting to reconnect in ${reconnectDelay}ms...`);
-      socket.connect();
-    }, reconnectDelay);
-  });
-
-  socket.on('disconnect', (reason) => {
-    console.log('Socket disconnected:', reason);
-    if (reason === 'io server disconnect') {
-      socket.connect();
-    }
-  });
+  return socket;
 };
 
-export const isSocketConnected = (): boolean => {
-  return socket.connected;
-};
-
-export const reconnectSocket = (): void => {
-  if (!socket.connected) {
-    socket.connect();
+export const getSocket = (): Socket => {
+  if (!socket) {
+    throw new Error('Socket not initialized. Call initializeSocket first.');
   }
+  return socket;
 };
 
-export const disconnectSocket = (): void => {
-  if (socket.connected) {
+export const disconnectSocket = () => {
+  if (socket) {
     socket.disconnect();
+    socket = null;
   }
-};
-
-export const useSocketStatus = () => {
-  const [isConnected, setIsConnected] = useState(socket.connected);
-
-  useEffect(() => {
-    const onConnect = () => setIsConnected(true);
-    const onDisconnect = () => setIsConnected(false);
-
-    socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
-
-    return () => {
-      socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
-    };
-  }, []);
-
-  return isConnected;
 };
 
 export const checkServerAvailability = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${SOCKET_URL}/health`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await fetch(SOCKET_SERVER_URL, { method: 'HEAD' });
     return response.ok;
-  } catch (error) {
-    console.error('Error checking server availability:', error);
+  } catch {
     return false;
   }
-};
 
-export const useSocketEvent = <T>(eventName: string, callback: (data: T) => void) => {
-  useEffect(() => {
-    socket.on(eventName, callback);
-    return () => {
-      socket.off(eventName, callback);
-    };
-  }, [eventName, callback]);
-};
 
-export const emitSocketEvent = <T>(eventName: string, data: T): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    socket.timeout(5000).emit(eventName, data, (err: Error | null, response: any) => {
-      if (err) {
-        reject(err);
+ };
+
+
+export const emitSocketEvent = async <T, R = any>(event: string, data: T): Promise<R> => {
+  const socket = getSocket();
+
+  return new Promise<R>((resolve, reject) => {
+    socket.emit(event, data, (response: R) => {
+      if (response && typeof response === 'object' && 'error' in response) {
+        reject(new Error(response.error as string));
       } else {
         resolve(response);
       }
     });
   });
 };
-

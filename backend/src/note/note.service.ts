@@ -142,7 +142,7 @@ export class NoteService {
       throw new NotFoundException(`Note #${noteId} not found`);
     }
   
-    return note.userId.equals(userId);
+    return note.userId.toString()===userId.toString();
   }
 
 }

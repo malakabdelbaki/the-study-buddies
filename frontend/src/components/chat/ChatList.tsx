@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import { Chat } from '../../types/Chat';
 
@@ -16,7 +17,7 @@ const ChatList: React.FC<ChatListProps> = ({ chats, onSelectChat, title }) => {
         onChange={(e) => onSelectChat(e.target.value)}
       >
         <option value="">Select a chat</option>
-        {chats.map(chat => (
+        {chats && chats.map(chat => (
           <option key={chat._id} value={chat._id}>
             {chat.chat_name}
           </option>

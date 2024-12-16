@@ -85,7 +85,7 @@ export class ThreadsService {
     if (!forum) {
       throw new NotFoundException(`Forum #${thread.forumId} not found`);
     }
-    forum.threads = forum.threads.filter((threadId) => !threadId.equals(id));
+    forum.threads = forum.threads.filter((threadId) => threadId.toString()!==id);
     const deletedThread = await this.threadModel.findByIdAndDelete(id).exec();
     return deletedThread;
   }
@@ -96,7 +96,7 @@ export class ThreadsService {
       throw new NotFoundException(`Thread #${threadId} not found`);
     }
 
-    return thread.createdBy.equals(userId);
+    return thread.createdBy.toString()===userId.toString();
   }
 
   async getForumOfThread(threadId: string): Promise<Forum> {

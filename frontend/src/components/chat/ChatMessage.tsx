@@ -4,7 +4,6 @@ import React from "react";
 interface ChatMessageProps {
   message: string;
   isMine: boolean;
-  // isSystemMessage: boolean;
   sender: string;
 }
 

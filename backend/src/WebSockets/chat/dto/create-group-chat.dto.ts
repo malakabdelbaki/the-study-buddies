@@ -30,7 +30,7 @@ export class CreateGroupChatDto{
     type: [Types.ObjectId]
   })
   @Validate(ExistsOnDatabase, [{ modelName: 'User', column: '_id' }], {
-    each: true, // Applies the `ExistsOnDatabase` validator to each element in the array
+    each: true, 
     message: 'One or more student IDs do not exist in the database',
   })
   participants: Types.ObjectId[]
@@ -40,7 +40,7 @@ export class CreateGroupChatDto{
     type: String,
   })
   @IsEnum(ChatVisibility)
-  chat_type: ChatVisibility;
+  visibility: ChatVisibility;
 
 
 

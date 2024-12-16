@@ -100,7 +100,7 @@ export class ForumService {
 
     const user = await this.userService.findUserById(initiator.toString()); 
     if(user.role == Role.Student 
-      && !(initiator).equals(forum.created_by)) {
+      && initiator.toString()!==forum.created_by.toString()) {
       throw new NotFoundException('User not authorized to update forum');
     }
 
@@ -149,6 +149,6 @@ export class ForumService {
       return true;
     }
     const enrolledStudents = await this.userService.getAllStudentsInCourse(course._id.toString());
-    return enrolledStudents.some(student => (student as any)._id.equals(userId));
+    return enrolledStudents.some(student => (student as any)._id.toString()===userId.toString());
   }
 }
