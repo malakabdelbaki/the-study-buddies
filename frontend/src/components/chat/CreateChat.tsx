@@ -2,40 +2,61 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '../../types/User';
 import { Course } from '../../types/Course';
+import { fetchPotentialParticipants } from './FetchPotentialParticipants';
 
 interface CreateChatProps {
-  userList: User[];
+  userId: string;
   courseList: Course[];
   userRole: 'student' | 'instructor';
   onCreateChat: (userId: string, chatType: 'direct' | 'group', chatName: string, visibility: 'private' | 'public', courseId: string) => void;
 }
 
-const CreateChat: React.FC<CreateChatProps> = ({ userList, courseList, userRole, onCreateChat }) => {
+const CreateChat: React.FC<CreateChatProps> = ({userId, courseList, userRole, onCreateChat }) => {
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [chatName, setChatName] = useState<string>('');
   const [chatType, setChatType] = useState<'direct' | 'group'>('direct');
   const [chatVisibility, setChatVisibility] = useState<'private' | 'public'>('private');
   const [selectedCourse, setSelectedCourse] = useState<string>('');
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [usersList, setUserList] = useState<User[]>([]);
+ 
 
-  useEffect(() => {
-    if (selectedCourse) {
-      const usersInCourse = userList.filter(user => 
-        user.enrolledCourses?.includes(selectedCourse) || 
-        user.taughtCourses?.includes(selectedCourse)
-      );
-      setFilteredUsers(usersInCourse);
-    } else {
-      setFilteredUsers([]);
-    }
-  }, [selectedCourse, userList]);
-
-  const handleCreateChat = () => {
+ useEffect(() => {
+  if (selectedCourse) {
+    const fetchParticipants = async () => {
+      try {
+        const response = await fetch(
+          `/api/communication/potential-participants/${selectedCourse}`,
+          {
+            method: "GET",
+            cache: "no-store",
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        const users = await response.json();
+        setUserList(users);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+    fetchParticipants();
+  } else {
+    setUserList([]); // Clear users when no course is selected
+  }
+}, [selectedCourse]);
+ 
+const handleCreateChat = () => {
     if (selectedUser && selectedCourse) {
-      onCreateChat(selectedUser, chatType, chatName, chatVisibility, selectedCourse);
+      onCreateChat(
+        selectedUser,
+        chatType,
+        chatName,
+        chatVisibility,
+        selectedCourse
+      );
     }
   };
-
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Create New Chat</h2>
@@ -53,14 +74,14 @@ const CreateChat: React.FC<CreateChatProps> = ({ userList, courseList, userRole,
           Group Chat
         </button>
       </div>
-      <select 
+      <select
         className="w-full p-2 border rounded"
         value={selectedCourse}
         onChange={(e) => setSelectedCourse(e.target.value)}
       >
         <option value="">Select a course</option>
-        {courseList.map(course => (
-          <option key={course._id} value={course._id}>
+        {courseList.map((course) => (
+          <option key={course.id} value={course.id}>
             {course.title}
           </option>
         ))}
@@ -91,7 +112,7 @@ const CreateChat: React.FC<CreateChatProps> = ({ userList, courseList, userRole,
         disabled={!selectedCourse}
       >
         <option value="">Select a user</option>
-        {filteredUsers.map(user => (
+        {usersList.map(user => (
           <option key={user._id} value={user._id}>
             {user.name}
           </option>

@@ -322,9 +322,10 @@ export class ChatService {
     if(user.role == Role.Student){
     const courses = await this.userService.getEnrolledCoursesOfStudent(userId);
     for(const course of courses){
-      chats.push(await this.getPublicChatsOfCourse(course.id)); 
+      const chatsOfCourse = await this.getPublicChatsOfCourse(course.id);
+      chats.push(...chatsOfCourse.filter(chat => !chat.participants.some(participant => participant.toString() === userId)));
     }
-  }
+  }  
   if(user.role == Role.Instructor){
     const courses = await this.userService.getCoursesByInstructor(userId);
     console.log("hi", courses);
@@ -337,22 +338,23 @@ export class ChatService {
   return chats;
 } 
 
-// async getPotentialParticipants(userId:string){
-//   const user = await this.userService.findUserById(userId);
-//   if (!user) {
-//     throw new EntityDoesNotExistException('User', userId);
-//   }
-//   const participants = [];
-//   let courses = [];
-//   if(user.role == Role.Student){
-//     courses = await this.userService.getEnrolledCoursesOfStudent(userId);
-//   }
-//   if(user.role == Role.Instructor){
-//     courses = await this.userService.getCoursesByInstructor(userId);
-//   }
-//   for(const course in courses){
-//     participants.push(await this.userService.getAllStudentsInCourse((course as any)._id));
-//   }
-//   return participants;
-// }
+async getPotentialParticipants(course_id:string, userId:string){
+  const user = await this.userService.findUserById(userId);
+  const course = await this.coursesService.findOne(new Types.ObjectId(course_id));
+  if (!user) {
+    throw new EntityDoesNotExistException('User', userId);
+  }
+  if (!course) {
+    throw new EntityDoesNotExistException('Course', course_id);
+  }
+
+  const participants = [];
+  const students = course.students;
+  for(const student of students){
+    if(student._id.toString() !== userId){  
+      participants.push(await this.userService.findUserById(student._id.toString()));
+  }
+  }
+  return participants;
+ }
 }

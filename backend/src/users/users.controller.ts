@@ -26,6 +26,19 @@
   export class UserController {
     constructor(private readonly userService: UserService) {}
 
+    @Get('me')
+    @ApiOperation({ summary: 'Get the current user' })
+    async getMe(@Req() req: any) {
+      const loggedInUser = req.user;
+      console.log(loggedInUser);
+  
+      if (!loggedInUser) {
+        throw new ForbiddenException('User is not authenticated');
+      }
+  
+      return await this.userService.findUserById(loggedInUser.userid);
+    }
+  
 ///////////////////////////////////////////////ADMIN ONLY////////////////////////////////////////////////////////////////////
 
     @Get('admins')
@@ -437,5 +450,5 @@
   //     throw new InternalServerErrorException(error.message || 'Failed to create progress');
   //   }
   // }
-  }
+}
   

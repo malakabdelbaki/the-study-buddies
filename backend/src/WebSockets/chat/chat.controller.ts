@@ -21,7 +21,16 @@ import { IsChatMemberHttpGuard } from 'src/auth/guards/IsChatMember.guard';
 export class ChatController {
   constructor(private readonly chatService: ChatService,
   ) {}
-
+// 1. Get all chats in which the student is a participant
+@Get()
+@ApiOperation({ summary: 'Get all chats for a student' })
+@ApiResponse({ status: 200, description: 'List of chats for the student' })
+@SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
+async getChatsOfUser(@Req() req: any) {
+  console.log(req);
+  console.log(req.user);
+  return await this.chatService.getChatsOfAStudentOrFail(req.user.userid);
+}
   @Get('publicGroups')
     @ApiOperation({ summary: 'Get all public group chats' })
     @ApiResponse({ status: 200, description: 'List of all public group chats' })
@@ -43,15 +52,6 @@ export class ChatController {
     return await this.chatService.getMessagesByChatId(chat_id, req.user.userid);
   }
 
-  // 1. Get all chats in which the student is a participant
-  @Get()
-  @ApiOperation({ summary: 'Get all chats for a student' })
-  @ApiResponse({ status: 200, description: 'List of chats for the student' })
-  @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
-  async getChatsOfUser(@Req() req: any) {
-    return await this.chatService.getChatsOfAStudentOrFail( req.user.userid);
-
-  }
 
   // 2. Get a certain chat by ID
   @Get(':chat_id')
@@ -155,14 +155,16 @@ export class ChatController {
  
   
   
-  // //axios.get('/api/users')
-  // @Get('potential-participants')
-  // @ApiOperation({ summary: 'Get all users' })
-  // @ApiResponse({ status: 200, description: 'List of all users' })
-  // @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
-  // async getAllPotentialParticipants( @Req() req: any) {
-  //   return await this.chatService.getPotentialParticipants(req.user.userid);
-  // }
+  //axios.get('/api/users')
+  @Get('potential-participants/:course_id')
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({ status: 200, description: 'List of all users' })
+  @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
+  async getAllPotentialParticipants(
+     @Req() req: any,
+    @Param('course_id') course_id: string) {
+    return await this.chatService.getPotentialParticipants(course_id, req.user.userid);
+  }
 
 }
 

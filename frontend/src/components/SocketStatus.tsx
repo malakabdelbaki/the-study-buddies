@@ -1,7 +1,15 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { socket, useSocketStatus, checkServerAvailability, useSocketEvent, emitSocketEvent, initializeSocket } from '@/lib/socket-client';
+import { 
+  initializeSocket, 
+  checkServerAvailability, 
+  emitSocketEvent, 
+  getSocket
+} from '@/lib/socket-client';
+import { useSocketStatus } from '@/hooks/useSocketStatus';
+import { useSocketEvent } from '@/hooks/useSocketEvent';
+import { cookies } from 'next/headers';
 
 export default function SocketStatus() {
   const isConnected = useSocketStatus();
@@ -10,15 +18,31 @@ export default function SocketStatus() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    initializeSocket();
+    // Fetch token from cookies
+    const initializeConnection = async () => {
+      const cookieStore = await cookies();
+      const cookieData = await cookieStore;
+      const token = cookieData.get('token')?.value;
+
+      if (token) {
+        initializeSocket(); // Pass the token to initialize the socket connection
+      } else {
+        console.error('Authentication token not found in cookies.');
+        setError('Authentication required. Unable to connect to WebSocket.');
+      }
+    };
+
+    initializeConnection();
+
     const checkAvailability = async () => {
       const available = await checkServerAvailability();
       setServerAvailable(available);
     };
+
     checkAvailability();
 
     return () => {
-      socket.disconnect();
+      getSocket().disconnect();
     };
   }, []);
 
@@ -37,6 +61,18 @@ export default function SocketStatus() {
     }
   };
 
+  const handleReconnect = async () => {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+
+    if (token) {
+      getSocket().connect(); // Reconnect the socket
+      console.log('Reconnecting to WebSocket server...');
+    } else {
+      setError('Token not found. Unable to reconnect.');
+    }
+  };
+
   return (
     <div className="p-4 bg-gray-100 rounded-lg">
       <h2 className="text-xl font-bold mb-4">Socket Status</h2>
@@ -45,7 +81,7 @@ export default function SocketStatus() {
       {!isConnected && serverAvailable && (
         <button 
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-2"
-          onClick={() => socket.connect()}
+          onClick={handleReconnect}
         >
           Reconnect
         </button>
@@ -65,4 +101,3 @@ export default function SocketStatus() {
     </div>
   );
 }
-

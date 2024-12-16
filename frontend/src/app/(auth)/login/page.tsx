@@ -8,47 +8,40 @@ import { useRouter } from "next/navigation"; //allows page to redirect after suc
 import axiosInstance from "@/app/utils/axiosInstance"; 
 import login from "./login.server"; //handles login logic
 
-let backend_url = "http://localhost:3001";
-
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const router = useRouter();
-  const [state,formAction]=useActionState(login,{message:''})
-  //initalise login with a default message, and return state, formAction =>handles form submission
-  if (state.success) {
-    router.push('/about')
-  }
- //redundant! this contains the logic that is in the login.server.tsx 
-  // const handleLogin = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   try {
-  //     const response = await axiosInstance.post(`${backend_url}/auth/login`, {
-  //       email,
-  //       password,
-  //     });
-  //     // console.log(data);
-  //     const { status, data } = response;
-  //     console.log("status",response.data);
-  //     if (status == 201) {
-  //       // handleSuccess(message);
-  //       localStorage.setItem("userId", response.data.user.userid);
-  //       localStorage.setItem("role", response.data.user.role);
-  //       // setSucessMessage(message)
-  //       setTimeout(() => {
-  //         router.push("/welcome"); // Redirect to home on successful login
-  //       }, 1000);
-  //     } else {
-  //       console.log();
-  //       // setErrorMessage(message);
-  //     }
-  //   } catch (err) {
-  //     alert("Login failed. Please check your credentials.");
-  //   }
-  // };
+  const [formState, setFormState] = useState<{ message: string | null }>({ message: null });
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
+    try {
+      // Make the POST request to the login API endpoint
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json(); // Parse JSON data from the response
+        setFormState({ message: 'Login successful!' });
+        router.push('/about');
+      } else {
+        const errorData = await response.json();
+        setFormState({ message: errorData.error || 'Login failed. Please try again.' });
+      }
+    } catch (error) {
+      setFormState({ message: 'An error occurred. Please try again.' });
+    }
+  };
+  
   return (
-    <form action={formAction}>
+    <form onSubmit={handleSubmit}>
       <h1>Login</h1>
       <input
       name="email"
@@ -66,8 +59,8 @@ export default function LoginPage() {
         onChange={(e) => setPassword(e.target.value)}
         required
       />
+      <p>{formState.message}</p>
       <button type="submit">Login</button>
-      <p>{state?.message}</p>
     </form>
   );
 }
