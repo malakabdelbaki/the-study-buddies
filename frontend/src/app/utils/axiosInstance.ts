@@ -13,12 +13,10 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async(config) => {
     const cookieStore = await cookies();
-    const token = cookieStore.get('CookieFromServer');
+    const token = cookieStore.get('token')?.value;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log('axiosInstance config:',
-      config);
     return config;
   },
   (error) => {

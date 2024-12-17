@@ -33,18 +33,20 @@ export function IsValidOptions(validationOptions?: ValidationOptions) {
               );
             }
           } else if (questionType === QuestionType.TrueOrFalse) {
-            // True/False questions must have exactly 2 options with keys 't' and 'f'
+            // True/False questions must have exactly 2 options with keys 'a' and 'b'
             if (keys.length !== 2) {
               throw new BadRequestException('True/False questions must have exactly 2 options.');
             }
 
-            const validKeys = ['t', 'f'];
+            const validKeys = ['a', 'b'];
             const invalidKeys = keys.filter((key) => !validKeys.includes(key));
             if (invalidKeys.length > 0) {
               throw new BadRequestException(
-                `Invalid keys for True/False: Expected 't' and 'f', but got ${invalidKeys.join(', ')}.`
+                `Invalid keys for True/False: Expected 'a' and 'b', but got ${invalidKeys.join(', ')}.`
               );
             }
+          } else {
+            throw new BadRequestException(`Unsupported question type: ${questionType}`);
           }
 
           return true; // Validation passed

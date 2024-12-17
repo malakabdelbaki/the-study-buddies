@@ -3,6 +3,4 @@ export enum Choice {
     B = 'b',
     C = 'c',
     D = 'd',
-    T = 't',
-    F = 'f',
   }

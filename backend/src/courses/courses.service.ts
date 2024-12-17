@@ -9,8 +9,9 @@ import { ModuleService } from 'src/module/module.service';
 import { CreateModuleDto } from 'src/module/dto/create-module.dto';
 import { Module } from 'src/Models/modules.schema';
 import { Role } from 'src/enums/role.enum';
-import { ProgressDocument } from 'src/Models/progress.schema';
+import { Progress, ProgressDocument } from 'src/Models/progress.schema';
 import { Difficulty } from 'src/enums/difficulty.enum';
+import { Course_diff } from 'src/enums/course-diff.enum';
 
 @Injectable()
 export class CoursesService {
@@ -33,8 +34,9 @@ export class CoursesService {
     }
   }
 
-  async findAll(title?: string, category?: string, key_word?: string, difficulty?: string, instructor?: string) {
+  async findAll(userid:Types.ObjectId,title?: string, category?: string, key_word?: string, difficulty?: string, instructor?: string) {
     try {
+
       let courses = await this.courseModel.find().populate('instructor_id');
       if (title) courses = courses.filter((course) => course.title === title);
       if (category) courses = courses.filter((course) => course.category === category);
@@ -46,6 +48,12 @@ export class CoursesService {
           return instructorDetails&& instructorDetails.name &&instructorDetails.name === instructor ;
         });
       }
+
+      let user = await this.userModel.findById(userid);
+      if (user.role === Role.Student){
+        courses = courses.filter((course)=>course.is_deleted===false);
+      }
+
       return courses;
     } catch (err) {
       console.error('Error fetching courses:', err.message);
@@ -75,6 +83,11 @@ export class CoursesService {
       if (!course) {
         throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
       }
+      updateCourseDto.key_words.forEach((keyword)=>{
+        course.key_words.push(keyword);
+         course.save()
+      });
+      updateCourseDto.key_words = undefined;
       const updatedCourse = await this.courseModel.findByIdAndUpdate(id, updateCourseDto, { new: true });
       return await updatedCourse.save();
     } catch (err) {
@@ -122,13 +135,12 @@ export class CoursesService {
         if(!StudentPerformance)
           throw new HttpException('Not Found The Progress Of the student', HttpStatus.INTERNAL_SERVER_ERROR);
 
-        if (StudentPerformance.studentLevel === 'beginner')
+        if (StudentPerformance.studentLevel === Course_diff.BEGINNER)
             modules = modules.filter((module:any) => module.module_difficulty === Difficulty.EASY)
       
-        else if (StudentPerformance.studentLevel === 'intermediate')
+        else if (StudentPerformance.studentLevel === Course_diff.INTERMEDIATE)
             modules = modules.filter((module:any) => module.module_difficulty === Difficulty.MEDIUM || 
                                 module.module_difficulty === Difficulty.EASY );
-
       }
       return modules;
     
@@ -145,24 +157,28 @@ export class CoursesService {
         throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
       }
 
-      if (!course.students || course.students.length > 0) {
-        throw new HttpException(
-          'Cannot delete course as it still has enrolled students',
-          HttpStatus.BAD_REQUEST,
-        );
+      if (!course.students || course.students.length === 0) {
+        course.is_deleted = true; 
+        course.save();
+        return 'Course deleted successfully';
       }
 
-      const modules = course.modules;
-      for (const mod of modules) {
-        try {
-          await this.moduleService.deleteModule(mod);
-        } catch (err) {
-          console.error(`Error deleting module ${mod}:`, err.message);
+      let IsNotComplete = false;
+      course.students.forEach(async (studentId) => {
+        let progress = await this.progressModel.find({userId:studentId,courseId:id});
+        if ((progress as unknown as Progress).completionPercentage !== 1){
+          IsNotComplete = true;
         }
+      });
+      
+      if (IsNotComplete){
+        throw new Error ('You can not delete the course as there are some students already enroll')
       }
-
-      await this.courseModel.findByIdAndDelete(id);
+      
+      course.is_deleted = true; 
+      course.save();
       return 'Course deleted successfully';
+      
     } catch (err) {
       console.error('Error deleting course:', err.message);
       throw new HttpException('Error deleting course', HttpStatus.INTERNAL_SERVER_ERROR);

@@ -14,7 +14,7 @@ export class UpdateModuleDto extends PartialType(CreateModuleDto) {
       })
       @IsString()
       @IsOptional()
-      title: string;
+      title?: string;
     
     
       @ApiProperty({
@@ -36,6 +36,7 @@ export class UpdateModuleDto extends PartialType(CreateModuleDto) {
       @IsOptional()
       resources?: string[];
     
+
       @ApiProperty({
         description: 'Type of the quiz associated with the module',
         enum: QuizType,
@@ -45,17 +46,16 @@ export class UpdateModuleDto extends PartialType(CreateModuleDto) {
       @IsEnum(QuizType, { message: 'It must be of type quiz type' })
       @IsOptional()
       quiz_type?: QuizType;
-    
-    
+
+
       @ApiProperty({
-        description: 'Array of question IDs from the question bank',
-        example: ['64a2345f7d9b5f001f234567', '64a3456f7d9b5f001f345678'],
+        description: 'Type of the quiz associated with the module',
+        type:Number,
+        example: 10,
         required: false,
       })
-      @IsArray()
       @IsOptional()
-      @IsMongoId({ each: true })
-      question_bank: Types.ObjectId[];
+      quiz_length?: number;
     
       
       @ApiProperty({
@@ -65,7 +65,7 @@ export class UpdateModuleDto extends PartialType(CreateModuleDto) {
       })
       @IsEnum(Difficulty, { message: 'It must be of type quiz type' })
       @IsOptional()
-      module_difficulty: Difficulty;
+      module_difficulty?: Difficulty;
 
 
 }

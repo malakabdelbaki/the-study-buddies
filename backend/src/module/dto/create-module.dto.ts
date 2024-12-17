@@ -65,6 +65,16 @@ export class CreateModuleDto {
   @IsOptional()
   quiz_type?: QuizType;
 
+  
+  @ApiProperty({
+    description: 'Type of the quiz associated with the module',
+    type:Number,
+    example: 10,
+    required: false,
+  })
+  @IsOptional()
+  quiz_length?: number;
+
 
   @ApiProperty({
     description: 'Array of question IDs from the question bank',

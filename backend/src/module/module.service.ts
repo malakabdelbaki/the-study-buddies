@@ -11,16 +11,35 @@ import { Question, QuestionDocument } from 'src/Models/question.schema';
 import { Resource, ResourceDocument } from 'src/Models/resource.schema';
 import { ResourceDto } from './dto/create-resource.dto';
 import { UpdateResourceDto } from './dto/update-resource.dto';
+import { UserDocument } from 'src/Models/user.schema';
+import { Role } from 'src/enums/role.enum';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { QuizDocument } from 'src/models/quiz.schema';
 
 @Injectable()
 export class ModuleService {
+  private s3Client: S3Client;
+  private bucketName: string;
+  
   constructor(
     @InjectModel('Module') private readonly Modulemodel: Model<ModuleDocument>,
     @InjectModel('Question') private readonly Questionmodel: Model<QuestionDocument>,
     @InjectModel('Course') private readonly coursemodel: Model<CourseDocument>,
     @InjectModel('Resource') private readonly resourcemodel: Model<ResourceDocument>,
+    @InjectModel('User') private readonly usermodel: Model<UserDocument>,
+    @InjectModel('Quiz') private readonly Quizmodel: Model<QuizDocument>,
 
-  ) {}
+  ) {
+    this.s3Client = new S3Client({
+      region: process.env.AWS_REGION,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      },
+    });
+    this.bucketName = process.env.AWS_BUCKET_NAME; // Name of the S3 bucket
+
+  }
 
   async createModule(createModuleDto: CreateModuleDto) {
     try {
@@ -52,17 +71,32 @@ export class ModuleService {
     }
   }
 
+
+
   async updateModule(Moduleid: Types.ObjectId, updateModuleDto: UpdateModuleDto) {
     try {
       const module = await this.Modulemodel.findById(Moduleid);
       if (!module) throw new NotFoundException('Module not found');
 
+      if (updateModuleDto.quiz_length || updateModuleDto.quiz_type){
+        
+        //check If a studnet already took a quiz on this module   
+        const quiz = await this.Quizmodel.find({module_id:Moduleid});
+        if (quiz){
+          throw new Error ('You can not change the type & length of the quiz as there are some students took a quiz');
+        }
+
+      }
+      
       const updatedModule = await this.Modulemodel.findByIdAndUpdate(Moduleid, updateModuleDto, { new: true });
+      
       return await updatedModule.save();
     } catch (error) {
       throw new InternalServerErrorException('Error updating module', error.message);
     }
   }
+
+
 
   async deleteModule(ModuleId: Types.ObjectId) {
     try {
@@ -209,32 +243,63 @@ export class ModuleService {
       throw new Error(error.message);
     }
   }
+
+
+  // async PostFileAndGetUrl(file){
+  //   const fileKey = `${file.filename.replace(/\s+/g, '_')}`; // Unique file key
+
+  //   // Upload file to S3
+  //   await this.s3Client.send(
+  //     new PutObjectCommand({
+  //       Bucket: this.bucketName,
+  //       Key: fileKey,
+  //       Body: file.buffer,
+  //       ContentType: file.mimetype,
+  //     }),
+  //   );
+
+  //   // Return the file URL
+  //   return `https://${this.bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`;
+  // }
   
 
-  async getAllRecourses(module_id:Types.ObjectId){
-    const resources = await this.resourcemodel.find({module_id:module_id});
+  async getAllRecourses(userId:Types.ObjectId,module_id:Types.ObjectId){
+    let resources = await this.resourcemodel.find({module_id:module_id});
+    const user = await this.usermodel.findById(userId);
     if (!resources){
-      throw new Error('No resources found for this module');
-    }
+          throw new Error('No resources found for this module');
+      }
+    
+    
+    if (user.role === Role.Student)
+      resources = resources.filter((resource)=> resource.isOutdated===false);
 
+    
     return resources;
   }
 
-  async getResource(id: Types.ObjectId): Promise<Resource> {
+  async getResource(userid:Types.ObjectId,id: Types.ObjectId): Promise<Resource> {
 
     const resource = await this.resourcemodel.findById(id);
+    const user = await this.usermodel.findById(userid);
+    
     if (!resource) {
       throw new Error('Resource not found');
     }
+    
+    if (user.role === Role.Student && resource.isModified)
+      throw new Error('Resource not available');
+
+    
     return resource; // Return metadata including the file URL
   }
 
-  async getAvailableResources(moduleId:Types.ObjectId) {
-    const resources = await this.resourcemodel.find({module_id:moduleId,isUpdated:false});
-    if (!resources)
-      throw new Error('No resources found');
-    return resources;
-  }
+  // async getAvailableResources(userId,moduleId:Types.ObjectId) {
+  //   const resources = await this.resourcemodel.find({module_id:moduleId,isUpdated:false});
+  //   if (!resources)
+  //     throw new Error('No resources found');
+  //   return resources;
+  // }
   
    // 2. Delete Resource: Mark as outdated or delete from DB
    async deleteResource(id: Types.ObjectId): Promise<{ message: string }> {
@@ -242,7 +307,7 @@ export class ModuleService {
     if (!resource) {
       throw new Error('Resource not found');
     }
-    resource.isUpdated = true; // Mark as outdated instead of deletion
+    resource.isOutdated = true; // Mark as outdated instead of deletion
     await resource.save();
     return { message: 'Resource marked as outdated' };
   }
@@ -253,7 +318,8 @@ export class ModuleService {
       if (!resource){
         throw new Error ('REsource not found');
       }
-      return resource.save();
+      resource.save();
+      return resource;
     }
     catch(err){
       throw new Error('Something went wrong !');

@@ -12,7 +12,7 @@ export class Resource{
     module_id: Types.ObjectId;
 
     @Prop({required:true, default:false}) 
-    isUpdated :boolean;
+    isOutdated :boolean;
 
     @Prop({required:true})
     title:string;
