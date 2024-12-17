@@ -17,6 +17,7 @@ import { ValidatorsModule } from 'src/common/validators/validators.module';
 import { LogsModule } from 'src/log/log.module';
 import { UserSchema } from 'src/Models/user.schema';
 import { ProgressSchema } from 'src/Models/progress.schema';
+import { QuizSchema } from 'src/models/quiz.schema';
 
 @Module({
   imports :[MongooseModule.forFeature([{ name: 'Module', schema: ModuleSchema }]),
@@ -25,6 +26,8 @@ import { ProgressSchema } from 'src/Models/progress.schema';
             MongooseModule.forFeature([{name:'Resource',schema:ResourceSchema}]),
             MongooseModule.forFeature([{name:'User',schema:UserSchema}]),
             MongooseModule.forFeature([{name:'Progress',schema:ProgressSchema}]),
+            MongooseModule.forFeature([{name:'User',schema:UserSchema}]),
+            MongooseModule.forFeature([{name:'Quiz',schema:QuizSchema}]),
 
 
             MulterModule.register({ dest: './uploads' }),

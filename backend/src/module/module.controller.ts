@@ -198,9 +198,16 @@ export class ModuleController {
     }
   }
 
+  
+  
+  
   //______________________________________________*RESOURCE*___________________________________________//
 
- @Roles(Role.Instructor)
+ 
+ 
+ 
+ 
+@Roles(Role.Instructor)
 @UseGuards(authorizationGuard, InstructorGuard)// -> gives me error
 @Post(':module_id/resource')
 @ApiOperation({ summary: 'Upload a resource file' })
@@ -235,13 +242,19 @@ async uploadResource(@Param('module_id') module_id :string,@Body() body: { title
   if (!Types.ObjectId.isValid(moduleObjectId)) {
     throw new BadRequestException('Invalid Module ID');
   }
-  const url = `http://localhost:3000/resources/${file.filename}`; // Generate file access URL
+  
+
+  //const url = await this.moduleService.PostFileAndGetUrl(file);
+  //
+   const url = `http://localhost:3000/resources/${file.filename}`; // Generate file access URL
+  
   return this.moduleService. uploadResource({
     module_id: moduleObjectId,
     title,
     url,
   });
 }
+
 
 @ApiOperation({ summary: 'Delete a resource by its ID ' })
 @Roles(Role.Instructor)
@@ -257,38 +270,31 @@ catch(err){
 }
 }
 
+
+
 @ApiOperation({ summary: 'Get all resources for a specific module' })
-@Roles(Role.Instructor)
 @UseGuards(authorizationGuard, InstructorGuard)
 @Get(':Module_id/resources')
-async getAllRecourses(@Param('Module_id') module_id: string) {
+async getAllRecourses(@Req() request,@Param('Module_id') module_id: string) {
   try{
+  let userId = new Types.ObjectId(request.user.userid);
   let ID = new Types.ObjectId(module_id);
-  return await this.moduleService.getAllRecourses(ID);
+  return await this.moduleService.getAllRecourses(userId,ID);
 }
 catch(err){
   throw new HttpException('Some thing went wrong',HttpStatus.INTERNAL_SERVER_ERROR);
 }
 }
 
-@ApiOperation({ summary: 'Get available resources for a specific module' })
-@Get(':Module_id/resources/available')
-async getAvailableResources(@Param('Module_id') module_id: string) {
-  try{
-  let ID = new Types.ObjectId(module_id);
-  return this.moduleService.getAvailableResources(ID);
-}
-catch(err){
-  throw new HttpException('Some thing went wrong',HttpStatus.INTERNAL_SERVER_ERROR);
-}
-}
+
 
 @ApiOperation({ summary: 'Get resource metadata by its ID' })
 @Get('resources/:id')
-async getOneResource(@Param('id') id: string) {
+async getOneResource(@Req() request,@Param('id') id: string) {
   try{
+  let userid = new Types.ObjectId(request.user.userid);  
   let ID = new Types.ObjectId(id);
-  return this.moduleService.getResource(ID);
+  return this.moduleService.getResource(userid,ID);
   }
   catch(err){
     throw new HttpException('Some thing went wrong',HttpStatus.INTERNAL_SERVER_ERROR);
