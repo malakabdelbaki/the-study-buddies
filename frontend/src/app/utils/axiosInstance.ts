@@ -9,6 +9,23 @@ const axiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
 });
+// Interceptor to attach token to each request
+axiosInstance.interceptors.request.use(
+  async (config) => {
+    // Get token from cookies (server-side)
+    const cookieStore = cookies();
+    const token = (await cookieStore).get("CookieFromServer");
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token.value}`;
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 axiosInstance.interceptors.request.use(
   async(config) => {
