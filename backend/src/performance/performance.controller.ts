@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Res,Query,HttpException,HttpStatus, UseGuards,SetMetadata } from '@nestjs/common';
+import { Controller, Get, Param, Res,Query,HttpException,HttpStatus, UseGuards,SetMetadata, UnauthorizedException, Req } from '@nestjs/common';
 import { Response } from 'express';
 import { PerformanceService } from './performance.service';
 import { ApiTags, ApiParam, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -6,31 +6,41 @@ import { StudentProgressDto } from './dto/student-progress.dto'; // Import DTO f
 import { InstructorAnalyticsDto } from './dto/instructor-analytics.dto'; // Import DTO for instructor analytics
 import { authorizationGuard } from '../auth/guards/authorization.guard';
 import { AuthGuard } from 'src/auth/guards/authentication.guard';
-import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
+import { Roles, ROLES_KEY } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
-
+import { Request } from 'express';
 
 @ApiTags('Performance') // Group all endpoints under the "Performance" section in Swagger
 @Controller('performance')
-@UseGuards(authorizationGuard)
-@UseGuards(AuthGuard)
+//@Roles(Role.User)
+//@UseGuards(AuthGuard)
+// @UseGuards(authorizationGuard)
+//@UseGuards(AuthGuard, authorizationGuard)
+
 export class PerformanceController {
+
   constructor(private readonly performanceService: PerformanceService) {}
 
   @Get('/student/:studentId')
+  //@Roles(Role.Student)
+ // @SetMetadata(ROLES_KEY, [ Role.Student])
   @ApiOperation({ summary: 'Get student dashboard' })
-  @SetMetadata(ROLES_KEY, [ Role.Student])
   @ApiParam({ name: 'studentId', description: 'The ID of the student' })
   @ApiResponse({
     status: 200,
     description: 'Student dashboard data',
     type: [StudentProgressDto], // Use the DTO for documenting the response
   })
+  
   async getStudentDashboard(
-    @Param('studentId') studentId: string,
+    @Param('studentId') studentId: string, // Request object for JWT user data
   ): Promise<StudentProgressDto[]> {
+    
+    console.log(`API hit for student performance: ${studentId}`);
     return this.performanceService.getStudentDashboard(studentId);
+    
   }
+
 
 
 
