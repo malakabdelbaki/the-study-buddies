@@ -1,6 +1,6 @@
-// // utils/axiosInstance.ts
-// import axios from 'axios';
-// import { cookies } from 'next/headers';
+// utils/axiosInstance.ts
+import axios from 'axios';
+import { cookies } from 'next/headers';
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL , // Use environment variable for base URL
@@ -41,5 +41,4 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// export default axiosInstance;
-
+export default axiosInstance;
