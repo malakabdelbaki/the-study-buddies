@@ -46,7 +46,7 @@ export class PerformanceController {
 
   @Get('/instructor/:instructorId')
   @ApiOperation({ summary: 'Get instructor analytics' })
-  @SetMetadata(ROLES_KEY, [ Role.Instructor])
+  //@SetMetadata(ROLES_KEY, [ Role.Instructor])
   @ApiParam({ name: 'instructorId', description: 'The ID of the instructor' })
   @ApiResponse({
     status: 200,
@@ -56,6 +56,7 @@ export class PerformanceController {
   async getInstructorAnalytics(
     @Param('instructorId') instructorId: string,
   ): Promise<InstructorAnalyticsDto[]> {
+    console.log(`API hit for instructor analysis: ${instructorId}`);
     return this.performanceService.getInstructorAnalytics(instructorId);
   }
 
