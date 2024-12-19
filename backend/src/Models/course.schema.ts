@@ -38,6 +38,10 @@ export class Course{
       })
       ratings: Map<Types.ObjectId, number>;
 
+
+    @Prop({required:true,default:false})
+    is_deleted:boolean;  
+
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);

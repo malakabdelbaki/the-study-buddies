@@ -15,17 +15,17 @@ import { AuthGuard } from '../auth/guards/authentication.guard';
 import { InstructorGuard } from 'src/auth/guards/instructor.guard';
 
 @ApiTags('Courses') // Tag for Swagger grouping
-//@UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 @Controller('courses')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @ApiOperation({ summary: 'Create a new course' })
-  //@Roles(Role.Instructor)
+  @Roles(Role.Instructor)
   @UseGuards(authorizationGuard)
   @ApiOperation({ summary: 'Creat e a new course' })
-  //@Roles(Role.Instructor)
-  //@UseGuards(authorizationGuard)
+  @Roles(Role.Instructor)
+  @UseGuards(authorizationGuard)
   @Post()
   async create(@Req() request,@Body() createCourseDto: CreateCourseDto) {
     try {
@@ -50,6 +50,7 @@ export class CoursesController {
   @ApiQuery({ name: 'instructor', required: false, description: 'Filter by instructor name' })
   @Get()
   async findAll(
+    @Req() request,
     @Query('title') title?: string,
     @Query('category') category?: string,
     @Query('key_word') key_word?: string,
@@ -57,9 +58,8 @@ export class CoursesController {
     @Query('instructor') instructor?: string,
   ) {
     try {
-      console.log('entered');
-      let courses = await this.coursesService.findAll(title, category, key_word, difficulty, instructor);
-      console.log(courses);
+      let ID = new Types.ObjectId(request.user.userid)
+      let courses = await this.coursesService.findAll(ID,title, category, key_word, difficulty, instructor);
       return courses;
 
     } catch (err) {
@@ -88,7 +88,7 @@ export class CoursesController {
   @ApiOperation({ summary: 'Update a course by ID' })
   @ApiParam({ name: 'id', description: 'Course ID', type: String })
   @Roles(Role.Instructor)
-@UseGuards(authorizationGuard)
+  @UseGuards(authorizationGuard)
   @Patch(':id')
   async update(@Req() request,@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
     try {
@@ -124,7 +124,7 @@ export class CoursesController {
 
   @ApiOperation({ summary: 'Delete a course by ID' })
   @ApiParam({ name: 'id', description: 'Course ID', type: String })
-  @Roles(Role.Admin)
+  @Roles(Role.Admin,Role.Instructor)
   @UseGuards(authorizationGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
