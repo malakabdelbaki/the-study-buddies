@@ -5,7 +5,7 @@
 import { useActionState, useState } from "react"; //useActionState: helps manage submissions
 //useState: manages local state of email and pass inputs
 import { useRouter } from "next/navigation"; //allows page to redirect after sucessful login
-import axiosInstance from "@/app/utils/axiosInstance"; 
+//import axiosInstance from "@/app/utils/axiosInstance"; 
 import login from "./login.server"; //handles login logic
 
 export default function LoginPage() {
@@ -19,7 +19,7 @@ export default function LoginPage() {
 
     try {
       // Make the POST request to the login API endpoint
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/auth/login', { //go to proxy server, inside route
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

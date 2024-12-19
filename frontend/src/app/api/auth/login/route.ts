@@ -6,7 +6,7 @@ import axios from 'axios';
 export async function POST(req: Request) {
     try {
         const { email, password } = await req.json();
-        const response = await axios.post('http://localhost:3000/api/auth/login', { email, password });
+        const response = await axios.post('http://localhost:3001/api/auth/login', { email, password });
         if (response.status === 201) {
             
             const setCookieHeader = response.headers['set-cookie'];

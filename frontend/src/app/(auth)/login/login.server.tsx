@@ -2,15 +2,16 @@
 //authenticate user, set cookie (if applicable), redirects the user (if login success)
 
 'use server'; //marker: server-side action
-import axiosInstance from "@/app/utils/axiosInstance"; //send HTTP reqs to backend server
+//import axiosInstance from "@/app/utils/axiosInstance"; //send HTTP reqs to backend server
 import { redirect } from "next/navigation";
+import axios from "axios";
 import { cookies } from "next/headers"; //allows server to interact with cookies
 
 export default async function login(prevState:any,formData:FormData){
     const cookieStore=await cookies()
     console.log(formData.get('email'))
     try{
-    const response = await axiosInstance.post(`auth/login`, { //send login cred to backend for auth
+    const response = await axios.post(`auth/login`, { //send login cred to backend for auth
       email:formData.get('email'),
       password: formData.get('password')
       });

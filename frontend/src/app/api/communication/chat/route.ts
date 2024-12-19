@@ -24,7 +24,7 @@ export async function GET(req: Request) {
 
 
     // Call the external endpoint and pass token
-    const response = await axios.get('http://localhost:3000/api/chat', {
+    const response = await axios.get('http://localhost:3001/api/chat', {
       headers: {
         Authorization: `Bearer ${tokenCookie.value}`,
       },

@@ -25,8 +25,8 @@ export async function GET(req: Request) {
 
     const endpoint =
       userRole === 'student'
-        ? `http://localhost:3000/api/users/${userId}/courses/enrolled`
-        : `http://localhost:3000/api/users/${userId}/courses`;
+        ? `http://localhost:3001/api/users/${userId}/courses/enrolled`
+        : `http://localhost:3001/api/users/${userId}/courses`;
 
     const response = await axios.get(endpoint, {
       headers: {
