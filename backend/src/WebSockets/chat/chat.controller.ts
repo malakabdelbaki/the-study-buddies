@@ -31,6 +31,39 @@ async getChatsOfUser(@Req() req: any) {
   console.log(req.user);
   return await this.chatService.getChatsOfAStudentOrFail(req.user.userid);
 }
+
+  // @Get(':chat_id/newMessages')
+  // @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
+  // async getMessages(
+  //   @Param('chat_id') chat_id: string,
+  //   @Query('timestamp') timestamp: string,
+  // ) {
+  //   if (!chat_id) {
+  //     throw new Error('Room ID is required');
+  //   }
+  //   console.log('chat_id', chat_id);
+  //   console.log('timestamp', timestamp);
+  //   const messages = await this.chatService.getNewMessages(chat_id, timestamp);
+  //   return messages;
+  // }
+
+  @Get(':chat_id/newMessages')
+@SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
+async getMessages(
+  @Param('chat_id') chat_id: string,
+  @Query('lastMessageId') lastMessageId?: string, // Updated query parameter
+) {
+  if (!chat_id) {
+    throw new Error('Room ID is required');
+  }
+  console.log('chat_id:', chat_id);
+  console.log('lastMessageId:', lastMessageId);
+
+  const messages = await this.chatService.getNewMessages(chat_id, lastMessageId);
+  return messages;
+}
+
+
   @Get('publicGroups')
     @ApiOperation({ summary: 'Get all public group chats' })
     @ApiResponse({ status: 200, description: 'List of all public group chats' })
@@ -48,8 +81,10 @@ async getChatsOfUser(@Req() req: any) {
   @UseGuards(IsChatMemberHttpGuard)
   async getAllChatHistory(
     @Param('chat_id') chat_id: Types.ObjectId,
-    @Req() req: any) {
-    return await this.chatService.getMessagesByChatId(chat_id, req.user.userid);
+    @Req() req: any,
+    @Query('timestamp') timestamp?: string,
+  ) {
+    return await this.chatService.getMessagesByChatId(chat_id, req.user.userid, timestamp);
   }
 
 
@@ -140,7 +175,7 @@ async getChatsOfUser(@Req() req: any) {
   }
 
   // 10. Leave a chat (remove student ID from participants list and if a chat has no participants it is archived)
-  @Patch('leave/:chat_id/:studentId')
+  @Patch('leave/:chat_id')
   @ApiOperation({ summary: 'Remove a student from a chat (leave chat)' })
   @ApiResponse({ status: 200, description: 'Student removed from the chat' })
   @ApiParam({ name: 'chat_id', type: String, description: 'The ID of the chat to leave' })
@@ -148,8 +183,10 @@ async getChatsOfUser(@Req() req: any) {
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
   @UseGuards(IsChatMemberHttpGuard)
 
-  async leaveChat(@Param('chat_id') chat_id: Types.ObjectId, @Param('studentId') studentId: Types.ObjectId) {
-    return this.chatService.leaveChatOrFail(chat_id, studentId);
+  async leaveChat(
+    @Param('chat_id') chat_id: Types.ObjectId,
+    @Req() req: any) {
+    return this.chatService.leaveChatOrFail(chat_id, new Types.ObjectId(req.user.userid));
   }
 
  

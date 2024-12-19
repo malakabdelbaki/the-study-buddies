@@ -2,15 +2,15 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import axios from 'axios';
 
-export async function GET(req: Request, { params }: { params: { course_id: string } }) {
+export async function GET(req: Request, { params }: { params: { chat_id: string } }) {
   try {
-    console.log("Participants route");
-    const url = new URL(req.url);
-    const pathSegments = url.pathname.split('/');
-    const course_id = pathSegments[pathSegments.length - 1];
+    console.log(params)
+    const { chat_id } = await params;
+    // const { timestamp } = await req.json();
+    console.log("in chat/chatid ", chat_id)
 
-    if (!course_id) {
-      return new Response('Bad Request: Missing course ID', { status: 400 });
+    if (!chat_id) {
+      return new Response('Bad Request: Missing chat ID', { status: 400 });
     }
 
     // Get token from cookies
@@ -21,13 +21,15 @@ export async function GET(req: Request, { params }: { params: { course_id: strin
     }
 
     // Make the request to the API with the course_id
-    const response = await axios.get(`http://localhost:3000/api/chat/potential-participants/${course_id}`, {
+    const response = await axios.get(`http://localhost:3000/api/chat/${chat_id}`, {
+      // params: {
+      //   timestamp: timestamp
+      // },
       headers: {
         Authorization: `Bearer ${tokenCookie.value}`,
       },
     });
-
-    console.log('Response from server potential participants:', response.data);
+    console.log(response)
 
     // Return the response as JSON
     return NextResponse.json(response.data);

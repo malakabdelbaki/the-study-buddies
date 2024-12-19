@@ -8,6 +8,9 @@ export class Message {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   sender_id: Types.ObjectId;
 
+  @Prop({ type: String, required: false , default: '' })
+  sender_name: string
+
   @Prop({ type: String, required: true })
   content: string;
 
