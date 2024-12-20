@@ -42,9 +42,22 @@ export default function Chat({ initialData }: { initialData: InitialData }) {
 
   const { me, userChats, publicChats, courses } = initialData;
 
-  const handleJoinExistingChat = (room: string) => {
+  const handleJoinExistingChat = async(chat_id: string) => {
 
-    router.push(`/chat/${room}`);
+    const isMember = userChats.some(chat => chat._id === chat_id);
+    const response = await fetch(`/api/communication/chat/${chat_id}/addParticipant`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ participants: [me._id] }), // Wrap in array
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to add participant');
+    }
+
+    console.log(chat_id);
+    router.push(`/chat/${chat_id}`);
   };
 
   const handleCreateNewChat = async (

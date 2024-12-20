@@ -12,6 +12,8 @@ export async function PATCH(req: NextRequest) {
     const chat_id = pathSegments[pathSegments.length - 2];
     const { participants } = await req.json();
 
+    console.log('chat_id:', chat_id); 
+    console.log('participants:', participants);
 
     if (!chat_id) {
       return NextResponse.json({ message: 'chat_id is required in the URL' }, { status: 400 });
@@ -27,6 +29,8 @@ export async function PATCH(req: NextRequest) {
     if (!tokenCookie) {
       return new Response('Unauthorized', { status: 401 });
     }
+    console.log('Adding participants to chat:', tokenCookie.value, chat_id, participants);
+
     // Send the PATCH request to the backend
     const response = await axios.patch(`${API_BASE_URL}/api/chat/add-participant/${chat_id}`, {
        participants

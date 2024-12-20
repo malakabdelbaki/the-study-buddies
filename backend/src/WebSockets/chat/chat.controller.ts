@@ -65,12 +65,12 @@ async getMessages(
 
 
   @Get('publicGroups')
-    @ApiOperation({ summary: 'Get all public group chats' })
-    @ApiResponse({ status: 200, description: 'List of all public group chats' })
-    @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
-    async getPublicGroupChats(@Req() req: any) {
-        console.log('req.user.userid', req.user.userid);
-        return await this.chatService.getPublicGroupChats(req.user.userid);
+  @ApiOperation({ summary: 'Get all public group chats' })
+  @ApiResponse({ status: 200, description: 'List of all public group chats' })
+  @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
+  async getPublicGroupChats(@Req() req: any) {
+      console.log('req.user.userid', req.user.userid);
+      return await this.chatService.getPublicGroupChats(req.user.userid);
     }
     
   @Get('/history/:chat_id')
@@ -138,6 +138,7 @@ async getMessages(
     @Param('chat_id') chat_id: string,
     @Body() addParticipantDto: AddParticipantDto,
     @Req() req: any) {
+      console.log("im cont");
     return await this.chatService.addParticipantToChatOrFail(new Types.ObjectId(chat_id), addParticipantDto, req.user.userid);
   }
 

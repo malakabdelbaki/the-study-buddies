@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import axios from 'axios';
+import { NextRequest } from 'next/server';
 
-export async function GET(req: Request, { params }: { params: { chat_id: string } }) {
+export async function GET(req: NextRequest ) {
   try {
-    console.log(params)
-    const { chat_id } = await params;
-    // const { timestamp } = await req.json();
+
+    const { pathname } = new URL(req.url);
+    const pathSegments = pathname.split('/');
+    const chat_id = pathSegments[pathSegments.length - 2];
     console.log("in chat/chatid ", chat_id)
 
     if (!chat_id) {
@@ -16,20 +18,21 @@ export async function GET(req: Request, { params }: { params: { chat_id: string 
     // Get token from cookies
     const cookieStore = await cookies();
     const tokenCookie = cookieStore.get('token');
+    
     if (!tokenCookie) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    // Make the request to the API with the course_id
     const response = await axios.get(`http://localhost:3000/api/chat/${chat_id}`, {
-      // params: {
-      //   timestamp: timestamp
-      // },
       headers: {
         Authorization: `Bearer ${tokenCookie.value}`,
       },
     });
     console.log(response)
+
+    if(response.status !== 200) {
+      return new NextResponse('Internal Server Error', { status: 500 });
+    }
 
     // Return the response as JSON
     return NextResponse.json(response.data);
