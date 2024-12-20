@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import getCourseDetails from "../api/getCourseDetails";
+import getCourseDetails from "../../api/courses/general/getCourseDetails";
 import { Module } from "@/types/Module";
 import { Course } from "@/types/Course";
 import { User } from "@/types/User";

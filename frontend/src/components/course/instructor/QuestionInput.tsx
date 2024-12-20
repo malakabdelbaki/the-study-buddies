@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { addQuestionToModule } from '../api/moduleRoute';
+import { addQuestionToModule } from '../../../app/api/courses/instructor/moduleRoute';
 
 const AddQuestionForm = ({moduleId,InstructorId}:{moduleId:string,InstructorId:string}) => {
   const [newQuestion, setNewQuestion] = useState({

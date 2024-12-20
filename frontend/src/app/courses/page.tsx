@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import courseServer from "./api/createCourse";
-import getCourses from "./api/getCourses";
+import courseServer from "../api/courses/general/createCourse";
+import getCourses from "../api/courses/general/getCourses";
 import { Course } from "@/types/Course";
-import CourseCard from "./components/courseCard";
+import CourseCard from "../../components/course/general/courseCard";
 
 const CoursesPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);

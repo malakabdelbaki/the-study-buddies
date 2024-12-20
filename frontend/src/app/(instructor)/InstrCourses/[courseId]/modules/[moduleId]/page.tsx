@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { Module } from "@/types/Module";
-import { addQuestionToModule, fetchModuleResources, fetchQuestionBank, getModule, updateModule, updateQuestionInModule } from "@/app/(instructor)/api/moduleRoute";
-import AddQuestionForm from "@/app/(instructor)/components/QuestionInput";
+import { addQuestionToModule, fetchModuleResources, fetchQuestionBank, getModule, updateModule, updateQuestionInModule } from "@/app/api/courses/instructor/moduleRoute";
+import AddQuestionForm from "@/components/course/instructor/QuestionInput";
 import { Question } from "@/types/Question";
-import QuestionCard from "@/app/(instructor)/components/questionCard";
+import QuestionCard from "@/components/course/instructor/questionCard";
 
 const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) => {
   const [module, setModule] = useState<Module>();

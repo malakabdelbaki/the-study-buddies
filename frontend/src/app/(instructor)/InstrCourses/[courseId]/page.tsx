@@ -5,9 +5,9 @@ import React, { useEffect, useState } from "react";
 import { Module } from "@/types/Module";
 import { Course } from "@/types/Course";
 import { User } from "@/types/User";
-import { fetchCourseModules,fetchCourseById, fetchInstructor, updateCourse } from "../../api/courseRoute";
-import ModuleCard from "../../components/moduleCard";
-import { createModule } from "../../api/moduleRoute";
+import { fetchCourseModules,fetchCourseById, fetchInstructor, updateCourse } from "../../../api/courses/instructor/courseRoute";
+import ModuleCard from "../../../../components/course/general/moduleCard";
+import { createModule } from "../../../api/courses/instructor/moduleRoute";
 import { Types } from "mongoose";
 
 const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) => {

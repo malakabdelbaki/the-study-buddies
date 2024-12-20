@@ -5,13 +5,6 @@ import { useEffect } from "react";
 
 const ModuleCard = ({ module }:{module:Module}) => {
 
-
-    // useEffect(()=>{
-    //     async function fetchModule(){
-    //         const module = fetch
-    //     }
-    // },[])
-
     return (
       <Card className="bg-white shadow-md rounded-lg p-4">
         <CardTitle className="text-xl font-semibold text-gray-800 mb-2">{module.title}</CardTitle>
