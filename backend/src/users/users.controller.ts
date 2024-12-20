@@ -410,7 +410,7 @@
 
   // Enroll in a Course
   @Post('enroll')
-  @ApiOperation({ summary: 'Enroll in a course' })
+  @ApiOperation({ summary: 'Enrol                                                                                                                                                                                                                          dl in a course' })
   @ApiBody({ type: EnrollInCourseDto })
   @SetMetadata(ROLES_KEY, [Role.Student])
   async enrollInCourse( @Body() dto: EnrollInCourseDto, @Req() req: any) {

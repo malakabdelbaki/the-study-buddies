@@ -1,10 +1,10 @@
 import { Types } from "mongoose";
 
 export interface Module {
-    _id:string;
-    course_id?: Types.ObjectId; 
+    _id?:string;
+    course_id?:string; 
 
-    instructor_id?: Types.ObjectId;
+    instructor_id?: string;
 
     title?: string; 
   
