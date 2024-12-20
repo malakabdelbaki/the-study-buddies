@@ -7,6 +7,7 @@ const ChatForm = ({
   onSendMessage: (message: string) => void;
 }) => {
   const [message, setMessage] = useState('');
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if(message.trim() !== '') {

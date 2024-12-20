@@ -14,12 +14,13 @@ import { authorizationGuard } from 'src/auth/guards/authorization.guard';
 import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
 import { IsChatMemberHttpGuard } from 'src/auth/guards/IsChatMember.guard';
-
+import { PusherService } from 'src/pusher/pusher.service';
 
 @UseGuards(AuthGuard, authorizationGuard)
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService,
+    private readonly pusherService: PusherService
   ) {}
 // 1. Get all chats in which the student is a participant
 @Get()
@@ -155,8 +156,10 @@ async getMessages(
     @Param('chat_id') chat_id: string, 
     @Body() addMessageDto: AddMessageDto,
     @Req() req: any) {
-      console.log('addMessageDto', addMessageDto);
-    return await this.chatService.addMessageToChatOrFail(new Types.ObjectId(chat_id), addMessageDto, new Types.ObjectId(req.user.userid));
+
+      const message = await this.chatService.addMessageToChatOrFail(new Types.ObjectId(chat_id), addMessageDto, new Types.ObjectId(req.user.userid));
+      await this.pusherService.trigger(`chat-${chat_id}`, 'new-message', message);
+    return message;
   }
 
   // 9. Update chat name of a chat

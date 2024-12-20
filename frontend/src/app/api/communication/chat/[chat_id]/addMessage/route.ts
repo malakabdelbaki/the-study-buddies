@@ -33,11 +33,11 @@ export async function PATCH(req: NextRequest, res: NextResponse) {
     const response = await axios.patch(
       `${API_BASE_URL}/api/chat/add-message/${chat_id}`,
       {
-        content, // Send content directly in the request body
+        content, 
       },
       {
         headers: {
-          Authorization: `Bearer ${tokenCookie.value}`, // Authorization header
+          Authorization: `Bearer ${tokenCookie.value}`, 
         },
       }
     );

@@ -63,7 +63,6 @@ export default function ChatPage() {
 
   return (
     <div>
-      <h1>{user._id}</h1>
       <Suspense fallback={<div>Loading chat room...</div>}>
         <ChatRoom chat_id={chat_id} data={initialData} me={{ _id: user._id, role: user.role, name: user.name }} />
       </Suspense>

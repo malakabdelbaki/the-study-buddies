@@ -11,14 +11,10 @@ import { ChatType } from '../../../../backend/src/enums/chat-type.enum';
 import { ChatVisibility } from '../../../../backend/src/enums/chat-visibility.enum';
 import { Role } from '../../../../backend/src/enums/role.enum';
 import { Chat } from '@/types/Chat';
+import Pusher from 'pusher-js';
+import { Message } from '@/types/Message';
+import useChat from '@/hooks/useChat';
 
-type Message = {
-  _id: string;
-  sender_id: string;
-  sender_name: string;
-  content: string;
-  timestamp: string;
-};
 
 type ChatRoomProps = {
   chat_id: string;
@@ -33,8 +29,9 @@ type ChatRoomProps = {
 };
 
 export default function ChatRoom({ chat_id, data, me }: ChatRoomProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
+  const messages = useChat(chat_id);
+
+  // const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { chat, potentialParticipants } = data;
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -44,7 +41,7 @@ export default function ChatRoom({ chat_id, data, me }: ChatRoomProps) {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchMessages = async () => {
+    const fetchChatRoom = async () => {
       setIsLoading(true);
       setErrorMessage(null);
 
@@ -58,73 +55,84 @@ export default function ChatRoom({ chat_id, data, me }: ChatRoomProps) {
         }
         const chatData = await chatResponse.json();
         setChatRoom(chatData);
-
-        const response = await fetch(`/api/communication/chat/${chat_id}/messageHistory`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-    
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch messages');
-        }
-
-        const data = await response.json();
-        console.log('Fetched messages:', data);
-        setMessages( (data && [...data]) || []);
-        const lastMessage = data[data.length - 1];
-        // setTimestamp(lastMessage.timestamp);
       } catch (error) {
-        console.error('Error fetching messages:', error);
-        setErrorMessage('Failed to fetch messages');
+        console.error('Error fetching room:', error);
+        setErrorMessage('Failed to fetch room');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchMessages();
+    fetchChatRoom();
   }, []);
 
+  // useEffect(() => {
+  //   const fetchMessages = async () => {
+  //     setIsLoading(true);
+  //     setErrorMessage(null);
 
+  //     try {
+  //       const response = await fetch(`/api/communication/chat/${chat_id}/messageHistory`, {
+  //         method: 'GET',
+  //         headers: { 'Content-Type': 'application/json' },
+  //       });
+    
+  //       if (!response.ok) {
+  //         const errorData = await response.json();
+  //         throw new Error(errorData.error || 'Failed to fetch messages');
+  //       }
+
+  //       const data = await response.json();
+  //       console.log('Fetched messages:', data);
+  //       setMessages( (data && [...data]) || []);
+      
+  //     } catch (error) {
+  //       console.error('Error fetching messages:', error);
+  //       setErrorMessage('Failed to fetch messages');
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   fetchMessages();
+  // }, []);
+
+
+  // useEffect(() => {
+  //   const pusher = new Pusher('your-key', {
+  //     cluster: 'your-cluster',
+  //   });
+
+  //   const channel = pusher.subscribe(`chat-${ChatRoom.}`);
+  //   channel.bind('new-message', (data) => {
+  //     setMessages((prev) => [...prev, data.message]);
+  //   });
+
+  //   return () => {
+  //     channel.unsubscribe();
+  //     pusher.disconnect();
+  //   };
+  // }, [chatId]);
 
 
   const handleSendMessage = async (message: string) => {
     try {
-      // Optimistically add the message to the UI
-      const tempMessage = {
-        _id: `temp-${Date.now()}`, // Temporary ID
-        sender_id: me._id,
-        sender_name: me.name,
-        content: message,
-        timestamp: new Date().toISOString(),
-        isPending: true, // Mark as pending
-      };
-      setMessages((prevMessages) => [...prevMessages, tempMessage]);
-    
+     
       const response = await fetch(`/api/communication/chat/${chat_id}/addMessage`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: message }),
       });
-    
+  
+      console.log('Message sent:', await response.json());
       if (!response.ok) {
         throw new Error('Failed to send message');
       }
-    
-      const newMessage = await response.json();
-    
-      // Update the message in the state with the actual data from the backend
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg._id === tempMessage._id ? { ...newMessage, isPending: false } : msg
-        )
-      );
+  
     } catch (error) {
       console.error('Error sending message:', error);
-      // Optionally show feedback to the user
       setErrorMessage('Failed to send the message. Please try again.');
-    }    
+    }
   };
 
   const handleAddParticipant = async (participantId: string) => {
@@ -238,16 +246,17 @@ export default function ChatRoom({ chat_id, data, me }: ChatRoomProps) {
           </Button>
          
         </div>
-        <div className="h-[500px] overflow-y-auto p-4 mb-4 bg-gray-100 border rounded-lg">
-        {messages && messages.map((msg) => (
-          <ChatMessage
-            key={msg._id} 
-            message={msg.content}
-            isMine={msg.sender_id === me._id}  
-            sender={msg.sender_name}  
-          />
-        ))}
+        <div className="max-h-[80vh] overflow-y-scroll px-4 py-2 mb-4 bg-white shadow-md border border-gray-300 rounded-lg">
+          {messages.map((msg) => (
+            <ChatMessage
+              key={msg._id}
+              message={msg.content}
+              isMine={msg.sender_id === me._id}
+              sender={msg.sender_name}
+            />
+          ))}
 </div>
+
         <ChatForm onSendMessage={handleSendMessage} />
       </Card>
     </div>
