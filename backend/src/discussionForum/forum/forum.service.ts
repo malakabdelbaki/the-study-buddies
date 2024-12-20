@@ -151,4 +151,15 @@ export class ForumService {
     const enrolledStudents = await this.userService.getAllStudentsInCourse(course._id.toString());
     return enrolledStudents.some(student => (student as any)._id.toString()===userId.toString());
   }
+
+  async searchForums(query: string, course_id: string): Promise<Thread[]> {
+    return await this.forumModel
+      .find({
+        course_id: new Types.ObjectId(course_id),
+        $or: [
+          { title: { $regex: query, $options: 'i' } }, // Case-insensitive regex
+          { description: { $regex: query, $options: 'i' } },
+        ],
+      });
+    }
 }

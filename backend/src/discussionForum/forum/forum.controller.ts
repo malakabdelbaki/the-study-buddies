@@ -1,8 +1,8 @@
 import { ForumService } from './forum.service';
-import { Controller, Get, Post, Body, Param, Patch, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Req, Query } from '@nestjs/common';
 import { CreateForumDto } from './dto/create-forum.dto';
 import { UpdateForumDto } from './dto/update-forum.dto';
-import { ApiTags, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/guards/authentication.guard';
 import { UseGuards, SetMetadata } from '@nestjs/common';
 import { authorizationGuard } from 'src/auth/guards/authorization.guard';
@@ -30,6 +30,18 @@ export class ForumController {
       return this.forumService.create(createForumDto, req.user.userid);
   }
 
+  @Get('course/:course_id/search')
+  @ApiOperation({ summary: 'Search forums' })
+  @ApiParam({ name: 'course_id', description: 'The ID of the course', required: true })
+  @ApiQuery({ name: 'query', description: 'The search query', required: false }) 
+  @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
+  async search(
+    @Param('course_id') course_id: string,
+    @Query('query') query: string,
+    ) {
+      const searchQuery = query?.trim() || '';
+    return this.forumService.searchForums(searchQuery, course_id); 
+  }
 
   @Get(':forum_id')
   @ApiOperation({ summary: 'Retrieve a forum by its ID' })

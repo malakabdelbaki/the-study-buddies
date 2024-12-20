@@ -20,7 +20,6 @@ export class IsMemberGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    console.log("IsMemberGuard");
     const request = context.switchToHttp().getRequest();
     const userId = request.user?.userid; // Get logged-in user ID
      if (!userId) {
