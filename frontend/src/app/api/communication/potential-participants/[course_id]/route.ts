@@ -5,9 +5,9 @@ import axios from 'axios';
 export async function GET(req: Request, { params }: { params: { course_id: string } }) {
   try {
     console.log("Participants route");
-
-    // Extract the course_id from the request params
-    const { course_id } = params;
+    const url = new URL(req.url);
+    const pathSegments = url.pathname.split('/');
+    const course_id = pathSegments[pathSegments.length - 1];
 
     if (!course_id) {
       return new Response('Bad Request: Missing course ID', { status: 400 });

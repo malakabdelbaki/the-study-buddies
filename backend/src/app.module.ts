@@ -24,6 +24,7 @@ import { AuthModule } from './auth/auth.module';
 import { ValidatorsModule } from './common/validators/validators.module';
 import { LogsModule } from './log/log.module';
 import { WebSocketsModule } from './WebSockets/web-sockets.module';
+import { PusherService } from './pusher/pusher.service';
 
 @Module({
   imports: [
@@ -47,7 +48,7 @@ import { WebSocketsModule } from './WebSockets/web-sockets.module';
     WebSocketsModule
   ],
   controllers: [AppController, NoteController],
-  providers: [AppService],
+  providers: [AppService, PusherService],
   exports: [AppService, MongooseModule],
   // controllers: [AppController, QuizzesController],
   // providers: [AppService, QuizzesService],
