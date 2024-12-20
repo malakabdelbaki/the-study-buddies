@@ -4,7 +4,7 @@ import { Chat } from '../../types/Chat';
 
 interface ChatListProps {
   chats: Chat[];
-  onSelectChat: (chatId: string) => void;
+  onSelectChat: (chat_id: string) => void;
   title: string;
 }
 

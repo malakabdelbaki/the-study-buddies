@@ -1,7 +1,10 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { User } from '../../types/User';
-import { fetchPotentialParticipants } from './FetchPotentialParticipants';
+import { ChatType } from '../../../../backend/src/enums/chat-type.enum';
+import { ChatVisibility } from '../../../../backend/src/enums/chat-visibility.enum';
+import { Role } from '../../../../backend/src/enums/role.enum';
+
 
 export interface CourseInfo {
   id: string;
@@ -10,17 +13,17 @@ export interface CourseInfo {
 interface CreateChatProps {
   userId: string;
   courseList: CourseInfo[];
-  userRole: 'student' | 'instructor';
-  onCreateChat: (userId: string, chatType: 'direct' | 'group', chatName: string, visibility: 'private' | 'public', courseId: string) => void;
+  userRole: Role;
+  onCreateChat: (participants: User[], chatType: ChatType, chatName: string, visibility: ChatVisibility, courseId: string) => void;
 }
 
 const CreateChat: React.FC<CreateChatProps> = ({userId, courseList, userRole, onCreateChat }) => {
-  const [selectedUser, setSelectedUser] = useState<string>('');
   const [chatName, setChatName] = useState<string>('');
-  const [chatType, setChatType] = useState<'direct' | 'group'>('direct');
-  const [chatVisibility, setChatVisibility] = useState<'private' | 'public'>('private');
+  const [chatType, setChatType] = useState<ChatType>(ChatType.Direct);
+  const [chatVisibility, setChatVisibility] = useState<ChatVisibility>(ChatVisibility.PRIVATE);
   const [selectedCourse, setSelectedCourse] = useState<string>('');
   const [usersList, setUserList] = useState<User[]>([]);
+  const [selectedUser, setSelectedUser] = useState<User[]>([]);
  
 
  useEffect(() => {
@@ -60,19 +63,20 @@ const handleCreateChat = () => {
       );
     }
   };
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Create New Chat</h2>
       <div className="flex space-x-4">
         <button 
-          className={`py-2 px-4 rounded ${chatType === 'direct' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          onClick={() => setChatType('direct')}
+          className={`py-2 px-4 rounded ${chatType === ChatType.Direct ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          onClick={() => setChatType( ChatType.Direct)}
         >
           Direct Chat
         </button>
         <button 
-          className={`py-2 px-4 rounded ${chatType === 'group' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          onClick={() => setChatType('group')}
+          className={`py-2 px-4 rounded ${chatType === ChatType.Group ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          onClick={() => setChatType(ChatType.Group)}
         >
           Group Chat
         </button>
@@ -89,7 +93,7 @@ const handleCreateChat = () => {
           </option>
         ))}
       </select>
-      {chatType === 'group' && (
+      {chatType === ChatType.Group && (
         <div>
           <input
             type="text"
@@ -100,31 +104,36 @@ const handleCreateChat = () => {
           />
           <select
             value={chatVisibility}
-            onChange={(e) => setChatVisibility(e.target.value as 'private' | 'public')}
+            onChange={(e) => setChatVisibility(e.target.value as ChatVisibility)}
             className="w-full p-2 border rounded mb-2"
           >
-            <option value="private">Private</option>
-            <option value="public">Public</option>
+            <option value= {ChatVisibility.PRIVATE} >Private</option>
+            <option value={ChatVisibility.PUBLIC}>Public</option>
           </select>
         </div>
       )}
-      <select 
+      <select
         className="w-full p-2 border rounded"
-        value={selectedUser}
-        onChange={(e) => setSelectedUser(e.target.value)}
+        value={chatType === ChatType.Group ? selectedUser.map(user => user._id) : (selectedUser[0]?._id || '')}
+        onChange={(e) => {
+          const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+          const selectedUsers = usersList.filter(user => selectedOptions.includes(user._id));
+          setSelectedUser(selectedUsers);
+        }}
+        multiple={chatType === ChatType.Group}
         disabled={!selectedCourse}
       >
-        <option value="">Select a user</option>
+        <option value="">Select {chatType === ChatType.Group ? 'users' : 'a user'}</option>
         {usersList.map(user => (
           <option key={user._id} value={user._id}>
-            {user.name}
+        {user.name}
           </option>
         ))}
       </select>
       <button 
         className="bg-blue-950 text-white py-2 px-4 rounded w-full"
-        onClick={handleCreateChat}
-        disabled={!selectedUser || !selectedCourse || (chatType === 'group' && !chatName)}
+        onClick={() => { handleCreateChat() }}
+        disabled={!selectedUser || !selectedCourse || (chatType === ChatType.Group && !chatName)}
       >
         Create Chat
       </button>

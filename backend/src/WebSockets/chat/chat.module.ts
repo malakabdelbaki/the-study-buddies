@@ -14,6 +14,7 @@ import { WsAuthorizationGuard } from '../guards/ws-jwt-authorization.guard'
 import { AuthModule } from 'src/auth/auth.module';
 import { LogsModule } from 'src/log/log.module';
 import { NotificationModule } from '../notification/notification.module';
+import { PusherService } from 'src/pusher/pusher.service';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { NotificationModule } from '../notification/notification.module';
     NotificationModule
   ],
   controllers: [ChatController],
-  providers: [ChatGateway, ChatService, WsJwtGuard, WsAuthorizationGuard],
+  providers: [ChatGateway, ChatService, WsJwtGuard, WsAuthorizationGuard, PusherService],
   exports: [ChatService]
 })
 export class ChatModule {}
