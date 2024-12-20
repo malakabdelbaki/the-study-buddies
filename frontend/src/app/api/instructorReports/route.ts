@@ -11,6 +11,49 @@ export async function GET(req: Request) {
     console.log('Instructor ID:', instructorId);
     console.log('Backend URL:', `${backendUrl}/instructor/${instructorId}`);
 
+
+// Parse the request URL for `downloadType` and `format`
+const url = new URL(req.url);
+const downloadType = url.searchParams.get('downloadType');
+const format = url.searchParams.get('format') || 'json';
+
+if (downloadType) {
+  // Handle file download request
+  const downloadUrl = `${backendUrl}/download-${downloadType}/${instructorId}?format=${format}`;
+  const response = await axios.get(downloadUrl, {
+    responseType: 'arraybuffer', // Ensure correct handling of binary data
+  });
+
+  return new NextResponse(response.data, {
+    headers: {
+      'Content-Type': response.headers['content-type'],
+      'Content-Disposition': response.headers['content-disposition'] || '',
+    },
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
     // Fetch reports from the backend
     const [analyticsResponse, quizResultsResponse, contentEffectivenessResponse] = await Promise.all([
       axios.get(`${backendUrl}/instructor/${instructorId}`),

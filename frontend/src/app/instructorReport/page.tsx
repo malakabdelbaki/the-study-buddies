@@ -73,6 +73,39 @@ export default function InstructorDashboard() {
     fetchReports();
   }, []);
 
+  
+
+  const downloadReport = async (type: string, format: 'csv' | 'json') => {
+    try {
+      const response = await fetch(`/api/instructorReports?downloadType=${type}&format=${format}`);
+      if (!response.ok) {
+        throw new Error('Failed to download report');
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `${type}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      alert('Failed to download the report. Please try again.');
+    }
+  };
+
+
+  
+
+
+
+
+
+
+
+
   if (error) return <p>{error}</p>;
   if (!analytics && !quizResults && !contentEffectiveness) return <p>Loading...</p>;
 
@@ -81,6 +114,8 @@ export default function InstructorDashboard() {
       <h1>Instructor Dashboard</h1>
 
       <h2>Analytics</h2>
+      <button onClick={() => downloadReport('analytics', 'json')}>Download Analytics (JSON)</button>
+      <button onClick={() => downloadReport('analytics', 'csv')}>Download Analytics (CSV)</button>
       {analytics?.length ? (
         analytics.map((course) => (
           <div key={course.courseId} style={{ marginBottom: '20px' }}>
@@ -102,6 +137,8 @@ export default function InstructorDashboard() {
       )}
 
       <h2>Quiz Results</h2>
+      <button onClick={() => downloadReport('quiz-results', 'json')}>Download Quiz Results (JSON)</button>
+      <button onClick={() => downloadReport('quiz-results', 'csv')}>Download Quiz Results (CSV)</button>
       {quizResults?.length ? (
         quizResults.map((quiz) => (
           <div key={quiz.quizId} style={{ marginBottom: '20px' }}>
@@ -124,6 +161,12 @@ export default function InstructorDashboard() {
       )}
 
       <h2>Content Effectiveness</h2>
+      <button onClick={() => downloadReport('content-effectiveness', 'json')}>
+        Download Content Effectiveness (JSON)
+      </button>
+      <button onClick={() => downloadReport('content-effectiveness', 'csv')}>
+        Download Content Effectiveness (CSV)
+      </button>
       {contentEffectiveness?.length ? (
         contentEffectiveness.map((course) => (
           <div key={course.courseId} style={{ marginBottom: '20px' }}>
@@ -146,3 +189,4 @@ export default function InstructorDashboard() {
     </div>
   );
 }
+

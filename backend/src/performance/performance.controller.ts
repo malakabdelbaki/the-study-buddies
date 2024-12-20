@@ -77,12 +77,14 @@ export class PerformanceController {
 
 
   @Get('download-analytics/:instructorId')
-  @SetMetadata(ROLES_KEY, [ Role.Instructor])
+  //@SetMetadata(ROLES_KEY, [ Role.Instructor])
   async downloadAnalytics(
     @Param('instructorId') instructorId: string,
-    @Query('format: csv or json') format: 'csv' | 'json' = 'json',
+    //@Query('format: csv or json') format: 'csv' | 'json' = 'json',
+    @Query('format') format: 'csv' | 'json' = 'json',
     @Res() res: Response,
   ) {
+    console.log(`API hit for instructor download: ${instructorId}`);
     try {
       const { filePath, fileName } =
         await this.performanceService.generateDownloadableAnalytics(
@@ -105,10 +107,12 @@ export class PerformanceController {
 
 
   @Get('download-quiz-results/:instructorId')
-  @SetMetadata(ROLES_KEY, [ Role.Instructor])
+  //@SetMetadata(ROLES_KEY, [ Role.Instructor])
   async downloadQuizResults(
     @Param('instructorId') instructorId: string,
-    @Query('format: csv or json') format: 'csv' | 'json' = 'json',
+    //@Query('format: csv or json') format: 'csv' | 'json' = 'json',
+    @Query('format') format: 'csv' | 'json' = 'json',
+
     @Res() res: Response,
   ) {
     try {
@@ -133,10 +137,11 @@ export class PerformanceController {
 
   
   @Get('download-content-effectiveness/:instructorId')
-  @SetMetadata(ROLES_KEY, [ Role.Instructor])
+  //@SetMetadata(ROLES_KEY, [ Role.Instructor])
   async downloadContentEffectivenessReport(
     @Param('instructorId') instructorId: string,
-    @Query('format: csv or json') format: 'csv' | 'json' = 'json',
+    //@Query('format: csv or json') format: 'csv' | 'json' = 'json',
+    @Query('format') format: 'csv' | 'json' = 'json',
     @Res() res: Response,
   ) {
     try {
