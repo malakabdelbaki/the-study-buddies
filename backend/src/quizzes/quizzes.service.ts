@@ -10,6 +10,9 @@ import { Answer, AnswerDocument } from 'src/models/answer.schema';
 import { Response, ResponseDocument } from 'src/models/response.schema';
 import { User, UserDocument } from 'src/models/user.schema';
 import { Progress, ProgressDocument } from 'src/models/progress.schema';
+import { ReturnQuizDto } from './dto/return-quiz.dto.js';
+import { title } from 'process';
+
 @Injectable()
 export class QuizzesService {
   constructor(
@@ -278,10 +281,27 @@ export class QuizzesService {
     console.log('Filtered Questions:', filteredQuestions);
     console.log(filteredQuestions.length, 'questions found for Module ID', module_id);
     console.log('Selected Questions:', selectedQuestions);
-    console.log('Quiz created:', savedQuiz);
+
+    const returnQuiz = new ReturnQuizDto();
+    returnQuiz.title = quiz.title;
+    returnQuiz.module_id = quiz.module_id.toString();
+    returnQuiz.quiz_type = quiz.quiz_type
+    returnQuiz.student_id = quiz.student_id.toString();
+    returnQuiz.questions = [];
+    console.log("***************************DEBUG*****************************")
+    
+    for(var index in quiz.questions){
+      const question_id = quiz.questions[index]; 
+      const q = await this.questionModel.findById(question_id);
+      returnQuiz.questions.push(q);
+    }
+
+    console.log("Return Quiz DTO :",returnQuiz);
+
+
 
     // Return the saved quiz
-    return savedQuiz;  
+    return returnQuiz;  
   }
   
 

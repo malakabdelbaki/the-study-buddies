@@ -76,9 +76,7 @@ const CoursesPage = () => {
     </div>
   );
 };
-
 export default CoursesPage;
 function handleClick() {
   throw new Error("Function not implemented.");
 }
-
