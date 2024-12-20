@@ -33,26 +33,6 @@ if (downloadType) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     
     // Fetch reports from the backend
     const [analyticsResponse, quizResultsResponse, contentEffectivenessResponse] = await Promise.all([
