@@ -82,7 +82,6 @@ export class ChatService {
     const user = await this.userService.findUserById(initiator.toString());
     const { receiver_id, course_id } = createDirectChatDto;
     const receiverUser = await this.userService.findUserById(receiver_id.toString());
-    const chatName = ' with ' + receiverUser.name;
     if (!receiverUser) {
       throw new EntityDoesNotExistException('User', receiver_id.toString());
     }
@@ -110,7 +109,7 @@ export class ChatService {
         throw new BadRequestException('Student is not enrolled in this course');
     }
     
-    const newChat = new this.chatModel({ participants: [initiator, receiver_id], chat_name: chatName, chat_type: ChatType.Direct, course_id: course_id, visibility:ChatVisibility.PRIVATE });  
+    const newChat = new this.chatModel({ participants: [initiator, receiver_id], chat_name: createDirectChatDto.chatName, chat_type: ChatType.Direct, course_id: course_id, visibility:ChatVisibility.PRIVATE });  
     const savedChat =  await newChat.save();
     return savedChat;
   }
@@ -204,15 +203,11 @@ export class ChatService {
   async addMessageToChatOrFail(chat_id:Types.ObjectId, addMessageDto:AddMessageDto, sender_id: Types.ObjectId): Promise<Message> {
 
     const { content } = addMessageDto;
-    console.log(chat_id);
-    console.log(sender_id);
-    console.log(content);
+    const user = await this.userService.findUserById(sender_id.toString());
     const chat = await this.chatModel.findOne({ _id: chat_id }).exec();
     if (!chat) {
       throw new EntityDoesNotExistException('Chat', chat_id.toString());
     }
-
-    console.log(chat);
     const participantExists = chat.participants.some(participant =>
       participant.toString()===sender_id.toString()
     );
@@ -221,12 +216,11 @@ export class ChatService {
       throw new BadRequestException('Sender is not a participant in this chat');
     }
 
-    // Create a new message
-    console.log('create message');
     const message = new this.messageModel({
       chat_id: chat_id,
       sender_id: sender_id,
-      content: content,     
+      content: content,    
+      sender_name: user.name 
     });
 
     const savedMessage = await message.save();
@@ -275,14 +269,14 @@ export class ChatService {
 
     chat.participants = chat.participants.filter(id => id.toString() !== studentId.toString());
    
-    if (chat.participants.length === 0) {
+    if (chat.participants.length < 2) {
       chat.isArchived = true;
     }
 
     return await (chat as ChatDocument).save();
   }
 
-  async getMessagesByChatId(chatId: Types.ObjectId, initiator:  Types.ObjectId): Promise<Message[]>{
+  async getMessagesByChatId(chatId: Types.ObjectId, initiator:  Types.ObjectId, timestamp?: string): Promise<Message[]>{
     const chat = await this.chatModel.findOne({ _id: chatId }).populate('messages').exec();
 
     if (!chat) {
@@ -298,7 +292,15 @@ export class ChatService {
     }
   
     // Extract the populated messages
-    const messages = await this.messageModel.find({ _id: { $in: chat.messages } }).exec();
+    let messages;
+    if (timestamp) {
+      messages = await this.messageModel.find({ 
+      _id: { $in: chat.messages },
+      timestamp: { $gt: new Date(timestamp) }
+      }).sort({ timestamp: 1 }).exec();
+    } else {
+      messages = await this.messageModel.find({ _id: { $in: chat.messages } }).sort({ timestamp: 1 }).exec();
+    }
   
     return messages;
   }
@@ -357,4 +359,27 @@ async getPotentialParticipants(course_id:string, userId:string){
   }
   return participants;
  }
+
+ async getNewMessages(chat_id: string, timestamp?: string): Promise<Message[]> {
+  // Define the base query to filter by chat_id
+  const query: any = { _id: chat_id };  // Use `chat_id` instead of `_id`
+
+  console.log("queryyy", query);
+
+  // If timestamp is provided, filter for messages newer than the timestamp
+  if (timestamp) {
+    query.timestamp = { $gt: new Date(timestamp) };  // $gt is used to filter messages greater than the timestamp
+  }
+
+  console.log("time queryy", query.timestamp);
+
+  // Fetch messages sorted by timestamp in ascending order (oldest first)
+  const result = await this.messageModel.find(query).sort({ timestamp: 1 }).exec();
+
+  console.log(result);
+
+  // Return the result
+  return result;
+}
+
 }
