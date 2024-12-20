@@ -43,6 +43,7 @@ export class ModuleService {
 
   async createModule(createModuleDto: CreateModuleDto) {
     try {
+      console.log('heree',createModuleDto);
       const courseId = createModuleDto.course_id;
       if (!courseId) throw new NotFoundException('Course Not found');
 
@@ -54,7 +55,7 @@ export class ModuleService {
 
       course.modules.push(newModule._id as Types.ObjectId);
       await course.save();
-
+      console.log('success');
       return newModule;
     } catch (error) {
       throw new InternalServerErrorException('Error creating module', error.message);
@@ -76,20 +77,22 @@ export class ModuleService {
   async updateModule(Moduleid: Types.ObjectId, updateModuleDto: UpdateModuleDto) {
     try {
       const module = await this.Modulemodel.findById(Moduleid);
+      console.log(module);
       if (!module) throw new NotFoundException('Module not found');
 
       if (updateModuleDto.quiz_length || updateModuleDto.quiz_type){
         
         //check If a studnet already took a quiz on this module   
         const quiz = await this.Quizmodel.find({module_id:Moduleid});
-        if (quiz){
+        if (quiz.length > 0){
+          console.log(quiz);
           throw new Error ('You can not change the type & length of the quiz as there are some students took a quiz');
         }
 
       }
       
       const updatedModule = await this.Modulemodel.findByIdAndUpdate(Moduleid, updateModuleDto, { new: true });
-      
+      console.log(updatedModule);
       return await updatedModule.save();
     } catch (error) {
       throw new InternalServerErrorException('Error updating module', error.message);
@@ -212,6 +215,20 @@ export class ModuleService {
       if (!module.question_bank) return  [];
 
       return module.question_bank;
+    } catch (error) {
+      throw new InternalServerErrorException('Error fetching question bank', error.message);
+    }
+  }
+
+
+  async getOneQuestion(questionId: Types.ObjectId) {
+    try {
+
+      const question = await this.Questionmodel.findById(questionId)
+      
+      if (!question) throw new NotFoundException('Question not found');
+
+      return question;
     } catch (error) {
       throw new InternalServerErrorException('Error fetching question bank', error.message);
     }

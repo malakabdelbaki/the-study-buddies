@@ -83,11 +83,13 @@ export class CoursesService {
       if (!course) {
         throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
       }
-      updateCourseDto.key_words.forEach((keyword)=>{
-        course.key_words.push(keyword);
-         course.save()
-      });
-      updateCourseDto.key_words = undefined;
+      if (updateCourseDto.key_words){
+        updateCourseDto.key_words.forEach((keyword)=>{
+          course.key_words.push(keyword);
+          course.save()
+        });
+        updateCourseDto.key_words = undefined;
+      }
       const updatedCourse = await this.courseModel.findByIdAndUpdate(id, updateCourseDto, { new: true });
       return await updatedCourse.save();
     } catch (err) {
