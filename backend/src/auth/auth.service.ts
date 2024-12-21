@@ -73,7 +73,7 @@ export class AuthService{
 
       this.logsService.logInfo('User logged in successfully', { email, userId: user._id }); //info log! (everything is ok)
 
-      const payload = { userid: user._id, role: user.role };
+      const payload = { userid: user._id, role: user.role, username: user.name }; //payload is the user id and role and name
       const token = await this.jwtService.signAsync(payload, {
         secret: process.env.JWT_SECRET,
         expiresIn: '1h',

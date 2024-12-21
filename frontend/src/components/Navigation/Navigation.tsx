@@ -44,6 +44,20 @@ const Navigation = ({ userRole }: { userRole: UserRole }) => {
 
   const isActive = (path: string) => pathname === path
 
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('api/auth/logout', { method: 'POST' });
+      if (response.ok) {
+        // Redirect to login page or refresh the page to clear sensitive data
+        window.location.href = '/login';
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
   return (
     <nav className="fixed left-0 top-0 h-screen w-20 bg-white shadow-lg flex flex-col items-center py-8">
       {/* Profile Picture */}
@@ -90,7 +104,7 @@ const Navigation = ({ userRole }: { userRole: UserRole }) => {
           <span className="sr-only">Profile</span>
         </Link>
         <button
-          onClick={() => {/* Add logout logic */}}
+          onClick={handleLogout}
           className="p-3 rounded-xl text-muted-foreground hover:text-red-600 hover:bg-red-50 transition-colors"
           title="Sign Out"
         >

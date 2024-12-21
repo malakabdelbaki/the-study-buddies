@@ -27,7 +27,7 @@ export class RepliesController {
   create(
     @Body() createReplyDto: CreateReplyDto,
     @Req() req: any) {
-      return this.repliesService.create(createReplyDto, req.user.userid);
+      return this.repliesService.create(createReplyDto, req.user.userid, req.user.username);
   }
 
   

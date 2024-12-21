@@ -13,10 +13,12 @@ import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decor
 import { ExistsOnDatabaseValidator } from 'src/common/validators/exists-on-database.validator';
 import { LogsModule } from 'src/log/log.module';
 import { ReplyModule } from '../replies/replies.module';
-
+import { Reply, ReplySchema } from 'src/Models/reply.schema';
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Thread.name, schema: ThreadSchema }]),
+    MongooseModule.forFeature([{ name: Thread.name, schema: ThreadSchema },
+      { name: Reply.name, schema: ReplySchema },
+    ]),
     ForumModule,
     CoursesModule,
     UserModule,

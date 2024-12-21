@@ -25,7 +25,7 @@ export class ThreadsController {
     @Param('forum_id') threadId: string,
     @Body() createThreadDto: CreateThreadDto,
     @Req() req: any) {
-      return this.threadService.create(createThreadDto, req.user.userid);
+      return this.threadService.create(createThreadDto, req.user.userid, req.user.username);
   }
 
   @Get('search/:forum_id')
@@ -35,7 +35,7 @@ export class ThreadsController {
   @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
   @UseGuards(IsMemberGuard)
   async search(
-    @Param('forum_id') forumId: Types.ObjectId,
+    @Param('forum_id') forumId: string,
     @Query('query') query: string,
     ) {
       const searchQuery = query?.trim() || '';

@@ -1,9 +1,10 @@
-'use client'
+'use client';
 
 import { Inter } from 'next/font/google'
 import Navigation from '@/components/Navigation/Navigation'
 import { usePathname } from 'next/navigation' // Import usePathname from next/navigation
 import './globals.css'
+import { useAuth } from '@/hooks/useAuth'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,6 +17,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  useAuth();
   const pathname = usePathname() // Get the current path
   // Get the first part of the path (e.g., '/admin', '/student', etc.)
   const pathStart = pathname.split('/')[1] // Extract the first part of the path

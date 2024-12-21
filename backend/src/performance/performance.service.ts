@@ -64,6 +64,7 @@ export class PerformanceService {
 
 //  Fetch the student dashboard
 async getStudentDashboard(studentId: string): Promise<StudentProgressDto[]> {
+  console.log(`API hit for student performance: ${studentId}`);
   try {
     // Validate and convert studentId to ObjectId
     if (!mongoose.Types.ObjectId.isValid(studentId)) {
@@ -73,13 +74,13 @@ async getStudentDashboard(studentId: string): Promise<StudentProgressDto[]> {
     const objectIdStudentId = new mongoose.Types.ObjectId(studentId);
 
     // Verify the user role if not student
-    const user = await this.userModel.findById(objectIdStudentId).exec();
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    if (user.role !== 'student') {
-      throw new ForbiddenException('This dashboard is only accessible for students');
-    }
+    // const user = await this.userModel.findById(objectIdStudentId).exec();
+    // if (!user) {
+    //   throw new NotFoundException('User not found');
+    // }
+    // if (user.role !== 'student') {
+    //   throw new ForbiddenException('This dashboard is only accessible for students');
+    // }
 
     // Fetch progress data
     const progressData = await this.progressModel
@@ -160,6 +161,7 @@ async getStudentDashboard(studentId: string): Promise<StudentProgressDto[]> {
     throw new InternalServerErrorException(`Error fetching student dashboard: ${error.message}`);
   }
 }
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
