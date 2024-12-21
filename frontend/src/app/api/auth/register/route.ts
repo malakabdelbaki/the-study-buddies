@@ -5,19 +5,13 @@ import axios from 'axios';
 
 export async function POST(req: Request) {
     try {
-        const { email, password } = await req.json();
-        const response = await axios.post(`http://localhost:${process.env.NEXT_PUBLIC_PORT}/api/auth/login`, { email, password });
+        const { name, email, password, role } = await req.json();
+        const response = await axios.post(`http://localhost:${process.env.NEXT_PUBLIC_PORT}/api/auth/register`, {name ,email, password, role }); //calls backend (dto)
         if (response.status === 201) {
-            
-            const setCookieHeader = response.headers['set-cookie'];
-
-            const res = NextResponse.json({ message: 'Login successful' });
-            if (setCookieHeader) {
-                res.headers.set('Set-Cookie', setCookieHeader[0]);
-            }
+            const res = NextResponse.json({ message: 'Register successful' });
             return res;
         }
-        return NextResponse.json({ error: 'Authentication failed' }, { status: response.status });
+        return NextResponse.json({ error: 'Register failed' }, { status: response.status });
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
             return NextResponse.json(

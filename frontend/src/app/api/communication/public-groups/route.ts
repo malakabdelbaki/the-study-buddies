@@ -11,7 +11,7 @@ export async function GET(req: Request) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const response = await axios.get('http://localhost:3000/api/chat/publicGroups', {
+    const response = await axios.get(`http://localhost:${process.env.NEXT_PUBLIC_PORT}/api/chat/publicGroups`, {
       headers: {
         Authorization: `Bearer ${tokenCookie.value}`,
       },

@@ -1,50 +1,39 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axiosInstance from '@/app/utils/axiosInstance';
+//import axiosInstance from '@/app/utils/axiosInstance';
 let backend_url = "http://localhost:3001";
+import axios from 'axios';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const router = useRouter();
   const [role, setRole] = useState('');
+  const [formState, setFormState] = useState<{ message: string | null }>({ message: null });
+  const router = useRouter();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    try{ 
-      console.log("hello1")
-         const response = await axiosInstance.post(
-        `${backend_url}/auth/register`,
-        {
-         email,
-         password,
-         name,
-         //age:25, //default
-         courses:[], //default no courses
-          role,
-        },
-      );
-      console.log("hello2")
-      const { status, data } = response;
-      if (status == 201) {
-        // handleSuccess(message);
-        // setSucessMessage("SignUp successfuly");
-        setTimeout(() => {
-            router.push('/login'); 
-        }, 1000);
-      } else {
-        // setErrorMessage(message);
-        console.log("hello3")
-        // handleError(message);
-      
-    } 
-    } catch (err: any) {
-      console.error('Registration error:', err.response?.data || err.message);
-      alert('Registration failed');
+
+    try {
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password, role }),
+        });
+
+        if (response.ok) {
+            setFormState({ message: 'Registration successful!' });
+            router.push('/about'); // Redirect on success
+        } else {
+            const errorData = await response.json();
+            setFormState({ message: errorData.error || 'Registration failed' });
+        }
+    } catch (error) {
+        setFormState({ message: 'An error occurred. Please try again.' });
     }
-  };
+};
 
   return (
     <form onSubmit={handleRegister}>

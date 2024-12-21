@@ -15,7 +15,7 @@ export async function GET(req: Request) {
 
 
     // Call the external endpoint and pass token
-    const response = await axios.get('http://localhost:3000/api/users/me', {
+    const response = await axios.get(`http://localhost:${process.env.NEXT_PUBLIC_PORT}/api/users/me`, {
       headers: {
         Authorization: `Bearer ${tokenCookie.value}`,
       },

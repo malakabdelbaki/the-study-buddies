@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     // Step 1: Fetch enrolled courses for the student or any courses if the user is an admin or instructor
     let enrolledCoursesResponse;
       enrolledCoursesResponse = await axios.get(
-        `http://localhost:3000/api/users/${userId}/courses/enrolled`,
+        `http://localhost:${process.env.NEXT_PUBLIC_PORT}/api/users/${userId}/courses/enrolled`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
