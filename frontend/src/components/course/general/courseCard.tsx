@@ -5,7 +5,7 @@ import { User } from "@/types/User";
 import { Course } from "@/types/Course";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 
-const CourseCard = ({ course, user }: { course: Course; user: { id?: string; role?: string } | null}) => {
+const CourseCard = ({ course, user ,explore}: { course: Course; user: { id?: string; role?: string } | null,explore?:boolean}) => {
   let inst_info = course.instructor_id as unknown as User;
 
   return (
@@ -45,7 +45,9 @@ const CourseCard = ({ course, user }: { course: Course; user: { id?: string; rol
       {/* Card Footer */}
       <CardFooter className="justify-between">
         <Link
-          href={ (user?.role==='instructor')?`InstrCourses/${course._id}`: `courses/${course._id}`}
+          href={(explore)?`courses/${course._id}`: 
+            (user?.role==='instructor')?`InstrCourses/${course._id}`: 
+            `StudCourses/${course._id}`}
           className="text-blue-500 hover:underline"
         >
           View Course Details

@@ -30,14 +30,6 @@ export class ModuleService {
     @InjectModel('Quiz') private readonly Quizmodel: Model<QuizDocument>,
 
   ) {
-    this.s3Client = new S3Client({
-      region: process.env.AWS_REGION,
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      },
-    });
-    this.bucketName = process.env.AWS_BUCKET_NAME; // Name of the S3 bucket
 
   }
 
@@ -296,16 +288,19 @@ export class ModuleService {
   }
 
   async getResource(userid:Types.ObjectId,id: Types.ObjectId): Promise<Resource> {
+    console.log('entered');
 
     const resource = await this.resourcemodel.findById(id);
     const user = await this.usermodel.findById(userid);
-    
+    console.log(resource);
     if (!resource) {
       throw new Error('Resource not found');
     }
     
-    if (user.role === Role.Student && resource.isModified)
+    if (user.role === Role.Student && resource.isOutdated)
       throw new Error('Resource not available');
+
+    console.log('reach',resource);
 
     
     return resource; // Return metadata including the file URL
