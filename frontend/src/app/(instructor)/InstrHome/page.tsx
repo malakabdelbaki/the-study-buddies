@@ -1,7 +1,12 @@
+'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAuthorization } from "@/hooks/useAuthorization"
 import { BookOpen, Users } from 'lucide-react'
+import Link from "next/link";
+import React from "react"
 
 export default function InstructorHomePage() {
+  useAuthorization(['instructor']);
   return (
     <div className="p-8">
       <h1 className="text-4xl font-bold mb-8">Welcome Back, Instructor!</h1>
@@ -64,7 +69,20 @@ export default function InstructorHomePage() {
           </CardContent>
         </Card>
       </div>
+
+
+
+{/* Link to Instructor Report Page */}
+<div className="mt-8">
+  <Link href="/instructorReport" className="text-blue-500 hover:underline text-lg font-semibold">
+    View Instructor Reports
+  </Link>
+</div>
+
+
+
     </div>
+
   )
 }
 

@@ -9,6 +9,7 @@ import { fetchCourseModules,fetchCourseById, fetchInstructor, updateCourse } fro
 import ModuleCard from "../../../../components/course/general/moduleCard";
 import { createModule } from "../../../api/courses/instructor/moduleRoute";
 import { Types } from "mongoose";
+import ForumPreview from "@/components/forum/ForumPreview";
 
 const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) => {
   const [course, setCourse] = useState<Course>();
@@ -311,6 +312,13 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
         )}
       </div>
   
+      <div className="modules-section mt-8">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Forum</h2>
+      {course._id && course.title && (
+        <ForumPreview courseId={course._id} courseTitle={course.title} />
+      )}
+
+       </div>
 
     </div>
 

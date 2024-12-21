@@ -13,12 +13,12 @@ import { ResourceDto } from './dto/create-resource.dto';
 import { UpdateResourceDto } from './dto/update-resource.dto';
 import { UserDocument } from 'src/Models/user.schema';
 import { Role } from 'src/enums/role.enum';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+//import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { QuizDocument } from 'src/models/quiz.schema';
 
 @Injectable()
 export class ModuleService {
-  private s3Client: S3Client;
+  //private s3Client: S3Client;
   private bucketName: string;
   
   constructor(
@@ -30,14 +30,14 @@ export class ModuleService {
     @InjectModel('Quiz') private readonly Quizmodel: Model<QuizDocument>,
 
   ) {
-    this.s3Client = new S3Client({
+    /*this.s3Client = new S3Client({
       region: process.env.AWS_REGION,
       credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       },
     });
-    this.bucketName = process.env.AWS_BUCKET_NAME; // Name of the S3 bucket
+    this.bucketName = process.env.AWS_BUCKET_NAME; // Name of the S3 bucket */
 
   }
 

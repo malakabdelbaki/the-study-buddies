@@ -9,16 +9,18 @@ import { UserService } from 'src/users/users.service';
 import { Role } from 'src/enums/role.enum';
 import { CoursesService } from 'src/courses/courses.service';
 import { Forum } from 'src/Models/forum.schema';
+import { Reply, ReplyDocument } from 'src/Models/reply.schema';
 @Injectable()
 export class ThreadsService {
   constructor(
     @InjectModel(Thread.name) private readonly threadModel: Model<ThreadDocument>,
+    @InjectModel(Reply.name) private readonly replyModel: Model<ReplyDocument>,
     private readonly userService: UserService,
     private readonly forumService: ForumService,
     private readonly courseService: CoursesService
   ){}
 
-  async create(createThreadDto: CreateThreadDto, user:Types.ObjectId): Promise<Thread> {
+  async create(createThreadDto: CreateThreadDto, user:Types.ObjectId, creator_name:string): Promise<Thread> {
     const forumId = createThreadDto.forumId;
     const forum = await this.forumService.findOne(forumId.toString());
     
@@ -29,7 +31,7 @@ export class ThreadsService {
       throw new NotFoundException(`Forum #${forumId} is archived`);
     }
 
-    const createdThread = new this.threadModel({ ...createThreadDto, createdBy: user });
+    const createdThread = new this.threadModel({ ...createThreadDto, createdBy: user, creator_name: creator_name });
     forum.threads.push(createdThread._id as Types.ObjectId);
     await forum.save();
     return createdThread.save();
@@ -65,10 +67,11 @@ export class ThreadsService {
     return thread;
   }
 
-  async searchThreads(query: string, forumId: Types.ObjectId): Promise<Thread[]> {
+  async searchThreads(query: string, forumId:string): Promise<Thread[]> {
     const forum = await this.forumService.findOne(forumId.toString());
     return await this.threadModel
       .find({
+        forumId,
         $or: [
           { title: { $regex: query, $options: 'i' } }, // Case-insensitive regex
           { content: { $regex: query, $options: 'i' } },
@@ -108,12 +111,9 @@ export class ThreadsService {
     return forum;
   }
 
-  async findRepliesOnThread(threadId: string): Promise<Thread> {
-    const thread = await this.threadModel.findById(threadId).populate('replies').exec();
-    if (!thread) {
-      throw new NotFoundException(`Thread #${threadId} not found`);
-    }
-    return thread;
+  async findRepliesOnThread(threadId: string): Promise<Reply[]> {
+       const replies = await this.replyModel.find({ thread_id:threadId }).exec();
+        return replies;
   }
 
 }

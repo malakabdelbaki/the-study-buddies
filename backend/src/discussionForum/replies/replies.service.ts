@@ -23,7 +23,7 @@ export class RepliesService {
     private readonly notificationService: NotificationsService,
   ) {}
 
-  async create(createReplyDto: CreateReplyDto, user:Types.ObjectId): Promise<Reply> {
+  async create(createReplyDto: CreateReplyDto, user:Types.ObjectId, creator_name:string ): Promise<Reply> {
     const { thread_id } = createReplyDto;
     const thread = await this.threadModel.findById(thread_id).exec();
     if (!thread) {
@@ -33,7 +33,7 @@ export class RepliesService {
       throw new NotFoundException(`Thread #${thread_id} is resolved`);
     }
    
-    const createdReply = new this.replyModel({ ...createReplyDto, createdBy: user });
+    const createdReply = new this.replyModel({ ...createReplyDto, createdBy: user, creator_name: creator_name });
     thread.replies.push(createdReply._id as Types.ObjectId);
 
     await thread.save();
