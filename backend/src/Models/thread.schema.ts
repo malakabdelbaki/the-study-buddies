@@ -11,6 +11,9 @@ export class Thread {
   @Prop({ type:Types.ObjectId, ref: 'User', required: true }) 
   createdBy: Types.ObjectId;
 
+  @Prop({ type: String, required: false })
+  creator_name: string;
+
   @Prop({ type: String, required: true })
   title: string;
 
@@ -20,8 +23,7 @@ export class Thread {
   @Prop({ type: [Types.ObjectId], ref: 'Reply', default: [] })  // Array of references to Reply model
   replies: Types.ObjectId[];
 
-  @Prop({ type: Types.ObjectId, ref: 'Module', required: false })  
-  module?: Types.ObjectId;
+ 
 
   @Prop({ type: Boolean, default: false })
   isResolved: boolean;
