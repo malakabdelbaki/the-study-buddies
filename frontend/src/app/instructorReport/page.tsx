@@ -267,324 +267,319 @@ export default function InstructorDashboard() {
   return (
     
   
-      <div style={{ padding: '20px' }}>
+  <div style={{ padding: '20px' }}>
   <h1 style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '2rem' }}>Instructor Dashboard</h1>
 
 
 
 
 {/* Analytics Section */}
-<section>
-  <h2>Analytics</h2>
-  <button onClick={() => downloadReport('analytics', 'json')}>Download Analytics (JSON)</button>
-  <button onClick={() => downloadReport('analytics', 'csv')}>Download Analytics (CSV)</button>
+<section style={{ margin: '20px 0', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
+  <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
+    Reports on Student Engagement
+  </h2>
+
   
+{/* Download Buttons */}
+<div style={{ textAlign: 'center', marginBottom: '20px' }}>
+    <button
+      onClick={() => downloadReport('analytics', 'json')}
+      style={{
+        display: 'inline-block',
+        margin: '10px',
+        padding: '10px 20px',
+        backgroundColor: '#007BFF',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        textDecoration: 'none',
+      }}
+    >
+      Download Report (JSON)
+    </button>
+    <button
+      onClick={() => downloadReport('analytics', 'csv')}
+      style={{
+        display: 'inline-block',
+        margin: '10px',
+        padding: '10px 20px',
+        backgroundColor: '#007BFF',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        textDecoration: 'none',
+      }}
+    >
+      Download Report (CSV)
+    </button>
+  </div>
+
+
+
   {analytics.length > 0 && (
     <>
       {/* Bar Chart for Total vs Completed Students */}
-      <Bar
-        data={{
-          labels: analytics.map((course) => course.courseTitle),
-          datasets: [
-            {
-              label: 'Total Students',
-              data: analytics.map((course) => course.totalStudents),
-              backgroundColor: 'rgba(75, 192, 192, 0.6)',
+      <div style={{ marginBottom: '40px' }}>
+        <h3 style={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center', marginBottom: '10px' }}>
+          Total vs Completed Students
+        </h3>
+        <Bar
+          data={{
+            labels: analytics.map((course) => course.courseTitle),
+            datasets: [
+              {
+                label: 'Total Students',
+                data: analytics.map((course) => course.totalStudents),
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+              },
+              {
+                label: 'Completed Students',
+                data: analytics.map((course) => course.completedStudents),
+                backgroundColor: 'rgba(75, 192, 192, 0.7)',
+              },
+            ],
+          }}
+          options={{
+            responsive: true,
+            plugins: {
+              legend: { position: 'top' },
+              title: { display: true, text: 'Analytics: Total vs Completed Students' },
+              tooltip: {
+                callbacks: {
+                  label: (tooltipItem) => `${tooltipItem.dataset.label}: ${tooltipItem.raw}`,
+                },
+              },
             },
-            {
-              label: 'Completed Students',
-              data: analytics.map((course) => course.completedStudents),
-              backgroundColor: 'rgba(255, 99, 132, 0.6)',
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Number of Students' },
+              },
+              x: {
+                title: { display: true, text: 'Courses' },
+              },
             },
-          ],
-        }}
-        options={{
-          responsive: true,
-          plugins: {
-            legend: { position: 'top' },
-            title: { display: true, text: 'Analytics: Total vs Completed Students' },
-          },
-        }}
-      />
+          }}
+        />
+      </div>
 
       {/* Pie Charts for Average Completion Rates */}
-      <h3>Average Completion Rates</h3>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-        {analytics.map((course) => (
-          <div key={course.courseId} style={{ width: '200px', textAlign: 'center' }}>
-            <h4 style={{ fontSize: '16px' }}>{course.courseTitle}</h4>
-            <Pie
-              data={{
-                labels: ['Average Completion', 'Remaining'],
-                datasets: [
-                  {
-                    label: 'Completion Rate',
-                    data: [course.averageCompletion, 100 - course.averageCompletion],
-                    backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(192, 192, 192, 0.6)'],
+      <div style={{ marginBottom: '40px' }}>
+        <h3 style={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center', marginBottom: '10px' }}>
+          Average Completion Rates
+        </h3>
+        <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '20px' }}>
+          {analytics.map((course) => (
+            <div key={course.courseId} style={{ width: '250px', textAlign: 'center' }}>
+              <h4 style={{ fontSize: '16px', marginBottom: '10px' }}>{course.courseTitle}</h4>
+              <Pie
+                data={{
+                  labels: ['Completed', 'Remaining'],
+                  datasets: [
+                    {
+                      label: 'Completion Rate',
+                      data: [course.averageCompletion, 100 - course.averageCompletion],
+                      backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(192, 192, 192, 0.7)'],
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: `${course.averageCompletion}% Completed` },
                   },
-                ],
-              }}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: { display: false },
-                  title: { display: true, text: `${course.averageCompletion}% Completed` },
-                },
-              }}
-            />
-          </div>
-        ))}
+                }}
+              />
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Overall Performance by Grades */}
-      <h3>Student Performance Based on Grades</h3>
-      <Bar
-        data={{
-          labels: ['Below Average', 'Average', 'Above Average', 'Excellent'],
-          datasets: [
-            {
-              label: 'Number of Students',
-              data: analytics[0]?.overallstudentPerformance
-                ? Object.values(analytics[0].overallstudentPerformance)
-                : [0, 0, 0, 0],
-              backgroundColor: 'rgba(54, 162, 235, 0.6)',
+      <div style={{ marginBottom: '40px' }}>
+        <h3 style={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center', marginBottom: '10px' }}>
+          Overall Student Performance (Grades)
+        </h3>
+        <Bar
+          data={{
+            labels: ['Below Average', 'Average', 'Above Average', 'Excellent'],
+            datasets: [
+              {
+                label: 'Number of Students',
+                data: analytics[0]?.overallstudentPerformance
+                  ? Object.values(analytics[0].overallstudentPerformance)
+                  : [0, 0, 0, 0],
+                backgroundColor: ['#FF6384', '#FFCE56', '#36A2EB', '#4BC0C0'],
+              },
+            ],
+          }}
+          options={{
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              title: { display: true, text: 'Performance by Grades' },
             },
-          ],
-        }}
-        options={{
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            title: { display: true, text: 'Overall Student Performance (Grades)' },
-          },
-        }}
-      />
-
-      {/* Performance Based on Course Completion */}
-      <h3>Performance Based on Course Completion</h3>
-      <Bar
-        data={{
-          labels: ['Below Average', 'Average', 'Above Average', 'Excellent'],
-          datasets: [
-            {
-              label: 'Number of Students',
-              data: analytics[0]?.CompletionPerformanceCategories
-                ? Object.values(analytics[0].CompletionPerformanceCategories)
-                : [0, 0, 0, 0],
-              backgroundColor: 'rgba(153, 102, 255, 0.6)',
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Number of Students' },
+              },
+              x: {
+                title: { display: true, text: 'Performance Categories' },
+              },
             },
-          ],
-        }}
-        options={{
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            title: { display: true, text: 'Performance Based on Course Completion' },
-          },
-        }}
-      />
+          }}
+        />
+      </div>
 
       {/* Module Performance as Table */}
-      <h3>Module Performance</h3>
-      {analytics.map((course) => (
-        <div key={course.courseId} style={{ marginBottom: '20px' }}>
-          <h4>{course.courseTitle}</h4>
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'left' }}>
-                <th style={{ padding: '10px', border: '1px solid #ddd' }}>Module Title</th>
-                <th style={{ padding: '10px', border: '1px solid #ddd' }}>Total Students</th>
-                <th style={{ padding: '10px', border: '1px solid #ddd' }}>Average Score</th>
-                <th style={{ padding: '10px', border: '1px solid #ddd' }}>Below Average</th>
-                <th style={{ padding: '10px', border: '1px solid #ddd' }}>Average</th>
-                <th style={{ padding: '10px', border: '1px solid #ddd' }}>Above Average</th>
-                <th style={{ padding: '10px', border: '1px solid #ddd' }}>Excellent</th>
-              </tr>
-            </thead>
-            <tbody>
-              {course.modulesPerformance.map((module: { moduleId: React.Key | null | undefined; moduleTitle: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; totalStudents: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; averageScore: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<React.AwaitedReactNode> | null | undefined; performanceCategories: { belowAverage: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; average: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; aboveAverage: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; excellent: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; }; }) => (
-                <tr key={module.moduleId}>
-                  <td style={{ padding: '10px', border: '1px solid #ddd' }}>{module.moduleTitle}</td>
-                  <td style={{ padding: '10px', border: '1px solid #ddd' }}>{module.totalStudents}</td>
-                  <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                    {module.averageScore !== null ? module.averageScore : 'N/A'}
-                  </td>
-                  <td style={{ padding: '10px', border: '1px solid #ddd' }}>{module.performanceCategories.belowAverage}</td>
-                  <td style={{ padding: '10px', border: '1px solid #ddd' }}>{module.performanceCategories.average}</td>
-                  <td style={{ padding: '10px', border: '1px solid #ddd' }}>{module.performanceCategories.aboveAverage}</td>
-                  <td style={{ padding: '10px', border: '1px solid #ddd' }}>{module.performanceCategories.excellent}</td>
+      <div>
+        <h3 style={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center', marginBottom: '10px' }}>
+          Module Performance
+        </h3>
+        {analytics.map((course) => (
+          <div key={course.courseId} style={{ marginBottom: '30px' }}>
+            <h4 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>{course.courseTitle}</h4>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'left' }}>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Module Title</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Total Students</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Average Score</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Below Average</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Average</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Above Average</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Excellent</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ))}
+              </thead>
+              <tbody>
+                {course.modulesPerformance.map((module: { moduleId: React.Key | null | undefined; moduleTitle: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; totalStudents: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; averageScore: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<React.AwaitedReactNode> | null | undefined; performanceCategories: { belowAverage: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; average: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; aboveAverage: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; excellent: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; }; }) => (
+                  <tr key={module.moduleId}>
+                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>{module.moduleTitle}</td>
+                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>{module.totalStudents}</td>
+                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>
+                      {module.averageScore !== null ? module.averageScore : 'N/A'}
+                    </td>
+                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>{module.performanceCategories.belowAverage}</td>
+                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>{module.performanceCategories.average}</td>
+                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>{module.performanceCategories.aboveAverage}</td>
+                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>{module.performanceCategories.excellent}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+      </div>
     </>
   )}
 </section>
 
 
-      
-    {/* Quiz Results Section */}
-<section style={{ marginTop: '30px' }}>
-  <h2 style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem' }}>Quiz Results</h2>
-  <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-    <button onClick={() => downloadReport('quiz-results', 'json')}>Download Quiz Results (JSON)</button>
-    <button onClick={() => downloadReport('quiz-results', 'csv')}>Download Quiz Results (CSV)</button>
-  </div>
-
-  {/* Total Questions Bar Chart */}
-  <h3>Total Questions</h3>
-  {quizResults?.length > 0 && (
-    <Bar
-      data={{
-        labels: quizResults.map((quiz) => quiz.quizTitle),
-        datasets: [
-          {
-            label: 'Total Questions',
-            data: quizResults.map((quiz) => quiz.totalQuestions || 0),
-            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-          },
-        ],
-      }}
-      options={{
-        responsive: true,
-        plugins: {
-          legend: { position: 'top' },
-          title: { display: true, text: 'Total Questions in Quizzes' },
-        },
-      }}
-    />
-  )}
-
-  {/* Total Students Bar Chart */}
-  <h3>Total Students</h3>
-  {quizResults?.length > 0 && (
-    <Bar
-      data={{
-        labels: quizResults.map((quiz) => quiz.quizTitle),
-        datasets: [
-          {
-            label: 'Total Students',
-            data: quizResults.map((quiz) => quiz.totalStudents || 0),
-            backgroundColor: 'rgba(255, 99, 132, 0.6)',
-          },
-        ],
-      }}
-      options={{
-        responsive: true,
-        plugins: {
-          legend: { position: 'top' },
-          title: { display: true, text: 'Total Students in Quizzes' },
-        },
-      }}
-    />
-  )}
-
-  {/* Average Score Bar Chart */}
-  <h3>Average Scores</h3>
-  {quizResults?.length > 0 && (
-    <Bar
-      data={{
-        labels: quizResults.map((quiz) => quiz.quizTitle),
-        datasets: [
-          {
-            label: 'Average Score',
-            data: quizResults.map((quiz) => quiz.averageScore || 0),
-            backgroundColor: 'rgba(75, 192, 192, 0.6)',
-          },
-        ],
-      }}
-      options={{
-        responsive: true,
-        plugins: {
-          legend: { position: 'top' },
-          title: { display: true, text: 'Average Scores in Quizzes' },
-        },
-      }}
-    />
-  )}
-
-  {/* Student Results Table */}
-  <h3>Student Results</h3>
-  {quizResults?.length > 0 ? (
-    quizResults.map((quiz) => (
-      <div key={quiz.quizId} style={{ marginBottom: '20px' }}>
-        <h4>{quiz.quizTitle}</h4>
-        {quiz.studentResults.length > 0 ? (
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-            <thead>
-              <tr>
-                <th style={{ border: '1px solid #ddd', padding: '8px' }}>Student Name</th>
-                <th style={{ border: '1px solid #ddd', padding: '8px' }}>Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {quiz.studentResults.map((result: { studentId: React.Key | null | undefined; studentName: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; score: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; }) => (
-                <tr key={result.studentId}>
-                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{result.studentName}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{result.score}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p>No student results available for this quiz.</p>
-        )}
-      </div>
-    ))
-  ) : (
-    <p>No quiz results found.</p>
-  )}
-</section>
 
 
 
 
 
 {/* Content Effectiveness Section */}
-<section style={{ marginTop: '30px' }}>
-  <h2 style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem' }}>Content Effectiveness</h2>
+<section style={{ marginTop: '30px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+  <h2 style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem', marginBottom: '20px', color: '#333' }}>
+    Content Effectiveness
+  </h2>
+
+  {/* Download Buttons */}
   <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-    <button onClick={() => downloadReport('content-effectiveness', 'json')}>Download Content Effectiveness (JSON)</button>
-    <button onClick={() => downloadReport('content-effectiveness', 'csv')}>Download Content Effectiveness (CSV)</button>
+    <button
+      onClick={() => downloadReport('content-effectiveness', 'json')}
+      style={{
+        display: 'inline-block',
+        margin: '10px',
+        padding: '10px 20px',
+        backgroundColor: '#007BFF',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        textDecoration: 'none',
+      }}
+    >
+      Download Content Effectiveness (JSON)
+    </button>
+    <button
+      onClick={() => downloadReport('content-effectiveness', 'csv')}
+      style={{
+        display: 'inline-block',
+        margin: '10px',
+        padding: '10px 20px',
+        backgroundColor: '#007BFF',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        textDecoration: 'none',
+      }}
+    >
+      Download Content Effectiveness (CSV)
+    </button>
   </div>
 
   {contentEffectiveness?.length > 0 ? (
     contentEffectiveness.map((course) => (
-      <div key={course.courseId} style={{ marginBottom: '20px', borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>
-        <h3>{course.courseTitle}</h3>
+      <div
+        key={course.courseId}
+        style={{
+          marginBottom: '20px',
+          padding: '15px',
+          borderBottom: '1px solid #ddd',
+          borderRadius: '8px',
+          backgroundColor: '#f9f9f9',
+        }}
+      >
+        <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '10px' }}>
+          {course.courseTitle}
+        </h3>
 
         {/* Course Rating */}
-        <p>
+        <p style={{ fontSize: '1rem', marginBottom: '5px' }}>
           <strong>Course Rating:</strong>{' '}
           {Array.from({ length: 5 }).map((_, index) => (
             <span key={index} style={{ color: index < course.courseRating ? '#FFD700' : '#ccc' }}>★</span>
           ))}
-          <span style={{ marginLeft: '10px' }}>({course.courseRating.toFixed(1)})</span>
+          <span style={{ marginLeft: '10px', fontSize: '0.9rem', color: '#555' }}>
+            ({course.courseRating.toFixed(1)})
+          </span>
         </p>
 
         {/* Instructor Rating */}
-        <p>
+        <p style={{ fontSize: '1rem', marginBottom: '10px' }}>
           <strong>Instructor Rating:</strong>{' '}
           {Array.from({ length: 5 }).map((_, index) => (
             <span key={index} style={{ color: index < course.instructorRating ? '#FFD700' : '#ccc' }}>★</span>
           ))}
-          <span style={{ marginLeft: '10px' }}>({course.instructorRating.toFixed(1)})</span>
+          <span style={{ marginLeft: '10px', fontSize: '0.9rem', color: '#555' }}>
+            ({course.instructorRating.toFixed(1)})
+          </span>
         </p>
 
         {/* Modules */}
         {course.modules.length > 0 && (
           <div>
-            <h4>Modules</h4>
+            <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '10px' }}>
+              Modules
+            </h4>
             {course.modules.map((module: { moduleId: React.Key | null | undefined; moduleTitle: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; moduleRating: number; }) => (
-              <div key={module.moduleId} style={{ marginBottom: '10px' }}>
-                <p>
+              <div key={module.moduleId} style={{ marginBottom: '10px', padding: '10px', backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+                <p style={{ margin: 0 }}>
                   <strong>{module.moduleTitle}:</strong>{' '}
                   {Array.from({ length: 5 }).map((_, index) => (
                     <span key={index} style={{ color: index < module.moduleRating ? '#FFD700' : '#ccc' }}>★</span>
                   ))}
-                  <span style={{ marginLeft: '10px' }}>({module.moduleRating.toFixed(1)})</span>
+                  <span style={{ marginLeft: '10px', fontSize: '0.9rem', color: '#555' }}>
+                    ({module.moduleRating.toFixed(1)})
+                  </span>
                 </p>
               </div>
             ))}
@@ -593,9 +588,196 @@ export default function InstructorDashboard() {
       </div>
     ))
   ) : (
-    <p>No content effectiveness data found.</p>
+    <p style={{ textAlign: 'center', color: '#666' }}>No content effectiveness data found.</p>
   )}
 </section>
+
+
+
+
+
+
+
+
+      
+    {/* Quiz Results Section */}
+    <section style={{ marginTop: '30px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+  <h2 style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem', marginBottom: '20px', color: '#333' }}>
+    Quiz Results
+  </h2>
+
+  {/* Download Buttons */}
+  <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+    <button
+      onClick={() => downloadReport('quiz-results', 'json')}
+      style={{
+        display: 'inline-block',
+        margin: '10px',
+        padding: '10px 20px',
+        backgroundColor: '#007BFF',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        textDecoration: 'none',
+      }}
+    >
+      Download Quiz Results (JSON)
+    </button>
+    <button
+      onClick={() => downloadReport('quiz-results', 'csv')}
+      style={{
+        display: 'inline-block',
+        margin: '10px',
+        padding: '10px 20px',
+        backgroundColor: '#007BFF',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        textDecoration: 'none',
+      }}
+    >
+      Download Quiz Results (CSV)
+    </button>
+  </div>
+
+  {/* Total Questions Bar Chart */}
+  <h3 style={{ fontWeight: 'bold', marginBottom: '10px' }}>Total Questions</h3>
+  {quizResults?.length > 0 && (
+    <div style={{ marginBottom: '30px' }}>
+      <Bar
+        data={{
+          labels: quizResults.map((quiz) => quiz.quizTitle),
+          datasets: [
+            {
+              label: 'Total Questions',
+              data: quizResults.map((quiz) => quiz.totalQuestions || 0),
+              backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            },
+          ],
+        }}
+        options={{
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            title: { display: true, text: 'Total Questions in Quizzes' },
+          },
+          scales: {
+            y: { beginAtZero: true, title: { display: true, text: 'Questions' } },
+          },
+        }}
+      />
+    </div>
+  )}
+
+  {/* Total Students Bar Chart */}
+  <h3 style={{ fontWeight: 'bold', marginBottom: '10px' }}>Total Students</h3>
+  {quizResults?.length > 0 && (
+    <div style={{ marginBottom: '30px' }}>
+      <Bar
+        data={{
+          labels: quizResults.map((quiz) => quiz.quizTitle),
+          datasets: [
+            {
+              label: 'Total Students',
+              data: quizResults.map((quiz) => quiz.totalStudents || 0),
+              backgroundColor: 'rgba(255, 99, 132, 0.6)',
+            },
+          ],
+        }}
+        options={{
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            title: { display: true, text: 'Total Students in Quizzes' },
+          },
+          scales: {
+            y: { beginAtZero: true, title: { display: true, text: 'Students' } },
+          },
+        }}
+      />
+    </div>
+  )}
+
+  {/* Average Score Bar Chart */}
+  <h3 style={{ fontWeight: 'bold', marginBottom: '10px' }}>Average Scores</h3>
+  {quizResults?.length > 0 && (
+    <div style={{ marginBottom: '30px' }}>
+      <Bar
+        data={{
+          labels: quizResults.map((quiz) => quiz.quizTitle),
+          datasets: [
+            {
+              label: 'Average Score',
+              data: quizResults.map((quiz) => quiz.averageScore || 0),
+              backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            },
+          ],
+        }}
+        options={{
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            title: { display: true, text: 'Average Scores in Quizzes' },
+          },
+          scales: {
+            y: { beginAtZero: true, title: { display: true, text: 'Scores' } },
+          },
+        }}
+      />
+    </div>
+  )}
+
+  {/* Student Results Table */}
+  <h3 style={{ fontWeight: 'bold', marginBottom: '10px' }}>Student Results</h3>
+  {quizResults?.length > 0 ? (
+    quizResults.map((quiz) => (
+      <div
+        key={quiz.quizId}
+        style={{
+          marginBottom: '30px',
+          padding: '15px',
+          backgroundColor: '#f9f9f9',
+          borderRadius: '8px',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        }}
+      >
+        <h4 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '10px' }}>
+          {quiz.quizTitle}
+        </h4>
+        {quiz.studentResults.length > 0 ? (
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#f5f5f5' }}>
+                <th style={{ padding: '10px', border: '1px solid #ddd' }}>Student Name</th>
+                <th style={{ padding: '10px', border: '1px solid #ddd' }}>Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {quiz.studentResults.map((result: { studentId: React.Key | null | undefined; studentName: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; score: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; }) => (
+                <tr key={result.studentId}>
+                  <td style={{ padding: '10px', border: '1px solid #ddd' }}>{result.studentName}</td>
+                  <td style={{ padding: '10px', border: '1px solid #ddd' }}>{result.score}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p style={{ color: '#666', fontStyle: 'italic' }}>No student results available for this quiz.</p>
+        )}
+      </div>
+    ))
+  ) : (
+    <p style={{ textAlign: 'center', color: '#666' }}>No quiz results found.</p>
+  )}
+</section>
+
+
+
+
+
+
 
     </div>
   );

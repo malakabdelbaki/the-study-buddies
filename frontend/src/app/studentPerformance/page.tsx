@@ -22,109 +22,6 @@ ChartJS.register(
   Legend
 );
 
-// export default function StudentPerformancePage() {
-//   const [studentData, setStudentData] = useState<any>(null); // Store fetched data
-//   const [error, setError] = useState<string | null>(null); // Store error messages
-//   const [loading, setLoading] = useState(true); // Manage loading state
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         // Fetch the current user's data
-//         const userResponse = await fetch(`/api/auth/me`, {
-//           method: 'GET',
-//           cache: 'no-store',
-//         });
-
-//         if (!userResponse.ok) {
-//           throw new Error("Failed to fetch user data");
-//         }
-
-//         const user = await userResponse.json();
-
-//         // Ensure the user is a student
-//         if (user.role !== 'student') {
-//           setError("This dashboard is only accessible for students.");
-//           setLoading(false);
-//           return;
-//         }
-
-//         // Fetch the student's performance data
-//         const performanceResponse = await fetch(`/api/studentPerformance`, {
-//           method: 'GET',
-//           cache: 'no-store',
-//         });
-
-//         if (!performanceResponse.ok) {
-//             if (performanceResponse.status === 404) {
-//               setError("No progress data found for the student. Start a course to see your progress.");
-//             } else {
-//               throw new Error("Failed to fetch student performance data");
-//             }
-//             setLoading(false);
-//             return;
-//           }
-
-//         const performanceData = await performanceResponse.json();
-
-//         // Set the fetched data
-//         setStudentData(performanceData);
-//       } catch (error) {
-//         console.error("Error fetching data:", error);
-//         setError("An error occurred while fetching student performance data.");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchData();
-//   }, []);
-
-//   // Handle loading state
-//   if (loading) {
-//     return <div>Loading...</div>;
-//   }
-
-//   // Handle error state
-//   if (error) {
-//     return <div>Error: {error}</div>;
-//   }
-
-//   // Handle empty data
-//   if (!studentData || studentData.length === 0) {
-//     return <div>No performance data available</div>;
-//   }
-
-//   return (
-//     <div className="flex flex-col items-center w-full p-4">
-//       <h1 className="text-xl font-bold mb-4">Student Dashboard</h1>
-//       <table className="w-full table-auto border-collapse border border-gray-300">
-//         <thead>
-//           <tr>
-//             <th className="border border-gray-300 px-4 py-2">Course Name</th>
-//             <th className="border border-gray-300 px-4 py-2">Average Score</th>
-//             <th className="border border-gray-300 px-4 py-2">Completion Percentage</th>
-//             <th className="border border-gray-300 px-4 py-2">Last Accessed</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {studentData.map((course: any) => (
-//             <tr key={course.courseId}>
-//               <td className="border border-gray-300 px-4 py-2">{course.courseName}</td>
-//               <td className="border border-gray-300 px-4 py-2">{course.averageScore}%</td>
-//               <td className="border border-gray-300 px-4 py-2">{course.completionPercentage}%</td>
-//               <td className="border border-gray-300 px-4 py-2">
-//                 {new Date(course.lastAccessed).toLocaleString()}
-//               </td>
-//             </tr>
-//           ))}
-//         </tbody>
-//       </table>
-//     </div>
-//   );
-// }
-
-
 
 interface StudentPerformanceData {
   courseId: string;
@@ -169,20 +66,7 @@ export default function StudentPerformancePage() {
     fetchPerformanceData();
   }, []);
 
-//   return (
-//     <div className="flex flex-col items-center p-4">
-//       <h1 className="text-2xl font-semibold mb-4">Student Performance Dashboard</h1>
-//       {error && <p className="text-red-500">{error}</p>}
-//       {performanceData ? (
-//         <pre className="bg-gray-100 p-4 rounded w-full">
-//           {JSON.stringify(performanceData, null, 2)}
-//         </pre>
-//       ) : (
-//         <p>Loading...</p>
-//       )}
-//     </div>
-//   );
-// }
+
 if (error) {
   return <p className="text-red-500">{error}</p>;
 }
@@ -192,53 +76,96 @@ if (!performanceData || performanceData.length === 0) {
 }
 
 // Prepare data for the chart with course names
+
 const chartData = {
-  labels: performanceData.map((item) => item.courseName), // Course names as X-axis labels
+  labels: performanceData.map((item) => item.courseName),
   datasets: [
     {
       label: 'Average Score',
       data: performanceData.map((item) => item.averageScore),
       backgroundColor: 'rgba(75, 192, 192, 0.6)',
+      borderColor: 'rgba(75, 192, 192, 1)',
+      borderWidth: 1,
     },
     {
-      label: 'Completion (%)',
+      label: 'Completion Rate (%)',
       data: performanceData.map((item) => item.completionPercentage),
-      backgroundColor: 'rgba(153, 102, 255, 0.6)',
+      backgroundColor: 'rgba(159, 39, 157, 0.6)',
+      borderColor: 'rgb(131, 18, 133)',
+      borderWidth: 1,
     },
   ],
 };
 
+const chartOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      position: 'top' as const, // Ensure type safety with 'as const'
+    },
+    title: {
+      display: true,
+      text: 'Average Score and Completion Rate by Course',
+      font: {
+        size: 18,
+      },
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      title: {
+        display: true,
+        text: 'Values',
+      },
+    },
+    x: {
+      title: {
+        display: true,
+        text: 'Courses',
+      },
+    },
+  },
+};
+
+
 return (
-  <div className="p-4">
-    <h1 className="text-2xl font-semibold mb-4">Student Performance Dashboard</h1>
+  <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+    <h1 style={{ textAlign: 'center', fontSize: '2rem', fontWeight: 'bold', marginBottom: '20px' }}>
+      Student Performance Dashboard
+    </h1>
 
     {/* Chart Visualization */}
-    <div className="mb-6">
-      <h2 className="text-lg font-medium mb-2">Course Progress and Scores</h2>
-      <Bar data={chartData} />
+    <div style={{ marginBottom: '40px' }}>
+      <Bar data={chartData} options={chartOptions} />
     </div>
 
     {/* Table Display */}
     <div>
-      <h2 className="text-lg font-medium mb-2">Performance Details</h2>
-      <table className="w-full border-collapse border border-gray-300">
+      <h2 style={{ textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '20px' }}>
+        Performance Details
+      </h2>
+      <table
+        style={{
+          width: '100%',
+          borderCollapse: 'collapse',
+          margin: '0 auto',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+        }}
+      >
         <thead>
-          <tr className="bg-gray-200">
-            <th className="border border-gray-300 px-4 py-2">Course Name</th>
-            <th className="border border-gray-300 px-4 py-2">Average Score</th>
-            <th className="border border-gray-300 px-4 py-2">Completion (%)</th>
-            <th className="border border-gray-300 px-4 py-2">Last Accessed</th>
+          <tr style={{ backgroundColor: '#f4f4f4', textAlign: 'left' }}>
+            <th style={{ border: '1px solid #ddd', padding: '12px' }}>Course Name</th>
+            <th style={{ border: '1px solid #ddd', padding: '12px' }}>Average Score</th>
+            <th style={{ border: '1px solid #ddd', padding: '12px' }}>Completion (%)</th>
           </tr>
         </thead>
         <tbody>
           {performanceData.map((item) => (
-            <tr key={item.courseId} className="text-center">
-              <td className="border border-gray-300 px-4 py-2">{item.courseName}</td>
-              <td className="border border-gray-300 px-4 py-2">{item.averageScore}</td>
-              <td className="border border-gray-300 px-4 py-2">{item.completionPercentage}%</td>
-              <td className="border border-gray-300 px-4 py-2">
-                {new Date(item.lastAccessed).toLocaleString()}
-              </td>
+            <tr key={item.courseId} style={{ textAlign: 'center' }}>
+              <td style={{ border: '1px solid #ddd', padding: '12px' }}>{item.courseName}</td>
+              <td style={{ border: '1px solid #ddd', padding: '12px' }}>{item.averageScore}</td>
+              <td style={{ border: '1px solid #ddd', padding: '12px' }}>{item.completionPercentage}%</td>
             </tr>
           ))}
         </tbody>
