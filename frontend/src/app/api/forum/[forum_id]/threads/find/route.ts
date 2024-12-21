@@ -8,7 +8,7 @@ export async function GET(req: NextRequest ) {
 
     const { pathname } = new URL(req.url);
     const pathSegments = pathname.split('/');
-    const forum_id = pathSegments[pathSegments.length - 2];
+    const forum_id = pathSegments[pathSegments.length - 3];
 
     if (!forum_id) {
       return new Response('Bad Request: Missing forum ID', { status: 400 });

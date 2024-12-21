@@ -24,9 +24,10 @@ export async function PATCH(req: NextRequest) {
 
     const response = await axios.patch(
       `${API_BASE_URL}/api/forum/archive/${forum_id}`,
+      {},
       {
         headers: {
-          Authorization: `Bearer ${tokenCookie.value}`, 
+          Authorization: `Bearer ${tokenCookie.value}`, // Authorization header
         },
       }
     );

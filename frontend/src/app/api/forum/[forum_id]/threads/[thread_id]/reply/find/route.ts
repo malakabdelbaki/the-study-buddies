@@ -8,15 +8,13 @@ export async function GET(req: NextRequest ) {
 
     const { pathname } = new URL(req.url);
     const pathSegments = pathname.split('/');
-    const course_id = pathSegments[pathSegments.length - 2];
+    const thread_id = pathSegments[pathSegments.length - 3];
 
-    const query = req.nextUrl.searchParams.get('query');
-    console.log('query:', query);
-
-    if (!course_id) {
-      return new Response('Bad Request: Missing course ID', { status: 400 });
+    if (!thread_id) {
+      return new Response('Bad Request: Missing thread_id', { status: 400 });
     }
 
+    // Get token from cookies
     const cookieStore = await cookies();
     const tokenCookie = cookieStore.get('token');
     
@@ -24,11 +22,7 @@ export async function GET(req: NextRequest ) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const params = query ? new URLSearchParams([['query', query]]) : undefined;
-
-    const response = await axios.get(`http://localhost:3000/api/forum/course/${course_id}/search`, {
-      params: params,
-      
+    const response = await axios.get(`http://localhost:3000/api/threads/${thread_id}/replies`, {
       headers: {
         Authorization: `Bearer ${tokenCookie.value}`,
       },
@@ -40,7 +34,7 @@ export async function GET(req: NextRequest ) {
 
     return NextResponse.json(response.data);
   } catch (error: any) {
-    console.error('Error fetching potential participants:', error);
+    console.error('Error fetching reply', error);
 
     const errorMessage = error.response?.data?.message || 'Internal Server Error';
     return NextResponse.json({ error: errorMessage }, { status: 500 });

@@ -15,13 +15,13 @@ export async function GET(req: NextRequest ) {
       return new Response('Unauthorized', { status: 401 });
     }
     const decodedToken = jwt.decode(tokenCookie.value);
-    const userId = (decodedToken as any)?.userid;
+
     const userRole = (decodedToken as any)?.role;
     if(userRole !== Role.Instructor) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const response = await axios.get(`http://localhost:3000/api/forum/instructor/${userId}`, {
+    const response = await axios.get(`http://localhost:3000/api/forum/instructor`, {
       headers: {
         Authorization: `Bearer ${tokenCookie.value}`,
       },

@@ -37,6 +37,7 @@ export async function PATCH(req: NextRequest) {
     );
     // Parse the response from the backend
     const data = await response.data;
+    console.log('Response from /api/forum/update:', data);
 
     if (response.status !== 200) {
       return NextResponse.json({ message: data.message || 'Error updating forum' }, { status: response.status });

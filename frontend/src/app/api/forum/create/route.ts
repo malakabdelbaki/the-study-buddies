@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const userId = (decodedToken as any)?.userid; 
     
     const response = await axios.post(`${API_BASE_URL}/api/forum`, 
-      {  title, description,  course_id, created_by: userId },
+      {  title, description, course_id, created_by: userId },
       {
         headers: {
           Authorization: `Bearer ${tokenCookie.value}`, 

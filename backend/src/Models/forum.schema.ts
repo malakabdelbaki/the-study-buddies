@@ -20,6 +20,9 @@ export class Forum {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   created_by: Types.ObjectId;
 
+  @Prop({ type: String, required: false })
+  creator_name: string;
+
   @Prop({ type: Boolean, default: true })
   is_active: boolean;
 }

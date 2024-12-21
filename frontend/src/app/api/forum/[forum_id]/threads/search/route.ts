@@ -8,7 +8,7 @@ export async function GET(req: NextRequest ) {
 
     const { pathname } = new URL(req.url);
     const pathSegments = pathname.split('/');
-    const forum_id = pathSegments[pathSegments.length - 2];
+    const forum_id = pathSegments[pathSegments.length - 3];
 
     const query = req.nextUrl.searchParams.get('query');
     console.log('query:', query);
@@ -26,10 +26,11 @@ export async function GET(req: NextRequest ) {
     }
 
     const params = query ? new URLSearchParams([['query', query]]) : undefined;
-
-    const response = await axios.get(`http://localhost:3000/api/threads/search/${forum_id}`, {
-      params: params,
-      
+console.log('params:', params);
+console.log('forum_id:', forum_id);
+    const response = await axios.get(`http://localhost:3000/api/threads/search/${forum_id}`,
+    {
+      params,
       headers: {
         Authorization: `Bearer ${tokenCookie.value}`,
       },

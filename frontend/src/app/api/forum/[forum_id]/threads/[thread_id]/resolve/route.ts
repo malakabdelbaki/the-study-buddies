@@ -10,7 +10,6 @@ export async function PATCH(req: NextRequest) {
     const { pathname } = new URL(req.url);
     const pathSegments = pathname.split('/'); 
     const thread_id = pathSegments[pathSegments.length - 2];
-
     if (!thread_id) {
       return NextResponse.json({ message: 'forum_id is required in the URL' }, { status: 400 });
     }
@@ -24,6 +23,7 @@ export async function PATCH(req: NextRequest) {
 
     const response = await axios.patch(
       `${API_BASE_URL}/api/threads/resolve/${thread_id}`,
+      {},
       {
         headers: {
           Authorization: `Bearer ${tokenCookie.value}`, 
@@ -32,6 +32,7 @@ export async function PATCH(req: NextRequest) {
     );
 
     const data = await response.data;
+
 
     if (response.status !== 200) {
       return NextResponse.json({ message: data.message || 'Error updating forum' }, { status: response.status });

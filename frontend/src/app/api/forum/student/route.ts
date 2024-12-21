@@ -21,7 +21,7 @@ export async function GET(req: NextRequest ) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const response = await axios.get(`http://localhost:3000/api/forum/instructor/${userId}`, {
+    const response = await axios.get(`http://localhost:3000/api/forum/student`, {
       headers: {
         Authorization: `Bearer ${tokenCookie.value}`,
       },

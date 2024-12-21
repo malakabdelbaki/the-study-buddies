@@ -22,10 +22,10 @@ export class ForumService {
     private readonly userService: UserService
   ) {}
 
-  async create(createForumDto: CreateForumDto, user: Types.ObjectId): Promise<Forum> {
+  async create(createForumDto: CreateForumDto, user: Types.ObjectId, creator_name:string): Promise<Forum> {
     const { title, description, course_id, created_by } = createForumDto;
     const courseObjId = new Types.ObjectId(course_id);
-    const createdForum = new this.forumModel({ title: title, description : description, course_id : courseObjId, created_by: user });
+    const createdForum = new this.forumModel({ title: title, description : description, course_id : courseObjId, created_by: user, creator_name: creator_name });
     return createdForum.save();
   }
 
@@ -35,8 +35,7 @@ export class ForumService {
     if (!course) {
       throw new NotFoundException(`Course #${courseId} not found`);
     }
-    const forums = await this.forumModel.find({ course_id: courseId }).exec();
-    console.log(forums);
+    const forums = await this.forumModel.find({ course_id: new Types.ObjectId(courseId) }).exec();
     return forums;
   }
 
