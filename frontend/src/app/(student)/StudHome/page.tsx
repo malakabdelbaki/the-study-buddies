@@ -53,29 +53,6 @@ export default function StudentHomePage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Current Courses Card */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Current Courses</CardTitle>
-            <CardDescription>Your enrolled courses this semester</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {['Introduction to React', 'Advanced JavaScript', 'UI/UX Design Principles', 'Data Structures and Algorithms'].map((course, index) => (
-                <div key={index} className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <BookOpen className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{course}</h3>
-                    <p className="text-sm text-muted-foreground">In Progress</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
         <EnrolledCoursesClient />
       </div>
 
