@@ -21,8 +21,10 @@ export class PerformanceController {
 
   constructor(private readonly performanceService: PerformanceService) {}
 
+
+  @Roles(Role.Student)
+  @UseGuards(authorizationGuard)
   @Get('/student/:studentId')
-  //@Roles(Role.Student)
  // @SetMetadata(ROLES_KEY, [ Role.Student])
   @ApiOperation({ summary: 'Get student dashboard' })
   @ApiParam({ name: 'studentId', description: 'The ID of the student' })

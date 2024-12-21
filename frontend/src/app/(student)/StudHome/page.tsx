@@ -5,6 +5,7 @@ import { BarChart, BookOpen, Bell } from 'lucide-react'
 import EnrolledCoursesClient from "@/components/user/studProgress"
 
 import React from "react"
+import Link from "next/link";
 
 export default function StudentHomePage() {
   useAuthorization(['student'])
@@ -77,6 +78,14 @@ export default function StudentHomePage() {
         </Card>
         <EnrolledCoursesClient />
       </div>
+
+      {/* Link to student dashboard Page */}
+<div className="mt-8">
+  <Link href="/studentPerformance" className="text-blue-500 hover:underline text-lg font-semibold">
+    View student dashboard
+  </Link>
+</div>
+
     </div>
   )
 }

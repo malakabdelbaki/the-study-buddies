@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
-import axios from 'axios';
+// import { NextResponse } from 'next/server';
+// import { cookies } from 'next/headers';
+// import jwt from 'jsonwebtoken';
+// import axios from 'axios';
 
 // export async function GET(req: Request) {
 //   try {
@@ -103,25 +103,91 @@ import axios from 'axios';
 
 
 
+// export async function GET(req: Request) {
+//   try {
+//     const studentId = '67458e188dad400e774a54d4'; // Hardcoded student ID for testing
+
+//     console.log(`Calling backend with studentId: ${studentId}`);
+
+//     // Call the backend endpoint directly
+//     const response = await axios.get(
+//       `http://localhost:3000/api/performance/student/${studentId}`
+//     );
+
+//     // Return the backend response
+//     return NextResponse.json(response.data);
+//   } catch (error: any) {
+//     console.error('Error fetching student performance:', error.message);
+//     return NextResponse.json(
+//       { error: 'Failed to fetch student performance' },
+//       { status: 500 }
+//     );
+//   }
+// }
+
+'use server';
+
+import { NextResponse } from 'next/server';
+import axios from 'axios';
+import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
+
+const backendUrl = 'http://localhost:3000/api/performance';
+
 export async function GET(req: Request) {
   try {
-    const studentId = '67458e188dad400e774a54d4'; // Hardcoded student ID for testing
+    // Extract token from cookies
+    const cookieStore = await cookies();
+    const tokenCookie = cookieStore.get('token');
+
+    if (!tokenCookie) {
+      console.error('Token is missing from cookies');
+      return new Response('Unauthorized: No token provided', { status: 401 });
+    }
+
+    // Decode the token
+    const decodedToken = jwt.decode(tokenCookie.value);
+
+    if (!decodedToken) {
+      console.error('Failed to decode token:', tokenCookie.value);
+      return new Response('Invalid token', { status: 401 });
+    }
+
+    const studentId = (decodedToken as any)?.userid;
+    const userRole = (decodedToken as any)?.role;
+
+    console.log('Decoded Token:', decodedToken);
+    console.log('Extracted Student ID:', studentId);
+    console.log('Extracted User Role:', userRole);
+
+    // Check if user has the student role
+    if (!studentId || userRole !== 'student') {
+      console.error('Forbidden: User is not a student');
+      return new Response('Forbidden: Not a student', { status: 403 });
+    }
 
     console.log(`Calling backend with studentId: ${studentId}`);
 
     // Call the backend endpoint directly
     const response = await axios.get(
-      `http://localhost:3000/api/performance/student/${studentId}`
+      `${backendUrl}/student/${studentId}`,
+      {
+        headers: { Authorization: `Bearer ${tokenCookie.value}` }, // Include token
+      }
     );
 
     // Return the backend response
     return NextResponse.json(response.data);
   } catch (error: any) {
     console.error('Error fetching student performance:', error.message);
-    return NextResponse.json(
-      { error: 'Failed to fetch student performance' },
-      { status: 500 }
-    );
+
+    if (axios.isAxiosError(error) && error.response) {
+      return NextResponse.json(
+        { error: error.response.data.message || 'Server error' },
+        { status: error.response.status }
+      );
+    }
+
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-
