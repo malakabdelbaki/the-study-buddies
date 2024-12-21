@@ -1,5 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, BookOpen, Bell } from 'lucide-react'
+import EnrolledCoursesClient from "@/components/user/studProgress"
+
 
 export default function StudentHomePage() {
   return (
@@ -69,6 +71,7 @@ export default function StudentHomePage() {
             </div>
           </CardContent>
         </Card>
+        <EnrolledCoursesClient />
       </div>
     </div>
   )
