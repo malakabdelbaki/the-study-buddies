@@ -14,12 +14,13 @@ import { authorizationGuard } from 'src/auth/guards/authorization.guard';
 import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
 import { IsChatMemberHttpGuard } from 'src/auth/guards/IsChatMember.guard';
-
+import { PusherService } from 'src/pusher/pusher.service';
 
 @UseGuards(AuthGuard, authorizationGuard)
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService,
+    private readonly pusherService: PusherService
   ) {}
 // 1. Get all chats in which the student is a participant
 @Get()
@@ -31,13 +32,46 @@ async getChatsOfUser(@Req() req: any) {
   console.log(req.user);
   return await this.chatService.getChatsOfAStudentOrFail(req.user.userid);
 }
+
+  // @Get(':chat_id/newMessages')
+  // @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
+  // async getMessages(
+  //   @Param('chat_id') chat_id: string,
+  //   @Query('timestamp') timestamp: string,
+  // ) {
+  //   if (!chat_id) {
+  //     throw new Error('Room ID is required');
+  //   }
+  //   console.log('chat_id', chat_id);
+  //   console.log('timestamp', timestamp);
+  //   const messages = await this.chatService.getNewMessages(chat_id, timestamp);
+  //   return messages;
+  // }
+
+  @Get(':chat_id/newMessages')
+@SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
+async getMessages(
+  @Param('chat_id') chat_id: string,
+  @Query('lastMessageId') lastMessageId?: string, // Updated query parameter
+) {
+  if (!chat_id) {
+    throw new Error('Room ID is required');
+  }
+  console.log('chat_id:', chat_id);
+  console.log('lastMessageId:', lastMessageId);
+
+  const messages = await this.chatService.getNewMessages(chat_id, lastMessageId);
+  return messages;
+}
+
+
   @Get('publicGroups')
-    @ApiOperation({ summary: 'Get all public group chats' })
-    @ApiResponse({ status: 200, description: 'List of all public group chats' })
-    @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
-    async getPublicGroupChats(@Req() req: any) {
-        console.log('req.user.userid', req.user.userid);
-        return await this.chatService.getPublicGroupChats(req.user.userid);
+  @ApiOperation({ summary: 'Get all public group chats' })
+  @ApiResponse({ status: 200, description: 'List of all public group chats' })
+  @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
+  async getPublicGroupChats(@Req() req: any) {
+      console.log('req.user.userid', req.user.userid);
+      return await this.chatService.getPublicGroupChats(req.user.userid);
     }
     
   @Get('/history/:chat_id')
@@ -48,8 +82,10 @@ async getChatsOfUser(@Req() req: any) {
   @UseGuards(IsChatMemberHttpGuard)
   async getAllChatHistory(
     @Param('chat_id') chat_id: Types.ObjectId,
-    @Req() req: any) {
-    return await this.chatService.getMessagesByChatId(chat_id, req.user.userid);
+    @Req() req: any,
+    @Query('timestamp') timestamp?: string,
+  ) {
+    return await this.chatService.getMessagesByChatId(chat_id, req.user.userid, timestamp);
   }
 
 
@@ -103,6 +139,7 @@ async getChatsOfUser(@Req() req: any) {
     @Param('chat_id') chat_id: string,
     @Body() addParticipantDto: AddParticipantDto,
     @Req() req: any) {
+      console.log("im cont");
     return await this.chatService.addParticipantToChatOrFail(new Types.ObjectId(chat_id), addParticipantDto, req.user.userid);
   }
 
@@ -119,8 +156,10 @@ async getChatsOfUser(@Req() req: any) {
     @Param('chat_id') chat_id: string, 
     @Body() addMessageDto: AddMessageDto,
     @Req() req: any) {
-      console.log('addMessageDto', addMessageDto);
-    return await this.chatService.addMessageToChatOrFail(new Types.ObjectId(chat_id), addMessageDto, new Types.ObjectId(req.user.userid));
+
+      const message = await this.chatService.addMessageToChatOrFail(new Types.ObjectId(chat_id), addMessageDto, new Types.ObjectId(req.user.userid));
+      await this.pusherService.trigger(`chat-${chat_id}`, 'new-message', message);
+    return message;
   }
 
   // 9. Update chat name of a chat
@@ -140,7 +179,7 @@ async getChatsOfUser(@Req() req: any) {
   }
 
   // 10. Leave a chat (remove student ID from participants list and if a chat has no participants it is archived)
-  @Patch('leave/:chat_id/:studentId')
+  @Patch('leave/:chat_id')
   @ApiOperation({ summary: 'Remove a student from a chat (leave chat)' })
   @ApiResponse({ status: 200, description: 'Student removed from the chat' })
   @ApiParam({ name: 'chat_id', type: String, description: 'The ID of the chat to leave' })
@@ -148,8 +187,10 @@ async getChatsOfUser(@Req() req: any) {
   @SetMetadata( ROLES_KEY, [Role.Instructor, Role.Student])
   @UseGuards(IsChatMemberHttpGuard)
 
-  async leaveChat(@Param('chat_id') chat_id: Types.ObjectId, @Param('studentId') studentId: Types.ObjectId) {
-    return this.chatService.leaveChatOrFail(chat_id, studentId);
+  async leaveChat(
+    @Param('chat_id') chat_id: Types.ObjectId,
+    @Req() req: any) {
+    return this.chatService.leaveChatOrFail(chat_id, new Types.ObjectId(req.user.userid));
   }
 
  

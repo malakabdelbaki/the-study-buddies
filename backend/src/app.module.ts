@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -24,6 +24,10 @@ import { AuthModule } from './auth/auth.module';
 import { ValidatorsModule } from './common/validators/validators.module';
 import { LogsModule } from './log/log.module';
 import { WebSocketsModule } from './WebSockets/web-sockets.module';
+import { PusherService } from './pusher/pusher.service';
+import { AuthenticationMiddleware } from './auth/middleware/authentication.middleware';
+import { BackupModule } from './backup/backup.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -44,12 +48,22 @@ import { WebSocketsModule } from './WebSockets/web-sockets.module';
     AuthModule,
     ValidatorsModule,
     LogsModule,
-    WebSocketsModule
+    WebSocketsModule,
+    ScheduleModule.forRoot(), //for backup
+    BackupModule //for backup
   ],
   controllers: [AppController, NoteController],
-  providers: [AppService],
+  providers: [AppService, PusherService, AuthenticationMiddleware],
   exports: [AppService, MongooseModule],
   // controllers: [AppController, QuizzesController],
   // providers: [AppService, QuizzesService],
 })
-export class AppModule {}
+export class AppModule {
+  // configure(consumer: MiddlewareConsumer) {
+  //   // Apply Authentication Middleware to all routes
+  //   consumer.apply(AuthenticationMiddleware).forRoutes(
+  //     { path: 'api/logs', method: RequestMethod.ALL },
+  //     //{ path: 'api/another-protected-route', method: RequestMethod.ALL },
+  //   );
+  // }
+}

@@ -33,8 +33,9 @@ export class ModuleController {
   @Post() //ok
   async create(@Req() request,@Body() createModuleDto: CreateModuleDto) {
     try {
+      console.log('enterered');
       const instructorId = request.user.userid;
-
+      console.log(request.user);
       return await this.moduleService.createModule({
         ...createModuleDto,
         instructor_id:new Types.ObjectId(instructorId) ,
@@ -70,6 +71,7 @@ export class ModuleController {
     @Body() updateModuleDto: UpdateModuleDto,
   ) {
     try {
+      console.log('entered',module_id,updateModuleDto);
       let ID = new Types.ObjectId(module_id);
       const updatedModule = await this.moduleService.updateModule(ID, updateModuleDto);
       if (!updatedModule) {
@@ -124,6 +126,7 @@ export class ModuleController {
   @Post('question-bank')
   async addQuestion(@Req() request,@Body() createQuestionDto: CreateQuestionDto) {
     try {
+      console.log('entered ques')
       let inst = request.user.userid;
       if (!inst || !request.user) {
         throw new HttpException('not loged in instructor',HttpStatus.UNAUTHORIZED);
@@ -193,6 +196,23 @@ export class ModuleController {
         throw new HttpException('No questions found for this module', HttpStatus.NOT_FOUND);
       }
       return questionBank;
+    } catch (error) {
+      throw new HttpException('Failed to get question bank: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  @Roles(Role.Instructor)
+  @UseGuards(authorizationGuard, InstructorGuard)
+  @Get('question-bank/:questionId')
+  async getOneQuestion(@Param('questionId') questionId: string) {
+    try {
+      let ID = new Types.ObjectId(questionId);
+      const question = await this.moduleService.getOneQuestion(ID);
+      if (!question) {
+        throw new HttpException('No questions found for this module', HttpStatus.NOT_FOUND);
+      }
+      return question;
     } catch (error) {
       throw new HttpException('Failed to get question bank: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
