@@ -26,6 +26,8 @@ import { LogsModule } from './log/log.module';
 import { WebSocketsModule } from './WebSockets/web-sockets.module';
 import { PusherService } from './pusher/pusher.service';
 import { AuthenticationMiddleware } from './auth/middleware/authentication.middleware';
+import { BackupModule } from './backup/backup.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -46,7 +48,9 @@ import { AuthenticationMiddleware } from './auth/middleware/authentication.middl
     AuthModule,
     ValidatorsModule,
     LogsModule,
-    WebSocketsModule
+    WebSocketsModule,
+    ScheduleModule.forRoot(), //for backup
+    BackupModule //for backup
   ],
   controllers: [AppController, NoteController],
   providers: [AppService, PusherService, AuthenticationMiddleware],
