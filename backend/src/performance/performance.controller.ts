@@ -12,8 +12,8 @@ import { Request } from 'express';
 
 @ApiTags('Performance') // Group all endpoints under the "Performance" section in Swagger
 @Controller('performance')
+@UseGuards(AuthGuard)
 //@Roles(Role.User)
-//@UseGuards(AuthGuard)
 // @UseGuards(authorizationGuard)
 //@UseGuards(AuthGuard, authorizationGuard)
 
@@ -43,7 +43,8 @@ export class PerformanceController {
 
 
 
-
+  @Roles(Role.Instructor)
+  @UseGuards(authorizationGuard)
   @Get('/instructor/:instructorId')
   @ApiOperation({ summary: 'Get instructor analytics' })
   //@SetMetadata(ROLES_KEY, [ Role.Instructor])
@@ -60,14 +61,19 @@ export class PerformanceController {
     return this.performanceService.getInstructorAnalytics(instructorId);
   }
 
+
+  @Roles(Role.Instructor)
+  @UseGuards(authorizationGuard)
   @Get('quiz-results/:instructorId')
-  @SetMetadata(ROLES_KEY, [ Role.Instructor])
+  //@SetMetadata(ROLES_KEY, [ Role.Instructor])
   async getQuizResultsReport(@Param('instructorId') instructorId: string) {
     return this.performanceService.getQuizResultsReport(instructorId);
   }
 
+  @Roles(Role.Instructor)
+  @UseGuards(authorizationGuard)
   @Get('content-effectiveness/:instructorId')
-  @SetMetadata(ROLES_KEY, [ Role.Instructor])
+  //@SetMetadata(ROLES_KEY, [ Role.Instructor])
   async getContentEffectivenessReport(
     @Param('instructorId') instructorId: string,
   ) {
@@ -75,7 +81,8 @@ export class PerformanceController {
   }
 
 
-
+  @Roles(Role.Instructor)
+  @UseGuards(authorizationGuard)
   @Get('download-analytics/:instructorId')
   //@SetMetadata(ROLES_KEY, [ Role.Instructor])
   async downloadAnalytics(
@@ -105,7 +112,8 @@ export class PerformanceController {
     }
   }
 
-
+  @Roles(Role.Instructor)
+  @UseGuards(authorizationGuard)
   @Get('download-quiz-results/:instructorId')
   //@SetMetadata(ROLES_KEY, [ Role.Instructor])
   async downloadQuizResults(
@@ -135,7 +143,8 @@ export class PerformanceController {
     }
   }
 
-  
+  @Roles(Role.Instructor)
+  @UseGuards(authorizationGuard)
   @Get('download-content-effectiveness/:instructorId')
   //@SetMetadata(ROLES_KEY, [ Role.Instructor])
   async downloadContentEffectivenessReport(
