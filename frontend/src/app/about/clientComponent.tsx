@@ -26,6 +26,11 @@ export function MyClientComponent({
         <h1>cookies{cookieClient}</h1>
 
         <Link href='/about/me'>Click To Me Page</Link>
+        
+        <Link href='/studentPerformance'> student Performance</Link>
+
+        <Link href="/instructorReport">Instructor Reports</Link>
+
         </>
     )
 }
