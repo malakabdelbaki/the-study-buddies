@@ -95,3 +95,22 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 }
+
+// DELETE: Delete User Account
+export async function DELETE(req: Request) {
+  try {
+    const { userId, role, token } = await getUserFromToken();
+
+    const response = await axios.delete(
+      `http://localhost:3000/api/users/${userId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    console.log(response.data)
+
+    return NextResponse.json(response.data);
+  } catch (error: any) {
+    console.error('Error deleting user:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
