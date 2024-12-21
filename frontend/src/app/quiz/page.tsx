@@ -3,16 +3,15 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-type Question= {
+type Question = {
   _id: string;
-  module_id: string;// Foreign key to the Module schema
+  module_id: string; // Foreign key to the Module schema
   instructor_id: string; // Reference to the instructor who created it
   question: string;
   options: Record<string, string>; // Matches the Record<string, string> format
-  correct_answer:string;
+  correct_answer: string;
   difficulty_level: string;
   question_type: string;
-
 };
 
 const QuizPage = () => {
@@ -28,21 +27,45 @@ const QuizPage = () => {
       [questionId]: choice, // Update or set the choice for the specific question ID
     }));
   };
+
+  const handleSubmit = async (quiz_id: string , user_answers:Record<string, string>) => {
+    console.log("clicked submit")
+    console.log("quiz id ", quiz_id)
+    console.log("user answers  ", user_answers)
+  
+    try {
+      const response = await fetch(`/api/quiz/${quiz_id}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_answers: user_answers,
+        }),
+      });
+    
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Submission error response:", errorData);
+        throw new Error(errorData.error || "Failed to submit quiz");
+      }
+    
+      const responseData = await response.json();
+    
+      // Redirect to /quiz/submit and pass data via query parameters
+      router.push(`/quiz/submit?data=${encodeURIComponent(JSON.stringify(responseData))}`);
+    } catch (error) {
+      console.error("Error submitting quiz:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-
-        // // Extract module ID from the URL
-        // const urlParams = new URLSearchParams(window.location.search);
-        // const moduleId = urlParams.get("moduleId");
-        // if (!moduleId) throw new Error("Module ID not found in URL");
-
         // Fetch the quiz data from the API
         const response = await fetch("/api/quiz", {
           method: "POST",
-          headers: { "Content-Type": "application/json" }
+          headers: { "Content-Type": "application/json" },
         });
-//          body: JSON.stringify({ module_id: "675f733844d8ccdfb2bb820d", user_id: "675f722a9d33c32a3f90d04c" }),
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || "Failed to fetch quiz data");
@@ -60,16 +83,16 @@ const QuizPage = () => {
     fetchQuiz();
   }, []);
 
-  console.log("in pages before loading",quiz);
+  console.log("in pages before loading", quiz);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-500">Error: {error}</div>;
   if (!quiz) return <div>No quiz found</div>;
-  console.log("in pages after loading",quiz);
+  console.log("in pages after loading", quiz);
+
   console.log("user answer", userChoices);
   console.log("quiz questions", quiz.questions);
   console.log("quiz questions", quiz.questions[1]._id);
-
 
   return (
     <div className="p-8 max-w-2xl mx-auto">
@@ -110,16 +133,13 @@ const QuizPage = () => {
       <div className="mt-8">
         <button
           className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          onClick={() => console.log("Submitted Choices:", userChoices)}
+          onClick={() => handleSubmit(quiz.quiz_id, userChoices)}
         >
           Submit
         </button>
       </div>
     </div>
-  );  
+  );
 };
 
-
 export default QuizPage;
-
-
