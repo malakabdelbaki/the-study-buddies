@@ -283,6 +283,7 @@ export class QuizzesService {
     console.log('Selected Questions:', selectedQuestions);
 
     const returnQuiz = new ReturnQuizDto();
+    returnQuiz.quiz_id = quiz._id.toString();
     returnQuiz.title = quiz.title;
     returnQuiz.module_id = quiz.module_id.toString();
     returnQuiz.quiz_type = quiz.quiz_type
@@ -295,7 +296,6 @@ export class QuizzesService {
       const q = await this.questionModel.findById(question_id);
       returnQuiz.questions.push(q);
     }
-
     console.log("Return Quiz DTO :",returnQuiz);
 
 

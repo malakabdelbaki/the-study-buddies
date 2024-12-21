@@ -4,6 +4,9 @@ import { Question } from 'src/Models/question.schema';
 
 export class ReturnQuizDto {
   @IsString()
+  quiz_id: string;
+
+  @IsString()
   title: string;
 
   @IsString()
