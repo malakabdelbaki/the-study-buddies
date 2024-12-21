@@ -1,14 +1,20 @@
 'use client';
+import React, { Component, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthorization } from "@/hooks/useAuthorization";
+//import { withAuth } from "@/lib/withAuth";
 
-import React, { useEffect, useState } from "react";
 
 export default function LogsPage() {
+  useAuthorization(['admin'])
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [level, setLevel] = useState<string>('');  // For filtering logs by level
   const [limit, setLimit] = useState<number>(50);  // For limiting the number of logs fetched
 
+  const router = useRouter(); // For redirecting
+  
   useEffect(() => {
     const fetchLogs = async () => {
       setLoading(true);
@@ -16,12 +22,12 @@ export default function LogsPage() {
       
       try {
         console.log("try start!");
-        /*const queryParams = new URLSearchParams();
+        const queryParams = new URLSearchParams();
         if (level) queryParams.append('level', level);
-        if (limit) queryParams.append('limit', limit.toString());*/
+        if (limit) queryParams.append('limit', limit.toString());
 
         console.log("hello1");
-        const response = await fetch(`http://localhost:3001/api/logs`, {
+        const response = await fetch(`/api/log?${queryParams.toString()}`, {
           method: 'GET',
           cache: 'no-store',
           //credentials: 'include',
@@ -29,10 +35,17 @@ export default function LogsPage() {
         
         console.log("hello2");
         if (!response.ok) {
-          console.log("failed to fetch logs");
-          console.log(response)
-          throw new Error("Failed to fetch logs");
-        }
+          // Check if the error is due to unauthorized access or forbidden access
+          // if (response.status === 401 || response.status === 403) {
+          //   setError("Unauthorized access - Please log in.");
+          //   setTimeout(() => {
+          //     router.push('/login');  // Redirect to login after displaying the error message
+          //   }, 2000);  // Delay before redirecting for better user experience
+          //   return;
+          // } else {
+            throw new Error("Failed to fetch logs");
+          }
+        //}
 
         console.log("hello3");
         const data = await response.json();

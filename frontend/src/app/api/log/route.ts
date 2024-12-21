@@ -1,4 +1,4 @@
-'use server'
+'use server';
 
 import { NextResponse } from 'next/server';
 import axios from 'axios';
@@ -25,6 +25,11 @@ export async function GET(req: Request) {
     const userid = (decodedToken as any)?.userId; 
     const userRole = (decodedToken as any)?.role;
 
+    // // Role-based authorization check
+    // if (userRole !== 'admin') {
+    //   // If the user is not an admin, deny access
+    //   return new Response('Forbidden: You do not have the required permissions', { status: 403 });
+    // }
 
     const url = 'http://localhost:3001/api/logs'; // Backend URL for logs API
     const params = new URL(req.url).searchParams;

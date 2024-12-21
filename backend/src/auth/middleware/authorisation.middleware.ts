@@ -1,5 +1,5 @@
 
-import { UnauthorizedException } from '@nestjs/common';
+import { Injectable,UnauthorizedException } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 
 /**
@@ -10,13 +10,14 @@ import { NextFunction, Request, Response } from 'express';
 * 
 * @returns next Function or Throws an Error if user is not authenticated
 */
-const isUserAuthorized = (roles: String[]) => {
-  return (req: Request, res: Response, next: NextFunction): NextFunction | void => {
-    if (!roles.includes(req['user'].role)) {
-        throw new UnauthorizedException('User does not have the required role')
+@Injectable()
+export class AuthorizationMiddleware {
+  constructor(private readonly roles: string[]) {}
+
+  use(req: Request, res: Response, next: NextFunction): void {
+    if (!req['user'] || !this.roles.includes(req['user'].role)) {
+      throw new UnauthorizedException('User does not have the required role');
     }
     next();
   }
 }
-
-export default isUserAuthorized;

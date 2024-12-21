@@ -72,11 +72,11 @@ async function bootstrap() {
     // //parses cookies from the incoming HTTP requests and makes them available in the request.cookies object
     // app.use(cookieParser())
 
-    /*app.enableCors({
-      origin: 'http://localhost:3000',
+    app.enableCors({
+      origin: '*',
       methods: 'GET,POST,PUT,PATCH,DELETE',
       credentials: true,
-    });*/
+    });
     
 }
 

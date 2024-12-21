@@ -7,12 +7,15 @@ import { useActionState, useState } from "react"; //useActionState: helps manage
 import { useRouter } from "next/navigation"; //allows page to redirect after sucessful login
 //import axiosInstance from "@/app/utils/axiosInstance"; 
 import login from "./login.server"; //handles login logic
+import { extractToken } from "@/app/_lib/tokenExtract";
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const router = useRouter();
   const [formState, setFormState] = useState<{ message: string | null }>({ message: null });
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userId, setUserId] = useState<any>(null);  // Add a state to store userId as well
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +33,31 @@ export default function LoginPage() {
       if (response.ok) {
         const data = await response.json(); // Parse JSON data from the response
         setFormState({ message: 'Login successful!' });
-        router.push('/about');
+
+        //------------------redirection
+        const tokenData = await extractToken();
+        
+        if (tokenData instanceof Response) {
+          // If the result is a Response (Unauthorized or Invalid Token)
+          console.log(tokenData.statusText); // You can handle the response here
+          return;
+        }
+
+        // Otherwise, destructure userId and userRole from the returned object
+        const { userId, userRole } = tokenData;
+        setUserRole(userRole);
+        setUserId(userId);
+
+        if (userRole == "admin") {
+          router.push('/AdminHome');
+        } else if (userRole == "instructor") {
+          router.push('/InstrHome');
+        } else {
+          router.push('/StudHome');
+        }
+
+        //----------------------
+
       } else {
         const errorData = await response.json();
         setFormState({ message: errorData.error || 'Login failed. Please try again.' });
