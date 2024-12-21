@@ -94,6 +94,17 @@ type Answer = {
     isCorrect: string;
   };
 
+  type Question = {
+    _id: string;
+    module_id: string; // Foreign key to the Module schema
+    instructor_id: string; // Reference to the instructor who created it
+    question: string;
+    options: Record<string, string>; // Matches the Record<string, string> format
+    correct_answer: string;
+    difficulty_level: string;
+    question_type: string;
+  };
+
 
 const QuizSubmitPage = () => {
   const searchParams = useSearchParams();
@@ -118,34 +129,59 @@ const QuizSubmitPage = () => {
             <p>
               <strong>Score:</strong> {responseData.score}
             </p>
-            <p>
-              <strong>Submitted At:</strong> {new Date(responseData.submittedAt).toLocaleString()}
-            </p>
           </div>
   
-          {/* Individual Answers */}
-          <h2 className="text-xl font-medium mb-4">Answers</h2>
+          {/* Individual Question Results */}
+          <h2 className="text-xl font-medium mb-4">Question Results</h2>
           {responseData.answers.length > 0 ? (
-            responseData.answers.map((answer: Answer) => (
-              <div key={answer._id} className="border p-4 rounded">
-                <h3 className="font-medium mb-2">
-                  Question ID: {answer.question_id}
-                </h3>
-                <p className="mb-2">
-                  <strong>Selected Answer:</strong> {answer.selectedAnswer}
-                </p>
-                <p className="mb-2">
-                  <strong>Correct:</strong>{" "}
-                  <span
-                    className={`font-bold ${
-                      answer.isCorrect ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    {answer.isCorrect ? "Yes" : "No"}
-                  </span>
-                </p>
-              </div>
-            ))
+            responseData.answers.map((answer: Answer) => {
+              // Find the matching question for the current answer
+              const question: Question | undefined = responseData.questions.find(
+                (q: Question) => q._id.toString() === answer.question_id.toString()
+              );
+  
+              return (
+                <div key={answer._id} className="border p-4 rounded">
+                  <h3 className="font-medium mb-2">
+                    {question ? question.question : "Question not found"}
+                  </h3>
+                  {question && (
+                    <ul className="space-y-2 mb-2">
+                      {question.options &&
+                        Object.entries(question.options).map(([key, value]) => (
+                          <li
+                            key={key}
+                            className={`px-4 py-2 border rounded w-full text-left ${
+                              answer.selectedAnswer === key
+                                ? "bg-blue-100"
+                                : ""
+                            }`}
+                          >
+                            {key}. {value as string}
+                          </li>
+                        ))}
+                    </ul>
+                  )}
+                  <p className="mb-2">
+                    <strong>Selected Answer:</strong> {answer.selectedAnswer}
+                  </p>
+                  <p className="mb-2">
+                    <strong>Correct Answer:</strong>{" "}
+                    {question ? question.correct_answer : "Unknown"}
+                  </p>
+                  <p className="mb-2">
+                    <strong>Correct:</strong>{" "}
+                    <span
+                      className={`font-bold ${
+                        answer.isCorrect ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {answer.isCorrect ? "Yes" : "No"}
+                    </span>
+                  </p>
+                </div>
+              );
+            })
           ) : (
             <p>No answers available.</p>
           )}
@@ -155,7 +191,6 @@ const QuizSubmitPage = () => {
       )}
     </div>
   );
-  
 };
 
 export default QuizSubmitPage;

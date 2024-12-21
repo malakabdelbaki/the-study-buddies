@@ -16,10 +16,10 @@ export class StudentCanAccessModuleValidator implements ValidatorConstraintInter
     private readonly CoursesService: CoursesService,
     private readonly ModuleService: ModuleService,
   ) {}
- async validate(moduleId: string, args: ValidationArguments) {
+ async validate(module_id: string, args: ValidationArguments) {
    
     const userId = args.object['user_id'] || args.object['student_id'];
-    const module = await this.ModuleService.findOne(new Types.ObjectId(moduleId));
+    const module = await this.ModuleService.findOne(new Types.ObjectId(module_id));
     const course = await this.CoursesService.findOne(module.course_id);
     if (!course) {
       return false; 
