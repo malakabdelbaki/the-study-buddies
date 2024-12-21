@@ -296,16 +296,19 @@ export class ModuleService {
   }
 
   async getResource(userid:Types.ObjectId,id: Types.ObjectId): Promise<Resource> {
+    console.log('entered');
 
     const resource = await this.resourcemodel.findById(id);
     const user = await this.usermodel.findById(userid);
-    
+    console.log(resource);
     if (!resource) {
       throw new Error('Resource not found');
     }
     
-    if (user.role === Role.Student && resource.isModified)
+    if (user.role === Role.Student && resource.isOutdated)
       throw new Error('Resource not available');
+
+    console.log('reach',resource);
 
     
     return resource; // Return metadata including the file URL

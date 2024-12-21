@@ -155,7 +155,7 @@ export class ModuleController {
     @Body() updateQuestionDto: UpdateQuestionDto,
   ) {
     try {
-      
+      console.log('duuuuuu');
       let ID = new Types.ObjectId(quesId);
       const updatedQuestion = await this.moduleService.updateQuestion(ID, updateQuestionDto);
       if (!updatedQuestion) {
@@ -163,6 +163,7 @@ export class ModuleController {
       }
       return updatedQuestion;
     } catch (error) {
+      console.log('myerror',error)
       throw new HttpException('Failed to update question: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -246,34 +247,47 @@ export class ModuleController {
     },
   },
 })
-@UseInterceptors(FileInterceptor('file',{storage:diskStorage(
-  {destination:'./uploads' , filename :(req,file,callback)=>{ 
-    const unique_suffix = Date.now()+'-';
-    const ext = path.extname(file.originalname);
-    const filename = `${file.originalname.replace(/\s+/g, '_')}+${unique_suffix}${ext}`;
-    callback(null,filename);
-  }}
-)}))
-async uploadResource(@Param('module_id') module_id :string,@Body() body: { title: string }, @UploadedFile() file: Express.Multer.File) {
-  const {  title } = body;
-  console.log(module_id);
-  const moduleObjectId = new Types.ObjectId(module_id);
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, callback) => {
+          if (!file) {
+            callback(new BadRequestException('No file provided'), null);
+            return;
+          }
+          const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+          const ext = path.extname(file.originalname);
+          const filename = `${file.originalname.replace(/\s+/g, '_')}_${uniqueSuffix}${ext}`;
+          callback(null, filename);
+        },
+      }),
+    }),
+  )
+  async uploadResource(
+    @Param('module_id') module_id: string,
+    @Body() body: { title: string,description?:string,type?:string }, // Other body data
+    @UploadedFile() file: Express.Multer.File, // Uploaded file
+  ) {
+    if (!file) {
+      throw new BadRequestException('File upload failed');
+    }
 
-  if (!Types.ObjectId.isValid(moduleObjectId)) {
-    throw new BadRequestException('Invalid Module ID');
+    console.log('File:', file);
+    console.log('Body:', body);
+
+    const moduleObjectId = module_id; // Replace this with your actual validation logic
+
+    const url = `http://localhost:3000/resources/${file.filename}`;
+    return await this.moduleService.uploadResource({
+      module_id: new Types.ObjectId(moduleObjectId),
+      title: body.title,
+      url,
+      description:body.description,
+      type:body.type
+    });
   }
-  
 
-  //const url = await this.moduleService.PostFileAndGetUrl(file);
-  //
-   const url = `http://localhost:3000/resources/${file.filename}`; // Generate file access URL
-  
-  return this.moduleService. uploadResource({
-    module_id: moduleObjectId,
-    title,
-    url,
-  });
-}
 
 
 @ApiOperation({ summary: 'Delete a resource by its ID ' })
@@ -314,6 +328,7 @@ async getOneResource(@Req() request,@Param('id') id: string) {
   try{
   let userid = new Types.ObjectId(request.user.userid);  
   let ID = new Types.ObjectId(id);
+  console.log('wow!',userid,ID);
   return this.moduleService.getResource(userid,ID);
   }
   catch(err){

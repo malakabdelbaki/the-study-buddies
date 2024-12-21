@@ -9,7 +9,6 @@ import { fetchCourseModules,fetchCourseById, fetchInstructor, updateCourse, dele
 import ModuleCard from "../../../../components/course/general/moduleCard";
 import { createModule } from "../../../api/courses/instructor/moduleRoute";
 import { Types } from "mongoose";
-import ForumPreview from "@/components/forum/ForumPreview";
 
 const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) => {
   const [course, setCourse] = useState<Course>();
@@ -242,33 +241,15 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     <span className="font-semibold">Number of Students:</span>{" "}
     {course.students?.length}
   </div>
+  
+  <div>
+    <button>
+        Rate Module
+    </button>
+    </div>
 
-  {/* Save and Edit Buttons */}
-  <div className="flex space-x-4">
-    {isEditing ? (
-      <button
-        onClick={handleSaveClick}
-        className="bg-green-500 text-white px-4 py-2 rounded"
-      >
-        Save
-      </button>
-    ) : (
-      <div>
-        <button
-          onClick={handleEditClick}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Edit
-        </button>
-          <button onClick={handleDelete} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-          Delete
-      </button>
-     </div>
-    )}
-  </div>
+  
 </div>
-
-
 
 
   {/* __________________________________ModulesPart_______________________________________ */}
@@ -283,91 +264,8 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
         </div>
     </div>
 
-       
-   {/* _____________________________New Module Form____________________________________ */}
-
-
-
-      <div className="p-4 border rounded shadow">
-        {!showForm ? (
-          <button
-            onClick={() => setShowForm(true)}
-            className="text-2xl font-bold text-green-500"
-          >
-            +
-          </button>
-        ) : (
-          <div>
-            <h3>Add a New Module</h3>
-            <input
-              type="text"
-              name="title"
-              placeholder="Module Title"
-              value={newModule?.title}
-              onChange={handleInputChangeForm}
-              className="border p-2 rounded w-full mb-2"
-            />
-
-            <input
-              type="text"
-              name="content"
-              placeholder="Module Content"
-              value={newModule?.content}
-              onChange={handleInputChangeForm}
-              className="border p-2 rounded w-full mb-2"
-            />
-
-            <input
-              type="number"
-              name="quiz_length"
-              placeholder="Quiz Length"
-              value={newModule?.quiz_length}
-              onChange={handleInputChangeForm}
-              className="border p-2 rounded w-full mb-2"
-            />
-
-
-            <select
-              name="quiz_type"
-              value={newModule?.quiz_type}
-              onChange={handleInputChangeForm}
-              className="border p-2 rounded w-full mb-2"
-            >
-              <option value="">Select Quiz Type</option>
-              <option value="mcq">MCQ</option>
-              <option value="mixed">mixed</option>
-              <option value="true/false">True/False</option>
-            </select>
-
-            <select
-              name="module_difficulty"
-              value={newModule?.module_difficulty}
-              onChange={handleInputChangeForm}
-              className="border p-2 rounded w-full mb-2"
-            >
-              <option value="">Select Difficulty</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-
-            <button
-              onClick={handleAddModule}
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              Add Module
-            </button>
-          </div>
-        )}
-      </div>
+    
   
-      <div className="modules-section mt-8">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Forum</h2>
-      {course._id && course.title && (
-        <ForumPreview courseId={course._id} courseTitle={course.title} />
-      )}
-
-       </div>
 
     </div>
 

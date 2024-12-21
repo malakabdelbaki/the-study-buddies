@@ -264,17 +264,14 @@ export class UserService {
   // View enrolled courses of a student
   async getEnrolledCoursesOfStudent(userId: string): Promise<any> {
     try {
-
+      console.log(userId);
       const studentObjectId = new mongoose.Types.ObjectId(userId);
 
-      const courses = await this.courseModel.find({ students: studentObjectId });
-
+      const courses = await this.courseModel.find({ students: studentObjectId }).populate('instructor_id');
+      console.log(courses);
       if (!courses.length) throw new NotFoundException('No courses found for this user.');
 
-      return courses.map(course => ({
-        title: course.title,
-        id: course._id, 
-      }));
+      return courses;
     } catch (error) {
         throw new InternalServerErrorException('Error fetching enrolled courses', error.message);
       }

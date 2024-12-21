@@ -164,15 +164,7 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) =>
         <p>Number of Questions: {questions.length}</p>
       </div>
   
-      {isEditing ? (
-        <button onClick={handleSaveModule} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-          Save
-        </button>
-      ) : (
-        <button onClick={() => setIsEditing(true)} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-          Edit
-        </button>
-      )}
+      
     </div>
   
     {/* Questions Section */}
@@ -183,7 +175,6 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) =>
           <QuestionCard key={q._id} Onequestion={q} onUpdate={handleUpdateQuestion} onDelete={handleDeleteQuestion} />
         ))}
       </div>
-      <AddQuestionForm moduleId={module._id as string} InstructorId={module.instructor_id as string} />
     </div>
   
     {/* Resources Section */}
@@ -192,9 +183,7 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) =>
       {resources.map((res: any) => (
         <ResourceCard key={res._id} onDelete={handleDeleteResource} onUpdate={handleUpdateResource} resource={res} />
       ))}
-      <div className="add-resource">
-        <AddResourceForm moduleId={module._id as string} InstructorId={module?.instructor_id as string} />
-      </div>
+     
     </div>
   </div>
   )  
@@ -202,6 +191,3 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) =>
 
 
 export default ModuleDetails;
-function addResourceToModule(formData: FormData) {
-    throw new Error("Function not implemented.");
-}
