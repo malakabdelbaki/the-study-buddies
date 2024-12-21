@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { BookOpen } from 'lucide-react'; // Import the BookOpen icon
 import ProgressBar from "@/components/ui/ProgressBar";
 
 interface CourseProgress {
   courseId: string;
-  courseTitle: string; // Add courseTitle field
-  progress: number; 
+  courseTitle: string;
+  progress: number;
 }
 
 const EnrolledCoursesClient = () => {
@@ -16,7 +16,6 @@ const EnrolledCoursesClient = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
 
-  // Fetch courses and progress data
   useEffect(() => {
     async function fetchCourses() {
       try {
@@ -25,8 +24,8 @@ const EnrolledCoursesClient = () => {
         const data = await response.json();
         setCourses(data.enrolledCourses.map((course: any, index: number) => ({
           courseId: course.id,
-          courseTitle: course.title, // Add courseTitle field here
-          progress: data.progressData[index]?.completionPercentage || 0, // Use completionPercentage
+          courseTitle: course.title,
+          progress: data.progressData[index]?.completionPercentage || 0,
         })));
       } catch (err) {
         setError('Error loading courses or progress.');
@@ -48,27 +47,31 @@ const EnrolledCoursesClient = () => {
   }
 
   return (
-    <div className="p-8 max-w-2xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>Enrolled Courses</CardTitle>
-          <CardDescription>View your enrolled courses and progress</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {courses.length === 0 ? (
-            <p>No enrolled courses found.</p>
-          ) : (
-            courses.map((course) => (
-              <div key={course.courseId} className="mb-6">
-                <h3 className="text-lg font-semibold">{course.courseTitle}</h3> {/* Use courseTitle */}
+    <Card>
+      <CardHeader>
+        <CardTitle>Enrolled Courses</CardTitle>
+        <CardDescription>View your enrolled courses and progress</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {courses.length === 0 ? (
+          <p>No enrolled courses found.</p>
+        ) : (
+          courses.map((course) => (
+            <div key={course.courseId} className="mb-6 flex items-center gap-4">
+              {/* Icon next to the course title */}
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                <BookOpen className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">{course.courseTitle}</h3>
                 <ProgressBar value={course.progress} max={100} />
                 <p className="text-sm text-gray-500">{course.progress}% completed</p>
               </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

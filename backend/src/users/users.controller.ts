@@ -1,6 +1,7 @@
   import { Controller, Get, Post, Body, Put, Param, Req, UseGuards
   ,InternalServerErrorException, Delete, Patch, ForbiddenException,BadRequestException,
-  SetMetadata,}  from '@nestjs/common';
+  SetMetadata,
+  Query,}  from '@nestjs/common';
   import { UserService } from './users.service';
   import { CreateUserDto } from './dtos/create-user.dto';
   import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
@@ -10,7 +11,7 @@
   import { Role } from '../enums/role.enum';
   import { Public } from '../auth/decorators/public.decorator';
   import { User } from 'src/Models/user.schema';
-  import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiProperty } from '@nestjs/swagger';
+  import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiProperty, ApiQuery } from '@nestjs/swagger';
   import { ChangePasswordDto } from './dtos/change-password-dto';
   import { RateDto } from './dtos/rate-dto';
   import { EnrollInCourseDto } from './dtos/enroll-in-course-dto';
@@ -26,6 +27,62 @@
   export class UserController {
     constructor(private readonly userService: UserService) {}
 
+
+    
+
+    @Get('progress')
+    @ApiOperation({ summary: 'View progress of a student in a specific course by name' })
+    @ApiQuery({ name: 'title', description: 'course title' })  // Use @ApiQuery for query parameters
+    @ApiQuery({ name: 'name', description: 'student name' })
+    @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor, Role.Student])
+    async getStudentProgressByName(
+      @Query('title') title: string,
+      @Query('name') name: string,
+      @Req() req: any
+    ) {
+      console.log(`Received title: ${title}, name: ${name}`);  // Debugging log
+
+      if (!title || !name) {
+        throw new BadRequestException('Both title and name are required.');
+      }
+
+      const loggedInUser = req.user;
+
+      // Check if the logged-in user is an admin or instructor
+      if (loggedInUser.role === Role.Admin || loggedInUser.role === Role.Instructor) {
+        // Admins and instructors can access any student's progress
+        return this.userService.getStudentProgressByName(title, name);
+      }
+
+      // If the logged-in user is a student, they can only view their own progress
+      if (loggedInUser.role === Role.Student) {
+        if (loggedInUser.name !== name) {
+          throw new ForbiddenException('You can only access your own progress');
+        }
+        return this.userService.getStudentProgressByName(title, name);
+      }
+
+      // If the user is not authorized
+      throw new ForbiddenException('You do not have permission to view this student\'s progress');
+    }
+
+    // Update student progress
+    @Put('progress')
+    @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor])
+    @ApiOperation({ summary: 'Update student progress in a course BY NAME ' })
+    @ApiQuery({ name: 'title', description: 'course title' })  // Use @ApiQuery for query parameters
+    @ApiQuery({ name: 'name', description: 'student name' })
+    @ApiBody({
+        description: 'Progress update payload',
+        examples: { example1: { value: { completionPercentage: 75 } } },
+    })
+    async updateStudentProgressByName(
+     @Query('title') title: string,
+     @Query('name') name: string,
+     @Body('completionPercentage') completionPercentage: number): Promise<string> {
+      return this.userService.updateStudentProgressByName(title, name, completionPercentage);
+    }
+
     @Get('me')
     @ApiOperation({ summary: 'Get the current user' })
     async getMe(@Req() req: any) {
@@ -40,6 +97,38 @@
     }
   
 ///////////////////////////////////////////////ADMIN ONLY////////////////////////////////////////////////////////////////////
+@Get('search')
+  @ApiOperation({ summary: 'Search for users by name or email' })
+  @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student,Role.Admin])
+  async searchUsers(
+    @Query('searchTerm') searchTerm: string ,
+    @Req() req: any,
+  ): Promise<User[]> {
+    const loggedInUser = req.user;
+
+    console.log('Search Term:', searchTerm);
+    console.log('Logged In User:', loggedInUser);
+
+
+    if (!loggedInUser) {
+      throw new ForbiddenException('User is not logged in.');
+    }
+
+    if (!searchTerm || searchTerm.trim() === '') {
+      throw new BadRequestException('Search term cannot be empty.');
+    }
+
+    try {
+      const users = await this.userService.searchUsers(searchTerm, loggedInUser);
+      console.log(`Found ${users.length} users matching the search term`);
+      return users;
+
+    } catch (error) {
+      throw new InternalServerErrorException('Error occurred while searching users: ' + error.message);
+    }
+  }
+
+    
 
     @Get('admins')
     //@Roles(Role.Admin)
@@ -78,24 +167,6 @@
         }
     }
 
-    @Delete(':userId')
-    @ApiOperation({ summary: 'Delete a user account' })
-    @ApiParam({ name: 'userId', description: 'The ID of the user to delete' , required: false,})
-    @SetMetadata(ROLES_KEY, [Role.Admin])
-    async deleteUser(@Param('userId') userId: string, @Req() req: any): Promise<{ message: string }> {
-
-      const loggedInUser = req.user;
-
-        if (!loggedInUser) {
-          throw new ForbiddenException('Admin is not logged in.');
-        }
-
-        try {
-        return await this.userService.deleteUser(userId);
-        } catch (error) {
-        throw new InternalServerErrorException(error.message);
-        }
-    }
 
     
 
@@ -103,7 +174,7 @@
 ///////////////////////////////////////////////ADMIN AND INSTRUCTOR////////////////////////////////////////////////////////////////////
 
 
-    @Get('courses/:courseId/students')
+    @Get('courses/:courseId')
     @ApiOperation({ summary: 'Retrieve all students in a specific course' })
     @ApiParam({ name: 'courseId', description: 'The ID of the course' })
     @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor])
@@ -146,10 +217,33 @@
     async updateStudentProgress(@Param('courseId') courseId: string, @Param('studentId') studentId: string, @Body('completionPercentage') completionPercentage: number) {
       return this.userService.updateStudentProgress(courseId, studentId, completionPercentage);
     }
+
+     
   
 
 
 ///////////////////////////////////////////////PUBLIC////////////////////////////////////////////////////////////////////
+
+
+
+    @Delete(':userId')
+    @ApiOperation({ summary: 'Delete a user account' })
+    @ApiParam({ name: 'userId', description: 'The ID of the user to delete' , required: false,})
+    @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor, Role.Student])
+    async deleteUser(@Param('userId') userId: string, @Req() req: any): Promise<{ message: string }> {
+
+      const loggedInUser = req.user;
+
+        if (!loggedInUser) {
+          throw new ForbiddenException('User is not logged in.');
+        }
+
+        try {
+        return await this.userService.deleteUser(userId);
+        } catch (error) {
+        throw new InternalServerErrorException(error.message);
+        }
+    }
 
 
     @Patch('change-password/:userId')
@@ -426,6 +520,33 @@
       throw new InternalServerErrorException(error.message || 'Failed to enroll in course');
     }
   }
+
+  @Get('search/:name')
+  @ApiOperation({ summary: 'Search for a user by name' })
+  @ApiParam({ name: 'name', description: 'The name of the user to search for' })
+  @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor, Role.Student]) // Optional if you want role-based restrictions in metadata
+  async findUserByName(@Param('name') name: string, @Req() req: any): Promise<any> {
+    const userRole = req.user.role; // Assuming the role is attached to the user in the request object (e.g., from JWT)
+
+    try {
+      // // Check if the role is student
+      // if (userRole === Role.Student) {
+      //   throw new ForbiddenException('Students cannot search for other students. You can only search for instructors.');
+      // }
+
+      // Call the service to get the user by name
+      const f= await this.userService.findUserByName(name);
+      return f ;
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error; // Rethrow Forbidden exception
+      }
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  
+  
 
   // // Create Progress
   // @Post('progress')
