@@ -23,7 +23,7 @@ export async function POST() {
     }
 
     // Call the backend API to log the user out
-    const response = await fetch('http://localhost:3001/api/auth/logout', {
+    const response = await fetch(`http://localhost:${process.env.NEXT_PUBLIC_PORT}/api/auth/logout`, {
       method: 'POST',
       headers: {
         //'Content-Type': 'application/json',

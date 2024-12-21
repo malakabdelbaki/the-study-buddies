@@ -31,7 +31,7 @@ export async function GET(req: Request) {
     //   return new Response('Forbidden: You do not have the required permissions', { status: 403 });
     // }
 
-    const url = 'http://localhost:3001/api/logs'; // Backend URL for logs API
+    const url = `http://localhost:${process.env.NEXT_PUBLIC_PORT}/api/logs`; // Backend URL for logs API
     const params = new URL(req.url).searchParams;
 
     // Passing query params (level, limit)

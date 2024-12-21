@@ -21,6 +21,7 @@ export default function LoginPage() {
     e.preventDefault();
 
     try {
+      console.log(process.env.NEXT_PUBLIC_PORT);
       // Make the POST request to the login API endpoint
       const response = await fetch('/api/auth/login', { //go to proxy server, inside route
         method: 'POST',
