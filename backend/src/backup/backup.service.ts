@@ -14,8 +14,22 @@ export class BackupService {
       const primaryConnection = mongoose.createConnection(process.env.MONGO_CONNECTION);
       const backupConnection = mongoose.createConnection(process.env.MONGO_BACKUP_CONNECTION);
 
+      await primaryConnection.asPromise();
+      await backupConnection.asPromise();
+
+      // Log the status of the connections (debugging!)
+      this.logsService.logInfo('Primary DB connected:', { status: primaryConnection.readyState });
+      this.logsService.logInfo('Backup DB connected:', { status: backupConnection.readyState });
+
+      if (!primaryConnection.db) {
+        this.logsService.logError('Primary connection database object is undefined.');
+        return;
+      }
+
       // Get all collections in the primary database
       const collections = await primaryConnection.db.listCollections().toArray();
+
+
 
       for (const collection of collections) {
         const collectionName = collection.name;
