@@ -1,9 +1,9 @@
 'use client';
 import { useEffect, useState } from "react";
-import { decodeToken } from "@/app/utils/decodeToken"; // Adjust the import path as necessary
-import { useRouter, useParams } from "next/navigation";
+import { decodeToken } from "@/app/utils/decodeToken"; 
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import ThreadCard  from "@/components/forum/ThreadCard";
-import { Role } from '../../../../../../../../backend/src/enums/role.enum'
+import { Role } from '../../../../../backend/src/enums/role.enum';
 import CreateThreadModal from "@/components/forum/CreateThreadModal";
 import EditForumModal from "@/components/forum/EditForumModal";
 import { Button } from "@/components/ui/button";
@@ -21,8 +21,9 @@ const ForumPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
-  const course_id = useParams().courseId;
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const course_id = searchParams.get('courseId');
 
   const handleNewThread = (newThread: any) => {
     setThreads((prev) => [newThread, ...prev]);

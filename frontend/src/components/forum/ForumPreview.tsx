@@ -94,7 +94,7 @@ const ForumPreview: React.FC<ForumPreviewProps> = ({ courseId, courseTitle }: Fo
       <div className="flex flex-col items-center space-y-4">
         <h2 className="text-2xl font-bold">{forum.title}</h2>
         <p className="text-gray-600">{forum.description}</p>
-        <Button onClick={() => router.push(`/InstrCourses/${courseId}/forum/${forum._id}`)}>
+        <Button onClick={() => router.push(`/forum/${forum._id}?courseId=${courseId}`)}>
           Go to Forum
         </Button>
       </div>

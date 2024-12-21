@@ -1,12 +1,12 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { decodeToken } from "@/app/utils/decodeToken";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import EditThreadModal from "@/components/forum/EditThreadModal";
 import { Thread } from "@/types/Thread";
-import { Role } from '../../../../../../../../../../backend/src/enums/role.enum';
+import { Role } from '../../../../../../../backend/src/enums/role.enum';
 import { Reply } from '@/types/reply';
 
 const ThreadPage = () => {
@@ -25,6 +25,9 @@ const ThreadPage = () => {
   
   const router = useRouter();
   const { toast } = useToast();
+
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get('courseId');
 
   useEffect(() => {
     const token = document.cookie
@@ -201,6 +204,9 @@ const ThreadPage = () => {
           onUpdated={handleThreadUpdated}
         />
       )}
+  {thread?.isResolved? (
+    <p className="text-green-500">This thread has been resolved.</p>
+  ):(
     <div className="mt-6">
         <textarea
           value={newReply}
@@ -215,7 +221,7 @@ const ThreadPage = () => {
           Post Reply
         </button>
       </div>
-
+  )}
       <div className="mt-6">
         <h2 className="text-lg font-bold">Replies:</h2>
         {replies.map((reply) => (
