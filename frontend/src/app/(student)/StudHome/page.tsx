@@ -1,9 +1,13 @@
+'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAuthorization } from "@/hooks/useAuthorization"
 import { BarChart, BookOpen, Bell } from 'lucide-react'
 import EnrolledCoursesClient from "@/components/user/studProgress"
 
+import React from "react"
 
 export default function StudentHomePage() {
+  useAuthorization(['student'])
   return (
     <div className="p-8">
       <h1 className="text-4xl font-bold mb-8">Welcome Back, Student!</h1>

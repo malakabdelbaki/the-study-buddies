@@ -1,9 +1,13 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { LogsService } from './log.service';
 import { LogInterceptor } from './log.interceptor';
+import { LogsController } from './log.controller';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
+  imports:[forwardRef(() => AuthModule),],
   providers: [LogsService, LogInterceptor],
+  controllers:[LogsController],
   exports: [LogsService, LogInterceptor],
 })
 export class LogsModule {}

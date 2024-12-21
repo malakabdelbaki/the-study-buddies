@@ -27,7 +27,7 @@ export async function GET(req: Request) {
 
     // External call to fetch user by ID
     const response = await axios.get(
-      `http://localhost:3000/api/users/${userId}`,
+      `http://localhost:${process.env.NEXT_PUBLIC_PORT}/api/users/${userId}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }

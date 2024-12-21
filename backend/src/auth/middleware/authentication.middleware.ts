@@ -6,8 +6,10 @@ import { verify } from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-export function AuthenticationMiddleware(req: Request, res: Response, next: NextFunction) {
-  const token = req.cookies?.token || req.headers['authorization']?.split(' ')[1];
+export class AuthenticationMiddleware {
+  use(req: Request, res: Response, next: NextFunction): void {
+    const token = req.cookies?.token || req.headers['authorization']?.split(' ')[1];
+
 
   if (!token) {
     throw new UnauthorizedException('Authentication token missing');
@@ -21,3 +23,5 @@ export function AuthenticationMiddleware(req: Request, res: Response, next: Next
     throw new UnauthorizedException('Invalid or expired token');
   }
 }
+}
+
