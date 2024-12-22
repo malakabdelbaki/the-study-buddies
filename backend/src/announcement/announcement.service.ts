@@ -20,34 +20,27 @@ export class AnnouncementService {
     private readonly courseService: CoursesService,
     private readonly userService: UserService,
     private readonly notificationsService: NotificationsService,
-    private readonly notificationsGateway: NotificationsGateway,
   ){}
 
-  async create(createAnnouncementDto: CreateAnnouncementDto): Promise<Announcement> {
-    const {course_id, instructor_id} = createAnnouncementDto;
-    const course = await this.courseService.findOne(new Types.ObjectId(course_id));
-    if (!course) {
-      throw new NotFoundException(`Course #${course_id} not found`);
-    }
-    const instructor = await this.userService.findUserById(instructor_id);
-    if (!instructor) {
-      throw new NotFoundException(`User #${instructor_id} not found`);
-    }
-    if(course.instructor_id._id.toString() !== instructor_id) {
-      throw new NotFoundException(`User #${instructor_id} is not the instructor of course #${course_id}`);
-    }
-
-    const createdAnnouncement = new this.announcementModel(createAnnouncementDto);
+  async create(createAnnouncementDto: CreateAnnouncementDto, instructor_id:string, creator_name:string ): Promise<Announcement> {
+    const {course_id } = createAnnouncementDto;
+    
+    const createdAnnouncement = new this.announcementModel({
+      ...createAnnouncementDto,
+      instructor_id,
+      creator_name
+    });
     const savedAnnouncement = await createdAnnouncement.save();
 
     const enrolledStudents = await this.userService.getAllStudentsInCourse(course_id);
    
+    const course = await this.courseService.findOne(new Types.ObjectId(course_id));
     for (const student of enrolledStudents) {
-      await this.notificationsService.createNotification(
+      await this.notificationsService.createNotificationForAnnouncement(
         (student as any)._id.toString(),
-        `New announcement: ${createAnnouncementDto.content}`,
-        NotificationType.ANNOUNCEMENT,
+        createAnnouncementDto.content,
         (savedAnnouncement as any)._id.toString(),
+        course.title
       );
   }
 
@@ -59,20 +52,11 @@ export class AnnouncementService {
     if (!announcement) {
       throw new NotFoundException(`Announcement #${id} not found`);
     }
-  if(!this.ValidateInitiatorForRead(initiator, announcement)) {
-    throw new NotFoundException(`User is not authorized to view the announcement`);
-  }
-    
     return announcement;
   }
 
   async findByCourse(courseId: string, initiator: Types.ObjectId): Promise<Announcement[]> {
     const announcements = await this.announcementModel.find({ course_id: courseId }).exec();
-    for (const announcement of announcements) {
-      if(!this.ValidateInitiatorForRead(initiator, announcement)) {
-        throw new NotFoundException(`User is not authorized to view the announcement`);
-      }
-    }
     return announcements;
   }
 
@@ -127,21 +111,5 @@ export class AnnouncementService {
 
     return updatedAnnouncement;  
   }  
-
-  async ValidateInitiatorForRead(initiator: Types.ObjectId, announcement: Announcement) : Promise<Boolean> {
-    const user = await this.userService.findUserById(initiator.toString());
-    const course = await this.courseService.findOne(announcement.course_id);
-    if(user.role === 'student') {
-      const enrolledStudents = await this.userService.getAllStudentsInCourse(course._id.toString());
-      if (enrolledStudents.some(student => (student as any)._id.toString()!==initiator.toString())) {
-        throw new NotFoundException(`Student is not enrolled in the course`);
-      }
-    } else if(user.role === 'instructor') {
-      if(course.instructor_id._id.toString() !== initiator._id.toString()) {
-        throw new NotFoundException(`Instructor is not the author of the announcement`);
-      }
-    }
-    return true;
-  }
 
 }

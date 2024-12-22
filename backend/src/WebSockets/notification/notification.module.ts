@@ -27,6 +27,7 @@ import { ChatSchema } from 'src/Models/chat.schema';
 import { Message , MessageSchema} from 'src/Models/message.schema';
 import { LogsModule } from 'src/log/log.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { PusherService } from 'src/pusher/pusher.service';
 @Module({
   imports: [
   MongooseModule.forFeature([
@@ -47,7 +48,7 @@ import { AuthModule } from 'src/auth/auth.module';
   AuthModule
   ],
   controllers: [ NotificationController],
-  providers: [ NotificationsService, NotificationsGateway, ThreadsService, ForumService, CoursesService, ChatService],
+  providers: [ NotificationsService, NotificationsGateway, ThreadsService, ForumService, CoursesService, ChatService, PusherService],
   exports: [NotificationsService, NotificationsGateway, MongooseModule],
 })
 export class NotificationModule {}

@@ -39,10 +39,9 @@ export class RepliesService {
     await thread.save();
     await createdReply.save();
 
-    this.notificationService.createNotification(
+    this.notificationService.createNotificationForReply(
       thread.createdBy.toString(), 
       `New reply on thread: ${thread.title}`, 
-      NotificationType.REPLY, 
       createdReply._id as Types.ObjectId);
       
     return createdReply;
@@ -72,7 +71,8 @@ export class RepliesService {
       throw new NotFoundException(`Reply #${reply_id} not found`);
     }
 
-    const updatedReply = await this.replyModel.findByIdAndUpdate(reply_id, updateReplyDto, { new: true }).exec();
+    const updatedReply = await this.replyModel.findByIdAndUpdate(new Types.ObjectId(reply_id), updateReplyDto, { new: true }).exec();
+    console.log(updatedReply);
     return updatedReply;
   }
 

@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
 
-export async function GET(req: Request, { params }: { params: { chat_id: string } }) {
+export async function GET(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const tokenCookie = cookieStore.get('token');
@@ -12,13 +12,9 @@ export async function GET(req: Request, { params }: { params: { chat_id: string 
       return new Response(JSON.stringify({ error: 'Unauthorized: Token missing' }), { status: 401 });
     }
 
-    try {
-      jwt.verify(tokenCookie.value, process.env.JWT_SECRET || 'your-secret-key');
-    } catch (error) {
-      return new Response(JSON.stringify({ error: 'Invalid Token' }), { status: 401 });
-    }
-
-    const { chat_id } = await params;
+    const { pathname} = new URL(req.url);
+    const pathSegments = pathname.split('/');
+    const chat_id  = pathSegments[pathSegments.length - 2];
 
     if (!chat_id) {
       return new Response(JSON.stringify({ error: 'Chat ID is required' }), { status: 400 });

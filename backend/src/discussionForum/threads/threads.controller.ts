@@ -86,7 +86,7 @@ export class ThreadsController {
   @Delete(':thread_id')
   @ApiOperation({ summary: 'Delete a thread' })
   @ApiParam({ name: 'id', description: 'The ID of the thread to delete' })
-  @SetMetadata(ROLES_KEY, [Role.Instructor])
+  @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
   @UseGuards(IsMemberGuard, isStudentCreator)
   remove(
     @Param('thread_id') id: string,

@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     }, 
     {
       headers: {
-        Authorization: `Bearer ${tokenCookie.value}`, // Authorization header
+        Authorization: `Bearer ${tokenCookie.value}`, 
       }
     });
 

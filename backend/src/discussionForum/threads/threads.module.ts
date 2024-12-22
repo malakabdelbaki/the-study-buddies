@@ -14,6 +14,8 @@ import { ExistsOnDatabaseValidator } from 'src/common/validators/exists-on-datab
 import { LogsModule } from 'src/log/log.module';
 import { ReplyModule } from '../replies/replies.module';
 import { Reply, ReplySchema } from 'src/Models/reply.schema';
+import { NotificationModule } from 'src/WebSockets/notification/notification.module';
+import { forwardRef } from '@nestjs/common';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Thread.name, schema: ThreadSchema },
@@ -24,7 +26,8 @@ import { Reply, ReplySchema } from 'src/Models/reply.schema';
     UserModule,
     AuthModule,
     LogsModule,
-    ReplyModule
+    ReplyModule,
+   forwardRef(()=> NotificationModule),
   ],
   controllers: [ThreadsController],
   providers: [ThreadsService, ExistsOnDatabaseValidator],

@@ -10,6 +10,8 @@ import { Role } from 'src/enums/role.enum';
 import { CoursesService } from 'src/courses/courses.service';
 import { Forum } from 'src/Models/forum.schema';
 import { Reply, ReplyDocument } from 'src/Models/reply.schema';
+import { NotificationsService } from 'src/WebSockets/notification/notification.service';
+import { NotificationType } from 'src/enums/notification-type.enum';
 @Injectable()
 export class ThreadsService {
   constructor(
@@ -17,7 +19,8 @@ export class ThreadsService {
     @InjectModel(Reply.name) private readonly replyModel: Model<ReplyDocument>,
     private readonly userService: UserService,
     private readonly forumService: ForumService,
-    private readonly courseService: CoursesService
+    private readonly courseService: CoursesService,
+    private readonly notificationsService: NotificationsService,
   ){}
 
   async create(createThreadDto: CreateThreadDto, user:Types.ObjectId, creator_name:string): Promise<Thread> {
@@ -34,9 +37,19 @@ export class ThreadsService {
     const createdThread = new this.threadModel({ ...createThreadDto, createdBy: user, creator_name: creator_name });
     forum.threads.push(createdThread._id as Types.ObjectId);
     await forum.save();
-    return createdThread.save();
-  }
+    await createdThread.save();
 
+    const enrolledStudents = await this.userService.getAllStudentsInCourse(forum.course_id.toString());
+    for (const student of enrolledStudents) {
+      await this.notificationsService.createNotificationForAnnouncement(
+        (student as any)._id.toString(),
+        createdThread.title,
+        (createdThread as any)._id.toString(),
+        forum.title
+      );
+    }
+    return createdThread;
+  }
 
   async findOne(id: string): Promise<Thread> {
     const thread = await this.threadModel.findById(id).exec();

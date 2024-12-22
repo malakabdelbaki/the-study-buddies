@@ -26,6 +26,6 @@ export class StudentEnrolledInCourseValidator implements ValidatorConstraintInte
   }
 
   defaultMessage(args: ValidationArguments) {
-    return 'The instructor ID does not match the authenticated user.';
+    return 'The student is not enrolled.';
   }
 }

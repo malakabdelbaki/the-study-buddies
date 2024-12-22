@@ -1,9 +1,11 @@
 import { useRouter } from 'next/navigation'; // For App Router
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { getCookie } from 'cookies-next';
+import { decodeToken } from '@/app/utils/decodeToken';
 
 export function useAuth() {
   const router = useRouter();
+  const [ userId, setUserId ] = useState<string | null>(null);
 
   useEffect(() => {
     const token = getCookie('token');
@@ -12,7 +14,11 @@ export function useAuth() {
     if (!token && !publicPaths.includes(window.location.pathname)) {
       router.replace('/login'); // Redirect to login if unauthenticated
     }
+    const decodedToken = token ? decodeToken(token as string) : null;
+    setUserId(decodedToken?.userid);
   }, [router]);
+
+  return userId;
 }
 
 

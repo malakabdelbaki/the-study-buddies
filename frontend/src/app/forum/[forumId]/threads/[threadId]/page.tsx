@@ -10,7 +10,8 @@ import { Role } from '../../../../../../../backend/src/enums/role.enum';
 import { Reply } from '@/types/reply';
 
 const ThreadPage = () => {
-  const { forumId, threadId } = useParams() as { forumId: string; threadId: string };
+  const forum_id = useParams().forumId as string;
+  const thread_id = useParams().threadId as string;
   const [thread, setThread] = useState<Thread | null>(null);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -45,13 +46,13 @@ const ThreadPage = () => {
   useEffect(() => {
     const fetchThread = async () => {
       try {
-        const res = await fetch(`/api/forum/${forumId}/threads/${threadId}/find`);
+        const res = await fetch(`/api/forum/${forum_id}/threads/${thread_id}/find`);
         if (!res.ok) throw new Error("Failed to fetch thread data");
         const data = await res.json();
         setThread(data);
 
 
-        const repliesRes = await fetch(`/api/forum/${forumId}/threads/${threadId}/reply/find`);
+        const repliesRes = await fetch(`/api/forum/${forum_id}/threads/${thread_id}/reply/find`);
         const repliesData = await repliesRes.json();
         setReplies(repliesData);
         
@@ -64,7 +65,7 @@ const ThreadPage = () => {
     };
 
     fetchThread();
-  }, [forumId, threadId, status]);
+  }, [forum_id, thread_id, status]);
 
   const handleEditClick = () => {
     setEditModalOpen(true);
@@ -80,10 +81,11 @@ const ThreadPage = () => {
 
   const handleResolveThread = async () => {
     try {
-      const res = await fetch(`/api/forum/${forumId}/threads/${threadId}/resolve`, { method: "PATCH" });
+      const res = await fetch(`/api/forum/${forum_id}/threads/${thread_id}/resolve`, { method: "PATCH" });
       if (!res.ok) throw new Error("Failed to resolve thread");
       toast({ title: "Success", description: "Thread marked as resolved." });
       setThread((prev) => prev && { ...prev, resolved: true });
+      
     } catch (error) {
       toast({ title: "Error", description: "Failed to resolve thread", variant: "destructive" });
     }
@@ -91,7 +93,7 @@ const ThreadPage = () => {
 
   const handleDeleteThread = async () => {
     try {
-      const res = await fetch(`/api/forum/${forumId}/threads/${threadId}/delete`, { method: "DELETE" });
+      const res = await fetch(`/api/forum/${forum_id}/threads/${thread_id}/delete`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete thread");
       toast({ title: "Success", description: "Thread deleted successfully." });
       router.back();
@@ -104,7 +106,7 @@ const ThreadPage = () => {
     if (!newReply.trim()) return;
 
     try {
-      const res = await fetch(`/api/forum/${forumId}/threads/${threadId}/reply/create`, {
+      const res = await fetch(`/api/forum/${forum_id}/threads/${thread_id}/reply/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -123,8 +125,8 @@ const ThreadPage = () => {
 
 
 
-  const startEdit = (replyId: string, content: string) => {
-    setEditingReplyId(replyId);
+  const startEdit = (reply_id: string, content: string) => {
+    setEditingReplyId(reply_id);
     setEditContent(content);
   };
   
@@ -133,16 +135,18 @@ const ThreadPage = () => {
     setEditContent("");
   };
   
-  const handleSaveEdit = async (replyId: string) => {
+  const handleSaveEdit = async (reply_id: string) => {
     try {
-      await fetch(`/api/forum/${forumId}/threads/${threadId}/reply/${replyId}/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        const res = await fetch(`/api/forum/${forum_id}/threads/${thread_id}/reply/${reply_id}/update`, {
+        method: 'PATCH',
         body: JSON.stringify({ content: editContent }),
       });
+      const data = await res.json();
+      console.log(data);
+
       setReplies((prevReplies) =>
         prevReplies.map((reply) =>
-          reply._id === replyId ? { ...reply, content: editContent } : reply
+          reply._id === reply_id ? { ...reply, content: data.content } : reply
         )
       );
       cancelEdit();
@@ -151,9 +155,9 @@ const ThreadPage = () => {
     }
   };
 
-  const handleDeleteReply = async (replyId: string) => {
+  const handleDeleteReply = async (reply_id: string) => {
     try {
-      const res = await fetch(`/api/forum/${forumId}/threads/${threadId}/reply/${replyId}/delete`, {
+      const res = await fetch(`/api/forum/${forum_id}/threads/${thread_id}/reply/${reply_id}/delete`, {
         method: 'DELETE',
       });
 
@@ -197,7 +201,7 @@ const ThreadPage = () => {
       {isEditModalOpen && thread && (
         <EditThreadModal
           threadId={thread._id}
-          forumId={forumId}
+          forumId={forum_id}
           initialTitle={thread.title}
           initialContent={thread.content}
           onClose={handleModalClose}

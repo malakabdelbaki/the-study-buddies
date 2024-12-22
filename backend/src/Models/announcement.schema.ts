@@ -12,6 +12,9 @@ export class Announcement {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   instructor_id: Types.ObjectId; 
 
+  @Prop({ type: String, required: false })
+  creator_name: string;
+
   @Prop({ type: String, required: true })
   content: string; 
 
