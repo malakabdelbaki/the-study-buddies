@@ -8,7 +8,13 @@ export class ReturnResponseDto {
   user_id: string;
 
   @IsString()
+  user_name: string;
+
+  @IsString()
   quiz_id: string;
+
+  @IsString()
+  quiz_title: string;
 
   @Type(() => Answer)
   @IsArray()
