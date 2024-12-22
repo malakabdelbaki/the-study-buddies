@@ -29,13 +29,13 @@ export class CoursesController {
   @Post()
   async create(@Req() request,@Body() createCourseDto: CreateCourseDto) {
     try {
-      const instructorId = '675467bea5b439cd11141846'; // Extract instructorId
-      console.log('kk');
+      // const instructorId = '675467bea5b439cd11141846'; // Extract instructorId
+      // console.log('kk');
       // if(!instructorId || !request.user){
       //   throw new HttpException('Error not found an instructor', HttpStatus.INTERNAL_SERVER_ERROR);
       // }
       return await this.coursesService.create({...createCourseDto,
-        instructor_id: new Types.ObjectId(instructorId)});
+        instructor_id: new Types.ObjectId(request.user.userid)}); 
     } catch (err) {
       console.error('Error creating course:', err.message);
       throw new HttpException('Error creating course', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -159,4 +159,29 @@ export class CoursesController {
     }
   }
 
+  @Patch(':course_id/enableNotes')
+  @Roles(Role.Instructor)
+  @UseGuards(authorizationGuard, InstructorGuard)
+  async enableNotes(@Req() request,@Param('course_id') id: string) {
+    try {
+      const objectId = new Types.ObjectId(id);
+      return await this.coursesService.enableNotes(objectId);
+    } catch (err) {
+      console.error('Error updating course:', err.message);
+      throw new HttpException('Error updating course', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Patch(':course_id/disableNotes')
+  @Roles(Role.Instructor)
+  @UseGuards(authorizationGuard, InstructorGuard)
+  async disableNotes(@Req() request,@Param('course_id') id: string) {
+    try {
+      const objectId = new Types.ObjectId(id);
+      return await this.coursesService.disableNotes(objectId);
+    } catch (err) {
+      console.error('Error updating course:', err.message);
+      throw new HttpException('Error updating course', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

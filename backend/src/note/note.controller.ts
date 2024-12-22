@@ -59,7 +59,7 @@ export class NoteController {
   }
 
 
-  @Put(':noteId') 
+  @Patch(':noteId') 
   async updateNote(
     @Param('noteId') noteId: string,
     updateNoteDto: UpdateNoteDto,
