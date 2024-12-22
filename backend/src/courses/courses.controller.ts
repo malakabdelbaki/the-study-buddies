@@ -58,6 +58,7 @@ export class CoursesController {
     @Query('instructor') instructor?: string,
   ) {
     try {
+      console.log(title);
       let ID = new Types.ObjectId(request.user.userid)
       let courses = await this.coursesService.findAll(ID,title, category, key_word, difficulty, instructor);
       return courses;
@@ -92,6 +93,7 @@ export class CoursesController {
   @Patch(':id')
   async update(@Req() request,@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
     try {
+      console.log('wwwwwww')
       if (!request.user || !request.user.userid)
         throw new HttpException('You Can not update this Course!', HttpStatus.INTERNAL_SERVER_ERROR);
       

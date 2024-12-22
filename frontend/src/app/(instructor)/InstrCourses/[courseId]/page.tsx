@@ -156,6 +156,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     )}
   </div>
 
+
   {/* Difficulty Level */}
   <div className="text-lg text-gray-700 mb-4">
     <span className="font-semibold">Difficulty Level:</span>{" "}
@@ -227,6 +228,11 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   <div className="text-lg text-gray-700 mb-4">
     <span className="font-semibold">Number of Modules:</span>{" "}
     {course.modules?.length || 0}
+  </div>
+
+  <div className="text-lg text-gray-700 mb-4">
+    <span className="font-semibold">Is Deleted ?</span>{" "}
+    {course.is_deleted? "YES":"NO"}
   </div>
 
   {/* Rating */}

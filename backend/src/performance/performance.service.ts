@@ -94,52 +94,52 @@ async getStudentDashboard(studentId: string): Promise<StudentProgressDto[]> {
 
     const dashboardData = await Promise.all(progressData.map(async (progress) => {
       try {
-        // Find all modules associated with the current course
-        const modules = await this.ModuleModel.find({ course_id: progress.courseId._id }).exec();
+        // //Find all modules associated with the current course
+        // const modules = await this.ModuleModel.find({ course_id: progress.courseId._id }).exec();
 
-        if (!modules.length) {
-          return {
-            courseId: progress.courseId._id.toString(),
-            courseName: progress.courseId.title,
-            averageScore: 0,
-            completionPercentage: progress.completionPercentage,
-            lastAccessed: progress.lastAccessed,
-          };
-        }
+        // if (!modules.length) {
+        //   return {
+        //     courseId: progress.courseId._id.toString(),
+        //     courseName: progress.courseId.title,
+        //     averageScore: 0,
+        //     completionPercentage: progress.completionPercentage,
+        //     lastAccessed: progress.lastAccessed,
+        //   };
+        // }
 
-        // Get all quizzes related to the modules of the course
-        const quizzes = await this.quizModel.find({ module_id: { $in: modules.map((module) => module._id) } }).exec();
+        // // Get all quizzes related to the modules of the course
+        // const quizzes = await this.quizModel.find({ module_id: { $in: modules.map((module) => module._id) } }).exec();
 
-        if (!quizzes.length) {
-          return {
-            courseId: progress.courseId._id.toString(),
-            courseName: progress.courseId.title,
-            averageScore: 0,
-            completionPercentage: progress.completionPercentage,
-            lastAccessed: progress.lastAccessed,
-          };
-        }
+        // if (!quizzes.length) {
+        //   return {
+        //     courseId: progress.courseId._id.toString(),
+        //     courseName: progress.courseId.title,
+        //     averageScore: 0,
+        //     completionPercentage: progress.completionPercentage,
+        //     lastAccessed: progress.lastAccessed,
+        //   };
+        // }
 
-        // Get all quiz responses for the student
-        const responses = await this.responseModel.find({
-          quiz_id: { $in: quizzes.map((quiz) => quiz._id) },
-          user_id: objectIdStudentId,
-        }).exec();
+        // // Get all quiz responses for the student
+        // const responses = await this.responseModel.find({
+        //   quiz_id: { $in: quizzes.map((quiz) => quiz._id) },
+        //   user_id: objectIdStudentId,
+        // }).exec();
 
-        if (responses.length === 0) {
-          return {
-            courseId: progress.courseId._id.toString(),
-            courseName: progress.courseId.title,
-            averageScore: 0,
-            completionPercentage: progress.completionPercentage,
-            lastAccessed: progress.lastAccessed,
-          };
-        }
+        // if (responses.length === 0) {
+        //   return {
+        //     courseId: progress.courseId._id.toString(),
+        //     courseName: progress.courseId.title,
+        //     averageScore: 0,
+        //     completionPercentage: progress.completionPercentage,
+        //     lastAccessed: progress.lastAccessed,
+        //   };
+        // }
 
-        // Calculate the total score and average score for the course
-        const totalScore = responses.reduce((acc, response) => acc + response.score, 0);
-        const averageScore = totalScore / responses.length;
-
+        // // Calculate the total score and average score for the course
+        // const totalScore = responses.reduce((acc, response) => acc + response.score, 0);
+        // const averageScore = totalScore / responses.length;
+        const averageScore = progress.AverageGrade;
         return {
           courseId: progress.courseId._id.toString(),
           courseName: progress.courseId.title,
@@ -200,7 +200,7 @@ async getStudentDashboard(studentId: string): Promise<StudentProgressDto[]> {
 
     const analytics = await Promise.all(
       courses.map(async (course) => {
-        //console.log('Fetching progress for course:', course._id);
+        
         try {//Error Handling for Each Course
         // Fetch progress data for the course
         const progressData = (await this.progressModel
@@ -261,6 +261,7 @@ async getStudentDashboard(studentId: string): Promise<StudentProgressDto[]> {
 
       // Get all modules for the course
       const modules = await this.ModuleModel.find({ course_id: course._id }).exec();
+      //const modulesCount = modules.length; //added
 
       // Initialize an array to hold module performance data and student performance data
       const modulesPerformance = await Promise.all(
@@ -297,6 +298,7 @@ async getStudentDashboard(studentId: string): Promise<StudentProgressDto[]> {
 
           let totalScore = 0;
           let totalStudents = 0;
+          //let totalmodulesscore= 0
 
           // Categorize students based on their average quiz score for this module
           Object.entries(studentQuizData).forEach(([studentId, data]) => {
@@ -342,23 +344,40 @@ const overallstudentPerformance = {
   aboveAverage: 0,
   excellent: 0,
 };
-  // Initialize student performance categories
+  // // Initialize student performance categories
+  // modulesPerformance.forEach((module) => {
+  //   const performanceCategories = module.performanceCategories;
+  //   Object.entries(performanceCategories).forEach(([category, count]) => {
+  //     if (category === 'belowAverage') {
+  //       overallstudentPerformance.belowAverage += count;
+  //     } else if (category === 'average') {
+  //       overallstudentPerformance.average += count;
+  //     } else if (category === 'aboveAverage') {
+  //       overallstudentPerformance.aboveAverage += count;
+  //     } else if (category === 'excellent') {
+  //       overallstudentPerformance.excellent += count;
+  //     }
+  //   });
+  // });
 
-  modulesPerformance.forEach((module) => {
-    const performanceCategories = module.performanceCategories;
-    Object.entries(performanceCategories).forEach(([category, count]) => {
-      if (category === 'belowAverage') {
-        overallstudentPerformance.belowAverage += count;
-      } else if (category === 'average') {
-        overallstudentPerformance.average += count;
-      } else if (category === 'aboveAverage') {
-        overallstudentPerformance.aboveAverage += count;
-      } else if (category === 'excellent') {
-        overallstudentPerformance.excellent += count;
-      }
-    });
-  });
+  // Calculate overallstudentPerformance
 
+let coursetotalavg = 0;
+progressData.forEach((studentProgress) => {
+  const avgScore = studentProgress.AverageGrade; // Fetching AverageGrade from Progress
+  coursetotalavg += avgScore;
+  if (avgScore < 50) {
+    overallstudentPerformance.belowAverage += 1;
+  } else if (avgScore >= 50 && avgScore < 70) {
+    overallstudentPerformance.average += 1;
+  } else if (avgScore >= 70 && avgScore < 90) {
+    overallstudentPerformance.aboveAverage += 1;
+  } else if (avgScore >= 90) {
+    overallstudentPerformance.excellent += 1;
+  }
+});
+
+let courseavg = coursetotalavg / progressData.length;
 
   // Return the full analytics object
   return {

@@ -10,4 +10,6 @@ export interface User {
   enrolledCourses?: string[];
   taughtCourses?: string[];
   completedCourses?:string[];
+  ratings?:Map<string, number>;
+
 }

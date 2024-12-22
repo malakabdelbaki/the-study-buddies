@@ -3,17 +3,35 @@
 import React, { useState, useEffect } from "react";
 import { Course } from "@/types/Course";
 import CourseCard from "@/components/course/general/courseCard";
-import { fetchCourses } from "../../api/courses/student/courseRoute";
+import { fetchCourses, fetchStudent } from "../../api/courses/student/courseRoute";
+import { getCompletedCoursesOfStudent } from "@/app/api/user/home/route";
+import { User } from "@/types/User";
 
 const StudentCoursesPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [coursescompleted,setCoursesCompleted] = useState<Course[]>([]);
+  const [coursesinprogress,setCoursesInProgress] = useState<Course[]>([]);
+  const [student,setStudent] = useState<{id:string,role:string}>();
 
   useEffect(() => {
     async function loadCourses() {
       try {
         const gett = await fetchCourses({ filters: {} });
+        const std = await fetchStudent();
+        setStudent(std as {id:string,role:string});
+        const complete = await getCompletedCoursesOfStudent((student as { id: string; role: string }).id);
+
+        const completedCourses = gett.filter((course: Course) =>
+          complete.includes(course._id?.toString())
+        );
+        const notYetCompletedCourses = gett.filter(
+          (course: Course) => !complete.includes(course._id?.toString())
+        );
+        
+        setCoursesCompleted(completedCourses);
+        setCoursesInProgress(notYetCompletedCourses);
         setCourses(gett);
       } catch (err) {
         setError("Failed to load courses.");
@@ -41,17 +59,27 @@ const StudentCoursesPage = () => {
         </div>
       )}
 
+
       {!loading && courses.length === 0 && (
         <p className="text-center text-gray-500">No courses available.</p>
       )}
 
-      {!loading && courses.length > 0 && (
+      {!loading && coursesinprogress.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {courses.map((c) => (
             <CourseCard key={c._id} course={c} user={{ role: "student" }} />
           ))}
         </div>
       )}
+    _____________________________________________________
+    {!loading && coursescompleted.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {courses.map((c) => (
+            <CourseCard key={c._id} course={c} user={{ role: "student" }} />
+          ))}
+        </div>
+      )}
+
     </div>
   );
 };

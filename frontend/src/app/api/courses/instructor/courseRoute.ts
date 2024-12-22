@@ -76,7 +76,15 @@ export async function createCourse(courseData: object) {
 // Update a course by ID
 export async function updateCourse(courseId: string, updateData: Course ={}) {
   try {
-    const { data } = await axiosInstance.patch(`/courses/${courseId}`, updateData);
+    console.log('haa',updateData);
+    let sent = {
+      description:updateData.description,
+      title:updateData.title,
+      key_words:updateData.key_words,
+      difficulty_level:updateData.difficulty_level,
+      category:updateData.category
+    }
+    const { data } = await axiosInstance.patch(`/courses/${courseId}`, sent);
     return data;
   } catch (error:any) {
     console.error('Error updating course:', error.message);

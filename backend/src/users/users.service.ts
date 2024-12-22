@@ -330,10 +330,10 @@ export class UserService {
       console.log(userId);
       const studentObjectId = new mongoose.Types.ObjectId(userId);
 
-      const courses = await this.courseModel.find({ students: studentObjectId }).populate('instructor_id');
+      let courses = await this.courseModel.find({ students: studentObjectId }).populate('instructor_id');
       console.log(courses);
       if (!courses.length) throw new NotFoundException('No courses found for this user.');
-
+      courses = courses.filter((course)=>course.is_deleted === false);
       return courses;
     } catch (error) {
         throw new InternalServerErrorException('Error fetching enrolled courses', error.message);
@@ -541,7 +541,9 @@ async getCompletedCoursesOfStudent(userId: string): Promise<any> {
     if (!hasCommonCourse) {
       throw new BadRequestException(`You are not enrolled in any course taught by this instructor.`);
     }
-
+    console.log(instructor.ratings);
+    instructor.ratings.set(new Types.ObjectId(studentId),dto.rating)
+    console.log(instructor.ratings);
     //instructor.ratings.push(dto.rating);
     await instructor.save();
     return { message: 'Instructor rated successfully', ratings: instructor.ratings };
