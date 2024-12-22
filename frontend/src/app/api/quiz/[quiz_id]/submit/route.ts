@@ -63,7 +63,7 @@ export async function POST(req: Request, { params }: { params: { quiz_id: string
 
 
     // Make an external API call to submit the quiz response
-    const apiUrl = `${process.env.EXTERNAL_API_URL || 'http://localhost:3000/api'}/quizzes/${quiz_id}/submit`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'}/quizzes/${quiz_id}/submit`;
     const response = await axios.post(
       apiUrl,
       {
