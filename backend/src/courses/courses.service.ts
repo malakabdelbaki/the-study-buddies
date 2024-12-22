@@ -34,33 +34,55 @@ export class CoursesService {
     }
   }
 
-  async findAll(userid:Types.ObjectId,title?: string, category?: string, key_word?: string, difficulty?: string, instructor?: string) {
+  async findAll(
+    userid: Types.ObjectId,
+    title?: string,
+    category?: string,
+    key_word?: string,
+    difficulty?: string,
+    instructor?: string
+  ) {
     try {
-
-      let courses = await this.courseModel.find().populate('instructor_id');
-      if (title) courses = courses.filter((course) => course.title === title);
-      if (category) courses = courses.filter((course) => course.category === category);
-      if (key_word) courses = courses.filter((course) => course.key_words.includes(key_word));
-      if (difficulty) courses = courses.filter((course) => course.difficulty_level === difficulty);
+      const query: any = {};
+      console.log(title);
+      // Partial matching with regex (case-insensitive)
+      if (title) query.title = { $regex: title, $options: 'i' };
+      if (category) query.category = { $regex: category, $options: 'i' };
+      if (key_word) query.key_words = { $regex: key_word, $options: 'i' };
+      if (difficulty) query.difficulty_level = { $regex: difficulty, $options: 'i' };
+  
+      // Exclude deleted courses for students
+      const user = await this.userModel.findById(userid);
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+  
+      if (user.role === Role.Student) {
+        query.is_deleted = false;
+      }
+      console.log(query);
+      // Fetch courses with query
+      let courses = await this.courseModel.find(query).populate('instructor_id');
+  
+      // Filter by instructor name (partial matching, case-insensitive)
       if (instructor) {
         courses = courses.filter((course) => {
           const instructorDetails = course.instructor_id as unknown as User; // Assert type
-          return instructorDetails&& instructorDetails.name &&instructorDetails.name === instructor ;
+          return (
+            instructorDetails &&
+            instructorDetails.name &&
+            new RegExp(instructor, 'i').test(instructorDetails.name)
+          );
         });
       }
-
-      let user = await this.userModel.findById(userid);
-      if (user.role === Role.Student){
-        courses = courses.filter((course)=>course.is_deleted===false);
-      }
-
+  
       return courses;
     } catch (err) {
       console.error('Error fetching courses:', err.message);
       throw new HttpException('Error fetching courses', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
+  
   async findOne(id: Types.ObjectId) {
     try {
       console.log("in course", id);
@@ -122,7 +144,7 @@ export class CoursesService {
       if (User.role === Role.Instructor){
           console.log(user_id);
           console.log(course.instructor_id);
-          if (course.instructor_id.toString() !== user_id.toString())
+          if (course.instructor_id._id.toString() !== user_id.toString())
             throw new HttpException('this instructor is not authorized', HttpStatus.UNAUTHORIZED);
 
       }
@@ -133,17 +155,33 @@ export class CoursesService {
         if (!isEnrolled) {
           throw new HttpException('Student not enrolled in this course', HttpStatus.FORBIDDEN);
         }
-
+        console.log(modules);
         let StudentPerformance = await this.progressModel.findOne({userId:user_id,courseId:courseid})
         if(!StudentPerformance)
           throw new HttpException('Not Found The Progress Of the student', HttpStatus.INTERNAL_SERVER_ERROR);
-
-        if (StudentPerformance.studentLevel === Course_diff.BEGINNER)
-            modules = modules.filter((module:any) => module.module_difficulty === Difficulty.EASY)
+        console.log("kkkkk",StudentPerformance);
+        if (StudentPerformance.studentLevel === Course_diff.BEGINNER){
+          console.log('entered');
+          const easyModules = [];
+          for (const module of modules) {
+              const mod = await this.moduleService.findOne(module);
+              if (mod.module_difficulty === Difficulty.EASY) {
+                  easyModules.push(module);
+              }
+          }
+          return easyModules;
+        }
       
-        else if (StudentPerformance.studentLevel === Course_diff.INTERMEDIATE)
-            modules = modules.filter((module:any) => module.module_difficulty === Difficulty.MEDIUM || 
-                                module.module_difficulty === Difficulty.EASY );
+        else if (StudentPerformance.studentLevel === Course_diff.INTERMEDIATE){
+          const easy_medModules = [];
+          for (const module of modules) {
+              const mod = await this.moduleService.findOne(module);
+              if (mod.module_difficulty === Difficulty.EASY || mod.module_difficulty===Difficulty.MEDIUM) {
+                easy_medModules.push(module);
+              }
+          }
+          return easy_medModules;
+        }
       }
       return modules;
     
@@ -170,7 +208,7 @@ export class CoursesService {
       course.students.forEach(async (studentId) => {
         console.log(studentId);
         let progress = await this.progressModel.find({userId:studentId,courseId:id});
-        if ((progress as unknown as Progress).completionPercentage !== 1){
+        if ((progress as unknown as Progress).completionPercentage !== 100){
           IsNotComplete = true;
         }
       });
@@ -213,7 +251,7 @@ export class CoursesService {
       }
 
       course.ratings.set(student_id,rating);
-      course.save();
+      await course.save();
       return course;
   }
 }

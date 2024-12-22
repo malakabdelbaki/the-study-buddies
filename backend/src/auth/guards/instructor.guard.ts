@@ -22,6 +22,7 @@ export class InstructorGuard implements CanActivate {
     console.log("request", request);
     const userId = request.user?.userid; // Get logged-in user ID
      if (!userId) {
+      console.log("hnt7r",userId);
       throw new HttpException(
         'Invalid request. Missing user ID.',
         HttpStatus.FORBIDDEN,
@@ -78,7 +79,7 @@ export class InstructorGuard implements CanActivate {
       );
     }
 
-    if (course.instructor_id.toString() !== userId) {
+    if (course.instructor_id._id.toString() !== userId) {
       throw new HttpException(
         'You are not authorized to perform this action.',
         HttpStatus.FORBIDDEN,

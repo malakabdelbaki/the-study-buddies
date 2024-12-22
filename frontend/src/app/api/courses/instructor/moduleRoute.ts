@@ -15,6 +15,7 @@ export async function createModule(moduleData: Module) {
   try {
     console.log(moduleData);
     let instr =  await fetchInstructor() as {id:string,role:string};
+    console.log(instr.id);
     const { data } = await axiosInstance.post('/modules',{...moduleData,instructor_id:instr.id});
     console.log(data);
     return data;
@@ -42,7 +43,9 @@ export async function updateModule(moduleId: string, updateData: Module) {
 
 export async function getModule(moduleId: string) {
     try {
+      console.log('leh?',moduleId);
       const { data } = await axiosInstance.get(`/modules/${moduleId}`);
+      console.log('eee',data);
       return data;
     } catch (error: any) {
       console.error('Error updating module:', error.message);
@@ -241,3 +244,16 @@ export async function addQuestionToModule(createQuestionDto:Question) {
     }
   }
   
+
+// Rate a course
+export async function rateModule(moduleId: string, rating: number) {
+  try {
+    const { data } = await axiosInstance.post(`/modules/${moduleId}/rate`, {
+      rating,
+    });
+    return data;
+  } catch (error:any) {
+    console.error('Error rating course:', error.message);
+    throw error;
+  }
+}

@@ -4,12 +4,14 @@ import { format } from 'date-fns';
 
 
 type ResourceCardProps = {
+  userRole: string;
   resource: Resource;
   onUpdate: (updatedResource: Resource) => void;
   onDelete: (resourceId: string) => void;
 };
 
 const ResourceCard: React.FC<ResourceCardProps> = ({
+  userRole,
   resource,
   onUpdate,
   onDelete,
@@ -98,7 +100,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
           >
             Download
           </button>
-          {!resource.isOutdated && (
+          {!resource.isOutdated && userRole==='instructor'&& (
             <>
               <button
                 onClick={() => setIsEditing(true)}

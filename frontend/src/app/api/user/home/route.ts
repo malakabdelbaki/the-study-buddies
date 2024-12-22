@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
+import axiosInstance from '@/app/utils/axiosInstance';
 
 // Helper to decode JWT and extract user info
 const getUserFromToken = async () => {
@@ -68,3 +69,16 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 }
+
+
+export async function getCompletedCoursesOfStudent(userId: string) {
+  try {
+    const { data } = await axiosInstance.get(`/users/${userId}/courses/completed`);
+    return data;
+  } catch (error:any) {
+    console.error('Error fetching course modules:', error.message);
+    throw error;
+  }
+}
+
+

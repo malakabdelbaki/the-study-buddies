@@ -9,4 +9,6 @@ export interface User {
   updatedAt?: Date;
   enrolledCourses?: string[];
   taughtCourses?: string[];
+  ratings?:Map<string, number>;
+
 }

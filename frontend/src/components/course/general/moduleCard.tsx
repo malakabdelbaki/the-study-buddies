@@ -13,6 +13,7 @@ const ModuleCard = ({ module }:{module:Module}) => {
         <p className="text-gray-500">Number of resources: {module.quiz_type}</p>
         <p className="text-gray-500">Quiz Type: {module.quiz_type}</p>
         <p className="text-gray-500">Quiz Length: {module.quiz_length}</p>
+        <p className="text-gray-500">Difficulty: {module.module_difficulty}</p>
         </CardContent>
         <CardFooter className="justify-between">
         <Link

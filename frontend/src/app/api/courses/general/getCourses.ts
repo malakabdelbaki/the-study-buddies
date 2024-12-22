@@ -16,7 +16,7 @@ export default async function getCourses({filters}:
 
       const params = new URLSearchParams({
       category: filters.category || "",
-      level: filters.difficulty || "",
+      title: filters.title || "",
       key_word:filters.key_word || "",
       difficulty:filters.difficulty || "",
       instructor:filters.instructor|| ""

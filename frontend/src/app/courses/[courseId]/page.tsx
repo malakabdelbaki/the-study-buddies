@@ -61,6 +61,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
           <span className="font-semibold">Number of Modules:</span>{" "}
           {course.modules?.length || 0}
         </p>
+        
 
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Instructor Information:</h2>

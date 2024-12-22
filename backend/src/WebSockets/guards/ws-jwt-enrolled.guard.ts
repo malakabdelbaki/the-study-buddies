@@ -30,7 +30,7 @@ export class CourseEnrollmentWsGuard implements CanActivate {
 
       // Instructors always have access
       if (client.user.role === Role.Instructor) {
-        if (course.instructor_id.toString() === client.user.userid.toString()) {
+        if (course.instructor_id._id.toString() === client.user.userid.toString()) {
           return true;
         }
         throw new WsException('Instructor is not assigned to this course');
