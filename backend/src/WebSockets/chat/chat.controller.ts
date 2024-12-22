@@ -3,7 +3,7 @@ import { ChatService } from './chat.service';
 import { SearchChatsDto } from './dto/searchChat.dto';
 import { AddParticipantDto } from './dto/AddParticipant.dto';
 import { AddMessageDto } from './dto/AddMessage.dto';
-import { UpdateChatNameDto } from './dto/updateChatName.dto';
+import { UpdateChatNameDto } from './dto/UpdateChatName.dto';
 import { Types } from 'mongoose';
 import { ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { CreateGroupChatDto } from './dto/create-group-chat.dto';
