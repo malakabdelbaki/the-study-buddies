@@ -200,7 +200,7 @@ async getStudentDashboard(studentId: string): Promise<StudentProgressDto[]> {
 
     const analytics = await Promise.all(
       courses.map(async (course) => {
-        //console.log('Fetching progress for course:', course._id);
+        
         try {//Error Handling for Each Course
         // Fetch progress data for the course
         const progressData = (await this.progressModel
@@ -261,6 +261,7 @@ async getStudentDashboard(studentId: string): Promise<StudentProgressDto[]> {
 
       // Get all modules for the course
       const modules = await this.ModuleModel.find({ course_id: course._id }).exec();
+      //const modulesCount = modules.length; //added
 
       // Initialize an array to hold module performance data and student performance data
       const modulesPerformance = await Promise.all(
@@ -297,6 +298,7 @@ async getStudentDashboard(studentId: string): Promise<StudentProgressDto[]> {
 
           let totalScore = 0;
           let totalStudents = 0;
+          //let totalmodulesscore= 0
 
           // Categorize students based on their average quiz score for this module
           Object.entries(studentQuizData).forEach(([studentId, data]) => {
@@ -342,23 +344,40 @@ const overallstudentPerformance = {
   aboveAverage: 0,
   excellent: 0,
 };
-  // Initialize student performance categories
+  // // Initialize student performance categories
+  // modulesPerformance.forEach((module) => {
+  //   const performanceCategories = module.performanceCategories;
+  //   Object.entries(performanceCategories).forEach(([category, count]) => {
+  //     if (category === 'belowAverage') {
+  //       overallstudentPerformance.belowAverage += count;
+  //     } else if (category === 'average') {
+  //       overallstudentPerformance.average += count;
+  //     } else if (category === 'aboveAverage') {
+  //       overallstudentPerformance.aboveAverage += count;
+  //     } else if (category === 'excellent') {
+  //       overallstudentPerformance.excellent += count;
+  //     }
+  //   });
+  // });
 
-  modulesPerformance.forEach((module) => {
-    const performanceCategories = module.performanceCategories;
-    Object.entries(performanceCategories).forEach(([category, count]) => {
-      if (category === 'belowAverage') {
-        overallstudentPerformance.belowAverage += count;
-      } else if (category === 'average') {
-        overallstudentPerformance.average += count;
-      } else if (category === 'aboveAverage') {
-        overallstudentPerformance.aboveAverage += count;
-      } else if (category === 'excellent') {
-        overallstudentPerformance.excellent += count;
-      }
-    });
-  });
+  // Calculate overallstudentPerformance
 
+let coursetotalavg = 0;
+progressData.forEach((studentProgress) => {
+  const avgScore = studentProgress.AverageGrade; // Fetching AverageGrade from Progress
+  coursetotalavg += avgScore;
+  if (avgScore < 50) {
+    overallstudentPerformance.belowAverage += 1;
+  } else if (avgScore >= 50 && avgScore < 70) {
+    overallstudentPerformance.average += 1;
+  } else if (avgScore >= 70 && avgScore < 90) {
+    overallstudentPerformance.aboveAverage += 1;
+  } else if (avgScore >= 90) {
+    overallstudentPerformance.excellent += 1;
+  }
+});
+
+let courseavg = coursetotalavg / progressData.length;
 
   // Return the full analytics object
   return {
