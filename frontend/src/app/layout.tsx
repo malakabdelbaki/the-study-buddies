@@ -2,45 +2,57 @@
 
 import { Inter } from 'next/font/google'
 import Navigation from '@/components/Navigation/Navigation'
-import { usePathname } from 'next/navigation' // Import usePathname from next/navigation
+import SearchBar from '@/components/ui/searchBar'; // Ensure this is the correct path
+import { useRouter, usePathname } from 'next/navigation';
 import './globals.css'
+
 import { useAuth } from '@/hooks/useAuth'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'] });
 
-
-// Assuming UserRole is a type or enum, you can use it here
 type UserRole = 'student' | 'admin' | 'instructor';
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   useAuth();
-  const pathname = usePathname() // Get the current path
-  // Get the first part of the path (e.g., '/admin', '/student', etc.)
-  const pathStart = pathname.split('/')[1] // Extract the first part of the path
+  const pathname = usePathname(); // Get the current path
+  const router = useRouter(); // Use the Next.js router
 
-  // Set the userRole based on the path start
+  const isAuthPage = pathname === '/login' || pathname === '/signup';
+  const pathStart = pathname.split('/')[1];
+
   let userRole: UserRole = 'student'; // Default role
   if (pathStart === 'AdminHome') {
-    userRole = 'admin'
+    userRole = 'admin';
   } else if (pathStart === 'InstrHome') {
-    userRole = 'instructor'
+    userRole = 'instructor';
+  } else if (pathStart === 'StudHome') {
+    userRole = 'student';
   }
-  else if (pathStart === 'StudHome') {
-    userRole = 'student'
-  }
+
+  // Handler for search submissions
+  const handleSearch = (searchTerm: string) => {
+    if (searchTerm.trim()) {
+      router.push(`/search?searchTerm=${encodeURIComponent(searchTerm)}`);
+    }
+  };
 
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Navigation userRole={userRole} />
-        <main className="ml-20 p-4">
-          {children}
-        </main>
+        {!isAuthPage && (
+          <>
+            <Navigation userRole={userRole} />
+            <div className="flex justify-center items-center mt-4">
+              <SearchBar onSearch={handleSearch} />
+            </div>
+          </>
+        )}
+        <main className={!isAuthPage ? 'ml-20 p-4' : ''}>{children}</main>
       </body>
     </html>
-  )
+  );
 }
