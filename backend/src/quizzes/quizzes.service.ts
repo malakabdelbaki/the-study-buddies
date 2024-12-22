@@ -473,7 +473,9 @@ export class QuizzesService {
 
       const returnResponse = new ReturnResponseDto();
       returnResponse.user_id = response.user_id.toString();
+      returnResponse.user_name = student.name;
       returnResponse.quiz_id = response.quiz_id.toString();
+      returnResponse.quiz_title = quiz.title;
       returnResponse.score = response.score;
       returnResponse.answers = response.answers;
       returnResponse.questions = [];
