@@ -104,6 +104,40 @@ export async function GET(req: Request) {
     console.log('Backend URL:', `${backendUrl}/instructor/${instructorId}`);
 
 
+
+    ////////////////////
+// Check for download type and format in query params
+const url = new URL(req.url);
+const downloadType = url.searchParams.get('downloadType'); // e.g., analytics, quiz-results, content-effectiveness
+const format = url.searchParams.get('format') || 'json'; // Default to json
+
+if (downloadType) {
+  // Validate download type
+  if (!['analytics', 'quiz-results', 'content-effectiveness'].includes(downloadType)) {
+    console.error('Invalid download type:', downloadType);
+    return new Response('Invalid download type', { status: 400 });
+  }
+
+  // Handle individual report download
+  const downloadUrl = `${backendUrl}/download-${downloadType}/${instructorId}?format=${format}`;
+  console.log('Download URL:', downloadUrl);
+
+  const response = await axios.get(downloadUrl, {
+    headers: { Authorization: `Bearer ${tokenCookie.value}` },
+    responseType: 'arraybuffer', // Handle binary data for downloads
+  });
+
+  return new NextResponse(response.data, {
+    headers: {
+      'Content-Type': response.headers['content-type'],
+      'Content-Disposition': response.headers['content-disposition'] || '',
+    },
+  });
+}
+/////////////////////////////
+
+
+
     // Fetch reports from the backend
     const [analyticsResponse, quizResultsResponse, contentEffectivenessResponse] = await Promise.all([
       axios.get(`${backendUrl}/instructor/${instructorId}`, {
