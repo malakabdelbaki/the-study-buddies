@@ -29,6 +29,6 @@ export class StudentCanAccessModuleValidator implements ValidatorConstraintInter
   }
 
   defaultMessage(args: ValidationArguments) {
-    return 'The instructor ID does not match the authenticated user.';
+    return 'The student cant access module.';
   }
 }

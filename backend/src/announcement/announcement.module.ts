@@ -14,6 +14,7 @@ import { forwardRef } from '@nestjs/common';
 import { AuthModule } from 'src/auth/auth.module';
 import { LogsModule } from 'src/log/log.module';
 import { ChatModule } from 'src/WebSockets/chat/chat.module';
+import { ModuleModule } from 'src/module/module.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { ChatModule } from 'src/WebSockets/chat/chat.module';
     forwardRef(() => UserModule),
     forwardRef(() => NotificationModule),
     AuthModule,
-    LogsModule
+    LogsModule,
+    ModuleModule
   ],
   controllers: [AnnouncementController],
   providers: [AnnouncementService],

@@ -67,7 +67,7 @@ export class RepliesController {
   @ApiOperation({ summary: 'Delete a reply' })
   @ApiParam({ name: 'id', description: 'The ID of the reply to delete' })
   @SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
-  @UseGuards(IsMemberGuard, IsInstructorCreator)
+  @UseGuards(IsMemberGuard, isStudentCreator)
   remove(@Param('reply_id') id: string) {
     return this.repliesService.remove(id);
   }

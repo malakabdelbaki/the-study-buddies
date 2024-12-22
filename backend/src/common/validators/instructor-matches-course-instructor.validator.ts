@@ -24,7 +24,7 @@ export class MatchInstructorForCourseValidator implements ValidatorConstraintInt
       return false; 
     }
 
-    return course.instructor_id.toString() === userId; 
+    return course.instructor_id._id.toString() === userId; 
   }
 
   defaultMessage(args: ValidationArguments) {

@@ -96,7 +96,7 @@ export class ChatService {
     }
 
     if(user.role == Role.Instructor 
-      && course.instructor_id.toString() !== initiator.toString()){
+      && course.instructor_id._id.toString() !== initiator.toString()){
         throw new BadRequestException('Instructor is not the instructor of this course');
     }
 
@@ -125,7 +125,7 @@ export class ChatService {
     }
 
     if(user.role == Role.Instructor 
-      && course.instructor_id.toString() !== initiator.toString()){
+      && course.instructor_id._id.toString() !== initiator.toString()){
         throw new BadRequestException('Instructor is not the instructor of this course');
     }
 
@@ -141,7 +141,7 @@ export class ChatService {
 
       if (
         course.students.some((student) => student._id.toString() === participant.toString()) ||
-        (course.instructor_id.toString() === participant.toString() && user.role !== Role.Student)
+        (course.instructor_id._id.toString() === participant.toString() && user.role !== Role.Student)
       ) {
         console.log('valid');
         validParticipants.push(participant);
@@ -190,7 +190,7 @@ export class ChatService {
 
       if (
         course.students.some((student) => student._id.toString() === participant.toString()) ||
-        (course.instructor_id.toString() === participant.toString() && user.role !== Role.Student)
+        (course.instructor_id._id.toString() === participant.toString() && user.role !== Role.Student)
       ) {
         chat.participants.push(participant);   
       }
@@ -205,6 +205,8 @@ export class ChatService {
     const { content } = addMessageDto;
     const user = await this.userService.findUserById(sender_id.toString());
     const chat = await this.chatModel.findOne({ _id: chat_id }).exec();
+    console.log(chat);
+    console.log(user);
     if (!chat) {
       throw new EntityDoesNotExistException('Chat', chat_id.toString());
     }
@@ -212,6 +214,7 @@ export class ChatService {
       participant.toString()===sender_id.toString()
     );
 
+    console.log(participantExists);
     if (!participantExists) {
       throw new BadRequestException('Sender is not a participant in this chat');
     }
@@ -222,6 +225,7 @@ export class ChatService {
       content: content,    
       sender_name: user.name 
     });
+    console.log(message);
 
     const savedMessage = await message.save();
     chat.messages.push(savedMessage._id);
@@ -229,7 +233,8 @@ export class ChatService {
 
     for (const participant of chat.participants){
       if(participant.toString() !== sender_id.toString()){
-        await this.notificationService.createNotification(participant.toString(), 'New message in chat', NotificationType.MESSAGE, chat_id);
+        console.log("participant", participant);
+        await this.notificationService.createNotificationForChat(participant.toString(), chat_id, chat.chat_name);
     }
   }
     // Save the new message

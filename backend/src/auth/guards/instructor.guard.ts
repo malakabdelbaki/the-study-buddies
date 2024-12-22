@@ -78,7 +78,7 @@ export class InstructorGuard implements CanActivate {
       );
     }
 
-    if (course.instructor_id.toString() !== userId) {
+    if (course.instructor_id._id.toString() !== userId) {
       throw new HttpException(
         'You are not authorized to perform this action.',
         HttpStatus.FORBIDDEN,

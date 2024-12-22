@@ -27,6 +27,7 @@ const ForumPage = () => {
 
   const handleNewThread = (newThread: any) => {
     setThreads((prev) => [newThread, ...prev]);
+    router.refresh();
   };
 
   useEffect(() => {
@@ -56,9 +57,7 @@ const ForumPage = () => {
           
         } catch (err) {
           setError("Failed to fetch forum data");
-        } finally {
-          setLoading(false);
-        }
+        } 
       };
 
 
@@ -79,7 +78,8 @@ const ForumPage = () => {
         const threadData = await threadsRes.json();
         console.log(threadData, "threads at client");
   
-        setThreads(threadData.length > 0 ? threadData : []); // Set the full array of threads
+        setThreads(threadData.length > 0 ? threadData : []); 
+        console.log(threads, "threads at client");
       } catch (err) {
         setError("Failed to fetch thread data");
       } finally {
@@ -148,7 +148,8 @@ const ForumPage = () => {
             <ThreadSearchBar forumId={forum._id} courseId={course_id as string} />
             </div>
           <div className="space-y-4">
-            {threads.length > 0 ? (
+            {loading && <p>Loading threads...</p>}
+            {!loading && threads.length > 0 ? (
               threads.map((thread) => (
                 <Link key={thread._id} href={`./${forum._id}/threads/${thread._id}`}>
                 <ThreadCard key={thread._id} thread={thread} />

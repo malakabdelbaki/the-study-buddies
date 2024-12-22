@@ -7,6 +7,7 @@ import { Course } from "@/types/Course";
 import { User } from "@/types/User";
 import { fetchCourseModules,fetchCourseById, fetchInstructor, updateCourse, deleteCourse } from "../../../api/courses/instructor/courseRoute";
 import ModuleCard from "../../../../components/course/general/moduleCard";
+import ForumPreview from "@/components/forum/ForumPreview";
 import { createModule } from "../../../api/courses/instructor/moduleRoute";
 import { Types } from "mongoose";
 
@@ -264,8 +265,13 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
         </div>
     </div>
 
-    
-  
+    <div className="modules-section mt-8">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Forum</h2>
+      {course._id && course.title && (
+        <ForumPreview courseId={course._id} courseTitle={course.title} />
+      )}
+
+      </div>
 
     </div>
 

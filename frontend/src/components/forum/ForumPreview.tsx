@@ -47,8 +47,13 @@ const ForumPreview: React.FC<ForumPreviewProps> = ({ courseId, courseTitle }: Fo
         });
         const data = await response.json();
 
-        if (response.ok && data.length > 0 && data[0].is_active) {
-          setForum(data[0]);
+        if (response.ok && data.length > 0) {
+          for (const forum of data) {
+            if (forum.is_active) {
+              setForum(forum);
+              break;
+            }
+          }
         } 
       } catch (err) {
         setError("Failed to fetch forum data");
