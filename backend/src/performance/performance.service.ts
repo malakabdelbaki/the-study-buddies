@@ -2,13 +2,13 @@
 import { Injectable , NotFoundException,ForbiddenException, InternalServerErrorException, BadRequestException} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, Types } from 'mongoose';
-import { Progress, ProgressDocument } from '../models/progress.schema';
-import { Course, CourseDocument } from '../models/course.schema';
-import { Quiz, QuizDocument } from '../models/quiz.schema';
-import { User, UserDocument } from '../models/user.schema';
+import { Progress, ProgressDocument } from '../Models/progress.schema';
+import { Course, CourseDocument } from '../Models/course.schema';
+import { Quiz, QuizDocument } from '../Models/quiz.schema';
+import { User, UserDocument } from '../Models/user.schema';
 import { Module , ModuleDocument } from '../Models/modules.schema';
-import { Response, ResponseDocument } from '../models/response.schema';
-import {Answer, AnswerDocument } from '../models/answer.schema'
+import { Response, ResponseDocument } from '../Models/response.schema';
+import {Answer, AnswerDocument } from '../Models/answer.schema'
 import { StudentProgressDto } from './dto/student-progress.dto';
 import { InstructorAnalyticsDto } from './dto/instructor-analytics.dto';
 import { StudentQuizResultDto ,QuizResultDto } from './dto/quiz-result.dto';
