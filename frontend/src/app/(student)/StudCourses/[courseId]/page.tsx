@@ -209,8 +209,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
       )}
 
     </div>
-    
-
+  </div>
 );
 };
 
