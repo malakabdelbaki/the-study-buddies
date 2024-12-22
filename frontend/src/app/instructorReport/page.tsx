@@ -243,17 +243,44 @@ export default function InstructorDashboard() {
     try {
       const response = await fetch(`/api/instructorReports?downloadType=${type}&format=${format}`);
       if (!response.ok) {
-        throw new Error('Failed to download report');
+        throw new Error('Failed to download report')   
       }
 
-      const blob = await response.blob();
-      const downloadUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = `${type}.${format}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+
+
+      const contentType = response.headers.get('Content-Type');
+      if (format === 'json' && contentType?.includes('application/json')) {
+        // Handle JSON file
+        const jsonData = await response.json();
+        const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' }); // Add indentation
+        const downloadUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `${type}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else if (format === 'csv') {
+        // Handle CSV file
+        const csvData = await response.text(); // Read as plain text
+        console.log('CSV Content:', csvData); // Debug CSV content
+        // Ensure proper handling of line breaks for CSV content
+        const normalizedCSV = csvData.replace(/(?!\r)\n/g, '\r\n');
+        const blob = new Blob([normalizedCSV], { type: 'text/csv;charset=utf-8;' });
+        const downloadUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `${type}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        throw new Error('Unexpected content type');
+      }
+
+
+
+
     } catch (error) {
       console.error('Error downloading report:', error);
       alert('Failed to download the report. Please try again.');
