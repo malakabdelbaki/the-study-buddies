@@ -2,6 +2,7 @@ import { Controller, UseGuards } from '@nestjs/common';
 import { Body } from '@nestjs/common';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { CreateResponseDto } from './dto/create-response.dto';
+import { ReturnQuizDto } from './dto/return-quiz.dto';
 import { Post , Param } from '@nestjs/common'; 
 import { QuizzesService } from './quizzes.service';
 import { AuthGuard } from 'src/auth/guards/authentication.guard';
@@ -18,8 +19,11 @@ export class QuizzesController {
     constructor(private readonly quizzesService: QuizzesService) {}
 
     @Post()
-    create(@Body() createQuizDto: CreateQuizDto) {
-         return this.quizzesService.createQuiz(createQuizDto.user_id , createQuizDto.module_id);
+    async create(@Body() createQuizDto: CreateQuizDto) {
+      console.log("entered create quiz controller");
+      const quiz = await this.quizzesService.createQuiz(createQuizDto.user_id , createQuizDto.module_id);
+      console.log("quiz in controller",quiz);
+         return quiz;
     
     }
 

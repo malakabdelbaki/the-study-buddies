@@ -64,7 +64,7 @@ export class CoursesService {
   async findOne(id: Types.ObjectId) {
     try {
       console.log("in course", id);
-      const course = await this.courseModel.findById(id);
+      const course = await this.courseModel.findById(id).populate('instructor_id');
       if (!course) {
         throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
       }
@@ -83,6 +83,7 @@ export class CoursesService {
       if (!course) {
         throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
       }
+      course.key_words =[];
       if (updateCourseDto.key_words){
         updateCourseDto.key_words.forEach((keyword)=>{
           course.key_words.push(keyword);
@@ -167,6 +168,7 @@ export class CoursesService {
 
       let IsNotComplete = false;
       course.students.forEach(async (studentId) => {
+        console.log(studentId);
         let progress = await this.progressModel.find({userId:studentId,courseId:id});
         if ((progress as unknown as Progress).completionPercentage !== 1){
           IsNotComplete = true;

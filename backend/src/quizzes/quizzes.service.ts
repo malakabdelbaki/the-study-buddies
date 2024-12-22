@@ -10,6 +10,10 @@ import { Answer, AnswerDocument } from 'src/models/answer.schema';
 import { Response, ResponseDocument } from 'src/models/response.schema';
 import { User, UserDocument } from 'src/models/user.schema';
 import { Progress, ProgressDocument } from 'src/models/progress.schema';
+import { ReturnQuizDto } from './dto/return-quiz.dto.js';
+import { title } from 'process';
+import { ReturnResponseDto } from './dto/return-response.dto.js';
+
 @Injectable()
 export class QuizzesService {
   constructor(
@@ -270,6 +274,7 @@ export class QuizzesService {
 
     // Save the quiz to the database - working
     const savedQuiz = await quiz.save();
+    console.log("saved Quiz", savedQuiz)
 
   
     // Log details for debugging - working
@@ -278,10 +283,27 @@ export class QuizzesService {
     console.log('Filtered Questions:', filteredQuestions);
     console.log(filteredQuestions.length, 'questions found for Module ID', module_id);
     console.log('Selected Questions:', selectedQuestions);
-    console.log('Quiz created:', savedQuiz);
+
+    const returnQuiz = new ReturnQuizDto();
+    returnQuiz.quiz_id = quiz._id.toString();
+    returnQuiz.title = quiz.title;
+    returnQuiz.module_id = quiz.module_id.toString();
+    returnQuiz.quiz_type = quiz.quiz_type
+    returnQuiz.student_id = quiz.student_id.toString();
+    returnQuiz.questions = [];
+    console.log("***************************DEBUG*****************************")
+    
+    for(var index in quiz.questions){
+      const question_id = quiz.questions[index]; 
+      const q = await this.questionModel.findById(question_id);
+      returnQuiz.questions.push(q);
+    }
+    console.log("Return Quiz DTO :",returnQuiz);
+
+
 
     // Return the saved quiz
-    return savedQuiz;  
+    return returnQuiz;  
   }
   
 
@@ -340,6 +362,7 @@ export class QuizzesService {
       // Retrieve the quiz by ID - working
       const quiz = await this.quizModel.findById(quiz_id).exec();
       const student = await this.userModel.findById(user_id).exec(); 
+
       
       // console.log("quiz_id: ", quiz_id); - working
       // console.log("user_id: ", user_id); - working
@@ -446,7 +469,26 @@ export class QuizzesService {
       console.log("response: ", response); 
       // Save the response to the database - working
       const savedResponse = await response.save();
-      return savedResponse; 
+      console.log("saved Response", savedResponse)
+
+      const returnResponse = new ReturnResponseDto();
+      returnResponse.user_id = response.user_id.toString();
+      returnResponse.quiz_id = response.quiz_id.toString();
+      returnResponse.score = response.score;
+      returnResponse.answers = response.answers;
+      returnResponse.questions = [];
+
+      for(var index in quiz.questions){
+        const question_id = quiz.questions[index]; 
+        const question = await this.questionModel.findById(question_id);
+        returnResponse.questions.push(question);
+      }
+
+      console.log("returnResponseDto", returnResponse)
+
+
+
+      return returnResponse; 
 
     }
 

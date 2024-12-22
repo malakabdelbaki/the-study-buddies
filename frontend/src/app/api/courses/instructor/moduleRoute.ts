@@ -46,7 +46,6 @@ export async function getModule(moduleId: string) {
       return data;
     } catch (error: any) {
       console.error('Error updating module:', error.message);
-      throw error;
     }
   }
 
@@ -93,7 +92,16 @@ export async function addQuestionToModule(createQuestionDto:Question) {
   // Update a question in the module's question bank
   export async function updateQuestionInModule(quesId:string, updateQuestionDto:Question) {
     try {
-      const { data } = await axiosInstance.patch(`/modules/question-bank/${quesId}`, updateQuestionDto);
+      console.log("anat3bt",quesId,updateQuestionDto)
+      let sentq = {
+        correct_answer: updateQuestionDto.correct_answer,
+        difficulty_level: updateQuestionDto.difficulty_level,
+        question_type: updateQuestionDto.question_type,
+        question: updateQuestionDto.question,
+        //options: updateQuestionDto.options,
+      }
+      console.log(sentq);
+      const { data } = await axiosInstance.patch(`/modules/question-bank/${quesId}`, sentq);
       return data;
     } catch (error:any) {
       console.error('Error updating question:', error.message);
@@ -113,7 +121,7 @@ export async function addQuestionToModule(createQuestionDto:Question) {
   }
   
   // Fetch the question bank for a specific module
-  export async function fetchQuestionBank(moduleId:string) :Promise<Question[]>{
+  export async function fetchQuestionBank(moduleId:string) :Promise<Question[] | {message:string}>{
     try {
       const { data } = await axiosInstance.get(`/modules/${moduleId}/question-bank`);
 
@@ -126,7 +134,8 @@ export async function addQuestionToModule(createQuestionDto:Question) {
       return questions;
     } catch (error:any) {
       console.error('Error fetching question bank:', error.message);
-      throw error;
+      //throw error;
+      return {message:error}
     }
   }
 
@@ -145,22 +154,28 @@ export async function addQuestionToModule(createQuestionDto:Question) {
   // Upload a resource file to a module
   export async function uploadModuleResource(moduleId:string, fileData:any) {
     try {
-      const formData = new FormData();
-      formData.append('file', fileData.file);
-      formData.append('title', fileData.title);
-  
+     
+      const formData =new FormData();
+      console.log(fileData);
+      formData.append('title', fileData.get('title'));
+      formData.append('description', fileData.get('description'));
+      formData.append('type', fileData.get('type'));
+
+      //const blob = new Blob([], { type: 'application/pdf' });
+      formData.append('file', fileData.get('file'));
       const { data } = await axiosInstance.post(`/modules/${moduleId}/resource`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-  
-      return data;
+ 
+      return data ;
     } catch (error:any) {
-      console.error('Error uploading resource:', error.message);
+      console.error('Error uploading resource:', error);
       throw error;
     }
   }
+
   
   // Delete a resource from a module
   export async function deleteModuleResource(resourceId:string) {
@@ -177,7 +192,16 @@ export async function addQuestionToModule(createQuestionDto:Question) {
   export async function fetchModuleResources(moduleId:string) {
     try {
       const { data } = await axiosInstance.get(`/modules/${moduleId}/resources`);
-      return data;
+
+      const resources = data ;
+      // await Promise.all(
+      //   data.map(async (resource: Types.ObjectId) => {
+      //     console.log('kk',resource);
+      //           return await fetchResourceById(resource.toString());
+      //         })
+      //       );
+      console.log(resources);
+      return resources;
     } catch (error:any) {
       console.error('Error fetching resources:', error.message);
       throw error;

@@ -4,6 +4,7 @@ import { useAuthorization } from "@/hooks/useAuthorization"
 import { BookOpen, Users } from 'lucide-react'
 import Link from "next/link";
 import React from "react"
+import StudentProgressCard from "@/components/user/InstAdstudProgress"
 
 export default function InstructorHomePage() {
   useAuthorization(['instructor']);
@@ -53,21 +54,7 @@ export default function InstructorHomePage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Recent Activity Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest updates from your courses</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              <li className="text-sm">New discussion post in Advanced JavaScript</li>
-              <li className="text-sm">5 new quiz submissions in Introduction to React</li>
-              <li className="text-sm">Updated course materials for Web Development Bootcamp</li>
-            </ul>
-          </CardContent>
-        </Card>
+        <StudentProgressCard/>
       </div>
 
 

@@ -98,16 +98,41 @@ export class UserService {
   // Get all students in a specific course
   async getAllStudentsInCourse(courseId: string): Promise<User[]> {
     try {
-      const course = await this.courseModel.findById(courseId).populate('students');
-      if (!course) throw new NotFoundException('Course not found.');
-
-      const students = course.students as unknown as User[]; // Resolves TypeScript warning
-      if (!students.length) throw new NotFoundException('No students found in this course.');
-      return students;
-    } catch (error) {
+      // Find the course without populating students
+      const course = await this.courseModel.findById(courseId).exec();
+  
+      if (!course) {
+        throw new NotFoundException('Course not found.');
+      }
+  
+      if (!course.students || course.students.length === 0) {
+        throw new NotFoundException('No students found in this course.');
+      }
+  
+      // Fetch and populate each student manually
+      const populatedStudents = await Promise.all(
+        course.students.map(async (studentId: Types.ObjectId) => {
+          const student = await this.userModel.findById(studentId).select('name email role').exec();
+          if (!student) {
+            console.warn(`Student with ID ${studentId} not found.`);
+            return null;
+          }
+          return student;
+        })
+      );
+  
+      // Filter out any null values in case some students weren't found
+      const validStudents = populatedStudents.filter((student) => student !== null);
+  
+      console.log('Populated Students:', validStudents);
+  
+      return validStudents as User[];
+    } catch (error: any) {
+      console.error('Error fetching students in course:', error.message);
       throw new InternalServerErrorException('Error fetching students in course', error.message);
     }
   }
+  
 
   
 
@@ -171,6 +196,44 @@ export class UserService {
     }
   }
 
+  //updates student progress
+  async updateStudentProgressByName(title: string, name: string, completionPercentage: number): Promise<string> {
+    try {
+      // Validate completion percentage
+      if (completionPercentage < 0 || completionPercentage > 100) {
+        throw new BadRequestException('Completion percentage must be between 0 and 100.');
+      }
+  
+      // Find course and student based on title and name
+      const course = await this.courseModel.findOne({ title });
+      const student = await this.userModel.findOne({ name });
+  
+      // Check if course or student exists
+      if (!course) {
+        throw new NotFoundException(`Course with title "${title}" not found.`);
+      }
+  
+      if (!student) {
+        throw new NotFoundException(`Student with name "${name}" not found.`);
+      }
+  
+      // Update progress with courseId and userId
+      const progress = await this.progressModel.findOneAndUpdate(
+        { courseId: course._id, userId: student._id },
+        { completionPercentage, lastAccessed: new Date() },
+        { new: true },
+      );
+  
+      if (!progress) {
+        throw new NotFoundException('Progress record not found.');
+      }
+  
+      return "Progress Updated Successfully";
+    } catch (error) {
+      throw new InternalServerErrorException('Error updating student progress', error.message);
+    }
+  }
+  
   
 
   /** --------- PUBLIC FUNCTIONALITIES ----------- */
@@ -264,39 +327,46 @@ export class UserService {
   // View enrolled courses of a student
   async getEnrolledCoursesOfStudent(userId: string): Promise<any> {
     try {
-
+      console.log(userId);
       const studentObjectId = new mongoose.Types.ObjectId(userId);
 
-      const courses = await this.courseModel.find({ students: studentObjectId });
-
+      const courses = await this.courseModel.find({ students: studentObjectId }).populate('instructor_id');
+      console.log(courses);
       if (!courses.length) throw new NotFoundException('No courses found for this user.');
 
-      return courses.map(course => ({
-        title: course.title,
-        id: course._id, 
-      }));
+      return courses;
     } catch (error) {
         throw new InternalServerErrorException('Error fetching enrolled courses', error.message);
       }
   }
 
-  // Track completed courses of a student
-  async getCompletedCoursesOfStudent(userId: string): Promise<any> {
-    try {
+ // Track completed courses of a student
+async getCompletedCoursesOfStudent(userId: string): Promise<any> {
+  try {
+    const studentObjectId = new mongoose.Types.ObjectId(userId);
 
-     const studentObjectId = new mongoose.Types.ObjectId(userId);
+    // Fetch completed progresses and populate the course information
+    const completed = await this.progressModel
+      .find({ userId: studentObjectId, completionPercentage: 100 })
+      .populate({
+        path: 'courseId', // Ensure courseId is a reference in progressModel
+        select: 'title', // Only fetch the title field from courseModel
+      });
 
-      const completed = await this.progressModel
-        .find({ userId: studentObjectId , completionPercentage: 100 }); // Fetching only fully completed courses
+    if (!completed.length) throw new NotFoundException('No completed courses found.');
 
-      if (!completed.length) throw new NotFoundException('No completed courses found.');
+    // Map the data to return the required structure
+    const result = completed.map((progress) => ({
+      progressId: progress._id,
+      title: (progress.courseId as any).title, // Use type assertion
+    }));
 
-      return completed;
-
-    } catch (error) {
-        throw new InternalServerErrorException('Error fetching completed courses', error.message);
-      }
+    return result;
+  } catch (error) {
+    throw new InternalServerErrorException('Error fetching completed courses', error.message);
   }
+}
+
 
   //get the average of scores of a certain student
   async getStudentAverageScore(studentId: string): Promise<any> {
@@ -334,8 +404,18 @@ export class UserService {
          // Ensure ObjectId type if needed
          const courseObjectId = new mongoose.Types.ObjectId(courseId);
          const studentObjectId = new mongoose.Types.ObjectId(studentId);
-      // Find progress record for the specified course and student
-      const progress = await this.progressModel.findOne({ courseId: courseObjectId, userId: studentObjectId});
+      // Find progress record and populate courseId and userId fields
+        const progress = await this.progressModel
+        .findOne({ courseId: courseObjectId, userId: studentObjectId })
+        .populate({
+          path: 'courseId', // Populate the courseId field
+          select: 'title', // Map courseId to its title
+        })
+        .populate({
+          path: 'userId', // Populate the userId field
+          select: 'name', // Map userId to the user's name
+        })
+        .exec();
   
       if (!progress) {
         throw new NotFoundException('No progress record found for this student in the specified course.');
@@ -346,6 +426,51 @@ export class UserService {
         throw new InternalServerErrorException('Error retrieving student progress', error.message);
       }
   }
+
+  async getStudentProgressByName(title: string, name: string): Promise<Progress> {
+    try {
+      //console.log(`Received title: ${title}, name: ${name}`);  // Debugging log
+
+      // Find the course ID by title
+      const course = await this.courseModel.findOne({ title}).exec();
+      if (!course) {
+        throw new NotFoundException(`Course with title "${title}" not found.`);
+      }
+  
+      // Find the student ID by name
+      const student = await this.userModel.findOne({ name }).exec();
+      if (!student) {
+        throw new NotFoundException(`Student with name "${name}" not found.`);
+      }
+  
+      // Find progress record by courseId and studentId
+      const progress = await this.progressModel
+        .findOne({ courseId: course._id, userId: student._id })
+        .populate({
+          path: 'courseId', // Populate the courseId field
+          select: 'title', // Map courseId to its title
+        })
+        .populate({
+          path: 'userId', // Populate the userId field
+          select: 'name', // Map userId to the user's name
+        })
+        .exec();
+  
+      if (!progress) {
+        throw new NotFoundException(
+          `No progress record found for student "${name}" in course "${title}".`,
+        );
+      }
+  
+      return progress;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error retrieving student progress',
+        error.message,
+      );
+    }
+  }
+  
   
   // get all courses taught by a certain instructor
   async getCoursesByInstructor(instructorId: string): Promise<any> {
@@ -474,5 +599,59 @@ export class UserService {
 
     await progress.save();
     return { message: 'Progress created successfully', progress };
+  }
+
+  async findUserByName(name: string): Promise<any> {
+    try {
+      // Check if the role is Instructor, Admin (can search for any user)
+      //if (role === Role.Instructor || role === Role.Admin) {
+         const found = await this.userModel.findOne({ name });
+         return found;
+     // }
+      
+      // If role is Student, allow searching only for instructors
+      // if (role === Role.Student) {
+      //    const found= await this.userModel.findOne({
+      //     where: { name},
+      //   });
+      //   return found;
+      // }
+
+     // throw new Error('Unauthorized role for searching users');
+    } catch (error) {
+      throw new Error(`Failed to find user: ${error.message}`);
+    }
+  }
+
+  async searchUsers(searchTerm: string, loggedInUser: any): Promise<User[]> {
+    try {
+      console.log('Search Term:', searchTerm);
+      console.log('Logged In User:', loggedInUser);
+
+      // Base query: search by name or email
+      const query: any = {
+        $or: [
+          { name: { $regex: searchTerm, $options: 'i' } },
+          { email: { $regex: searchTerm, $options: 'i' } },
+          { role: { $regex: searchTerm, $options: 'i' } },
+        ],
+      };
+  
+
+      // Restrict based on the logged-in user's role
+    if (loggedInUser.role === Role.Student) {
+      // Exclude both admins and students for students
+      query['role'] = { $nin: [Role.Student, Role.Admin] };
+    } else if (loggedInUser.role === Role.Instructor) {
+      // Exclude admins for instructors
+      query['role'] = { $ne: Role.Admin };
+    }
+
+
+      // Exclude sensitive fields like passwordHash
+      return await this.userModel.find(query).select('-passwordHash');
+    } catch (error) {
+      throw new Error('Error searching users: ' + error.message);
+    }
   }
 }

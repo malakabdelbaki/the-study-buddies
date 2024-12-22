@@ -1,11 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from '../../types/User';
 
 const ProfileClient = () => {
@@ -48,44 +55,63 @@ const ProfileClient = () => {
   };
 
   // Handle profile save
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  if (user) {
-    try {
-      // Update user profile
-      const updateResponse = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user),
-      });
-
-      if (!updateResponse.ok) throw new Error('Failed to update profile.');
-
-      // Update password if provided
-      if (newPassword) {
-        const passwordResponse = await fetch('/api/user/profile', {
-          method: 'PATCH',
+    if (user) {
+      try {
+        // Update user profile
+        const updateResponse = await fetch('/api/user/profile', {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ newPassword, confirmPassword: newPassword }),
+          body: JSON.stringify(user),
         });
 
-        if (!passwordResponse.ok) throw new Error('Failed to update password.');
+        if (!updateResponse.ok) throw new Error('Failed to update profile.');
 
-        alert('Password updated successfully');
-        setNewPassword('');
+        // Update password if provided
+        if (newPassword) {
+          const passwordResponse = await fetch('/api/user/profile', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newPassword, confirmPassword: newPassword }),
+          });
+
+          if (!passwordResponse.ok) throw new Error('Failed to update password.');
+
+          alert('Password updated successfully');
+          setNewPassword('');
+        }
+
+        // alert('Profile updated successfully');
+        // setIsEditing(false); // Exit editing mode
+      } catch (err) {
+        setError('An error occurred while saving changes.');
+        console.error(err);
       }
-
-      // Show success alert and exit editing mode
-      // alert('Profile updated successfully');
-      // setIsEditing(false); // Exit editing mode
-    } catch (err) {
-      setError('An error occurred while saving changes.');
-      console.error(err);
     }
-  }
-};
+  };
 
+  // Handle delete account
+  const handleDeleteAccount = async () => {
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete your account? This action cannot be undone.'
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch('/api/user/profile', { method: 'DELETE' });
+      console.log(response.json);
+      if (!response.ok) throw new Error('Failed to delete account.');
+
+      alert('Your account has been successfully deleted.');
+      window.location.href = '/login'; // Redirect to login 
+    } catch (err) {
+      console.error(err);
+      setError('An error occurred while deleting your account.');
+    }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -145,7 +171,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 <Input
                   id="email"
                   name="email"
-                  value={user.email } 
+                  value={user.email}
                   onChange={handleInputChange}
                   disabled
                 />
@@ -173,21 +199,19 @@ const handleSubmit = async (e: React.FormEvent) => {
               {isEditing ? (
                 <>
                   <Button type="submit">Save Changes</Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsEditing(false) }
-                  >
+                  <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
                     Cancel
                   </Button>
                 </>
               ) : (
-                <Button
-                  type="button"
-                  onClick={() => setIsEditing(true)} // Toggle editing mode
-                >
-                  Edit Profile
-                </Button>
+                <>
+                  <Button type="button" onClick={() => setIsEditing(true)}>
+                    Edit Profile
+                  </Button>
+                  <Button type="button" variant="destructive" onClick={handleDeleteAccount}>
+                    Delete Account
+                  </Button>
+                </>
               )}
             </CardFooter>
           </form>

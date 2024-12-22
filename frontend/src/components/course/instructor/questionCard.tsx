@@ -1,22 +1,31 @@
-import React, { useState } from 'react';
 import { Question } from '@/types/Question';
+import React, { useState } from 'react';
 
 type QuestionCardProps = {
   Onequestion: Question;
   onUpdate: (updatedQuestion: Question) => void;
+  onDelete: (questionId: string) => void;
 };
 
-const QuestionCard: React.FC<QuestionCardProps> = ({ Onequestion, onUpdate }) => {
+const QuestionCard: React.FC<QuestionCardProps> = ({ Onequestion, onUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   // Initialize options with a default value if undefined
   const [editedQuestion, setEditedQuestion] = useState<Question>({
     ...Onequestion,
-    options: Onequestion.options as Record<string,string> || { a: '', b: '', c: '', d: '' },
+    options: Onequestion.options as Record<string, string> || { a: '', b: '', c: '', d: '' },
   });
 
   const handleInputChange = (field: keyof Question, value: string) => {
-    setEditedQuestion((prev) => ({ ...prev, [field]: value }));
+    if (field ==='question_type'){
+      if (value==='mcq')
+        setEditedQuestion((prev) => ({ ...prev, [field]: value ,options:{ a: '', b: '', c: '', d: '' }}));
+      else 
+        setEditedQuestion((prev) => ({ ...prev, [field]: value ,options:{ a: '', b: ''}}));
+    }
+    else 
+      setEditedQuestion((prev) => ({ ...prev, [field]: value }));
+
   };
 
   const handleOptionChange = (key: string, value: string) => {
@@ -26,25 +35,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ Onequestion, onUpdate }) =>
     }));
   };
 
-//   const handleAddOption = () => {
-//     const newKey = String.fromCharCode(97 + Object.keys(editedQuestion.options).length); // 'a', 'b', 'c', etc.
-//     setEditedQuestion((prev) => ({
-//       ...prev,
-//       options: { ...prev.options, [newKey]: '' },
-//     }));
-//   };
-
-//   const handleRemoveOption = (key: string) => {
-//     const { [key]: _, ...remainingOptions } = editedQuestion.options;
-//     setEditedQuestion((prev) => ({
-//       ...prev,
-//       options: remainingOptions,
-//     }));
-//   };
-
   const handleSave = () => {
     onUpdate(editedQuestion);
     setIsEditing(false);
+  };
+
+  const handleDelete = () => {
+    onDelete(Onequestion._id as string); // Assuming `_id` exists in the `Onequestion` object
   };
 
   return (
@@ -66,7 +63,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ Onequestion, onUpdate }) =>
               className="border p-2 w-full"
             >
               <option value="mcq">MCQ</option>
-              <option value="trueFalse">True/False</option>
+              <option value="true/false">True/False</option>
             </select>
           </div>
 
@@ -82,20 +79,32 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ Onequestion, onUpdate }) =>
                     placeholder={`Option ${key.toUpperCase()}`}
                     className="border p-2 flex-grow mr-2"
                   />
-                  {/* <button
-                    onClick={() => handleRemoveOption(key)}
-                    className="bg-red-500 text-white px-2 py-1"
-                  >
-                    Remove
-                  </button> */}
                 </div>
               ))}
-              {/* <button
-                onClick={handleAddOption}
-                className="bg-blue-500 text-white px-4 py-2 mt-2"
-              >
-                Add Option
-              </button> */}
+            </div>
+          )}
+
+          {editedQuestion.question_type === 'true/false' && (
+            <div>
+              <label className="font-bold block mb-1">Options:</label>
+              <div className="flex items-center mb-2">
+                <input
+                  type="text"
+                  value={editedQuestion.options?.a || ''}
+                  onChange={(e) => handleOptionChange('a', e.target.value)}
+                  placeholder="A"
+                  className="border p-2 flex-grow mr-2"
+                />
+              </div>
+              <div className="flex items-center mb-2">
+                <input
+                  type="text"
+                  value={editedQuestion.options?.b || ''}
+                  onChange={(e) => handleOptionChange('b', e.target.value)}
+                  placeholder="B"
+                  className="border p-2 flex-grow mr-2"
+                />
+              </div>
             </div>
           )}
 
@@ -108,6 +117,19 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ Onequestion, onUpdate }) =>
               className="border p-2 w-full"
               placeholder="Enter correct answer"
             />
+          </div>
+
+          <div className="mb-2">
+          <label className="font-bold block mb-1">Question Difficulty:</label>
+            <select
+              value={editedQuestion.difficulty_level}
+              onChange={(e) => handleInputChange('difficulty_level', e.target.value)}
+              className="border p-2 w-full"
+            >
+              <option value="easy">EASY</option>
+              <option value="hard">HARD</option>
+              <option value="medium">MEDIUM</option>
+            </select>
           </div>
 
           <button
@@ -129,23 +151,39 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ Onequestion, onUpdate }) =>
           <p className="mb-2">
             <span className="font-bold">Type:</span> {Onequestion.question_type}
           </p>
-          {Onequestion.question_type === 'mcq' && (
-            <ul className="mb-2">
-              {Object.entries(Onequestion.options || {}).map(([key, value]) => (
-                <li key={key}>
-                  <span className="font-bold">{key.toUpperCase()}:</span> {value}
-                </li>
-              ))}
-            </ul>
+
+          {(Onequestion.question_type === 'mcq' || Onequestion.question_type === 'true/false') && (
+            <div>
+              <p className="font-bold">Options:</p>
+              <ul className="mb-2">
+                {Object.entries(Onequestion.options || {}).map(([key, value]) => (
+                  <li key={key}>
+                    <span className="font-bold">{key.toUpperCase()}:</span> {value}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
+
           <p className="mb-2">
             <span className="font-bold">Correct Answer:</span> {Onequestion.correct_answer}
           </p>
+
+          <p className="mb-2">
+            <span className="font-bold">Difficulty Level:</span> {Onequestion.difficulty_level}
+          </p>
+
           <button
             onClick={() => setIsEditing(true)}
             className="bg-blue-500 text-white px-4 py-2"
           >
             Edit
+          </button>
+          <button
+            onClick={handleDelete}
+            className="bg-red-500 text-white px-4 py-2"
+          >
+            Delete
           </button>
         </>
       )}

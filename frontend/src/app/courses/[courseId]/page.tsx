@@ -16,12 +16,9 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
       try {
         const { courseId } = await params;
         let course = await getCourseDetails(courseId);
-        const instructor = await fetch('/api/user/profile', {
-          method: 'GET',
-          cache: 'no-store',
-        });
-        
-        course = course as Course;
+        course = course as Course;      
+        const instructor = course.instructor_id;
+
         setCourse(course);
         setInstructor(instructor as unknown as User);
         let mods: Module[] = [];

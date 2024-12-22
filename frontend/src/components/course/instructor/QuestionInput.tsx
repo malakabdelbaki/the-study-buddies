@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { addQuestionToModule } from '../../../app/api/courses/instructor/moduleRoute';
+import { stringify } from 'querystring';
 
 const AddQuestionForm = ({moduleId,InstructorId}:{moduleId:string,InstructorId:string}) => {
   const [newQuestion, setNewQuestion] = useState({
     question: '',
     question_type: 'mcq',
-    options: {a:"",b:"",c:"",d:""} as Record<string, string>,
+    options: {} as Record<string,string>,
     difficulty_level: 'easy',
     correct_answer: '',
     module_id:moduleId,
@@ -24,10 +25,28 @@ const AddQuestionForm = ({moduleId,InstructorId}:{moduleId:string,InstructorId:s
   // Handle changes for select fields
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setNewQuestion((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if(name==='difficulty_level'){
+      setNewQuestion((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+    else{ 
+      if (value==='mcq'){
+        setNewQuestion((prev) => ({
+          ...prev,
+          [name]: value,
+          options: {a:"",b:"",c:"",d:""}
+        }));
+      }
+      else {
+        setNewQuestion((prev) => ({
+          ...prev,
+          [name]: value,
+          options: {a:"",b:""}
+        }));
+      }
+    }
   };
 
   // Handle changes for options
@@ -39,6 +58,7 @@ const AddQuestionForm = ({moduleId,InstructorId}:{moduleId:string,InstructorId:s
         [key]: value,
       },
     }));
+    console.log(newQuestion);
   };
 
   const handleAddQuestion = async () => {
@@ -116,7 +136,7 @@ const AddQuestionForm = ({moduleId,InstructorId}:{moduleId:string,InstructorId:s
 
         {/* Difficulty Level */}
         <select
-          name="difficultyLevel"
+          name="difficulty_level"
           value={newQuestion.difficulty_level}
           onChange={handleSelectChange}
           className="border p-2 w-full mb-2"
