@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+
 
 type Question = {
   _id: string;
@@ -20,6 +22,25 @@ const QuizPage = () => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [userChoices, setUserChoices] = useState<Record<string, string>>({});
+
+  const searchParams = useSearchParams();
+  const data = searchParams.get("data");
+  useEffect(() => {
+    if (data) {
+      try {
+        const parsedQuizData = JSON.parse(data);
+        setQuiz(parsedQuizData);
+      } catch (err) {
+        console.error("Error parsing quiz data:", err);
+        setError("Invalid quiz data provided.");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setLoading(false);
+    }
+  }, [data]);
+
 
   const handleChoice = (questionId: string, choice: string) => {
     setUserChoices((prev) => ({
@@ -57,31 +78,33 @@ const QuizPage = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchQuiz = async () => {
-      try {
-        // Fetch the quiz data from the API
-        const response = await fetch("/api/quiz", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        });
+  // useEffect(() => {
+  //   const fetchQuiz = async () => {
+  //     try {
+  //       // Fetch the quiz data from the API
+  //       const response = await fetch("/api/quiz", {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //       });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to fetch quiz data");
-        }
+  //       if (!response.ok) {
+  //         const errorData = await response.json();
+  //         throw new Error(errorData.error || "Failed to fetch quiz data");
+  //       }
 
-        const quizData = await response.json();
-        setQuiz(quizData);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       const quizData = await response.json();
+  //       setQuiz(quizData);
+  //     } catch (err: any) {
+  //       setError(err.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchQuiz();
-  }, []);
+  //   fetchQuiz();
+  // }, []);
+
+
 
   console.log("in pages before loading", quiz);
 
