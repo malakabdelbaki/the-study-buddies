@@ -144,7 +144,7 @@ export class ForumService {
     console.log(course);
     console.log(userId);
     console.log(forum);
-    if (course.instructor_id.toString()===userId.toString()) {
+    if (course.instructor_id._id.toString()===userId.toString()) {
       return true;
     }
     const enrolledStudents = await this.userService.getAllStudentsInCourse(course._id.toString());

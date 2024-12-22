@@ -130,7 +130,7 @@ export class ModuleService {
     }
 
     module.ratings.set(studentid,rating)
-    module.save();
+    await module.save();
     return module;
 }
   

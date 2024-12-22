@@ -36,6 +36,7 @@ export async function fetchCourses(filters = {}) {
 export async function fetchCourseById(courseId: string) {
   try {
     const { data } = await axiosInstance.get(`/courses/${courseId}`);
+    console.log(data);
     return data;
   } catch (error:any) {
     console.error('Error fetching course:', error.message);
@@ -50,7 +51,7 @@ export async function fetchCourseModules(courseId: string) {
   try {
     const { data } = await axiosInstance.get(`/courses/${courseId}/modules`);
     const modules = await Promise.all(
-      data.map(async (module: Types.ObjectId) => {
+      data.map(async (module: string) => {
         return await getModule(module.toString());
       })
     );
@@ -101,6 +102,17 @@ export async function rateCourse(courseId: string, rating: number) {
     return data;
   } catch (error:any) {
     console.error('Error rating course:', error.message);
+    throw error;
+  }
+}
+
+export async function rateInstructor(tosend: {targetId: string, rating: number}) {
+  try {
+    const { data } = await axiosInstance.post(`/users/rate/instructor`, tosend);
+    console.log(data);
+    return data;
+  } catch (error:any) {
+    console.error('Error rating course:', error);
     throw error;
   }
 }

@@ -33,7 +33,7 @@ export class AnnouncementService {
     if (!instructor) {
       throw new NotFoundException(`User #${instructor_id} not found`);
     }
-    if(course.instructor_id.toString() !== instructor_id) {
+    if(course.instructor_id._id.toString() !== instructor_id) {
       throw new NotFoundException(`User #${instructor_id} is not the instructor of course #${course_id}`);
     }
 
@@ -137,7 +137,7 @@ export class AnnouncementService {
         throw new NotFoundException(`Student is not enrolled in the course`);
       }
     } else if(user.role === 'instructor') {
-      if(course.instructor_id.toString() !== initiator._id.toString()) {
+      if(course.instructor_id._id.toString() !== initiator._id.toString()) {
         throw new NotFoundException(`Instructor is not the author of the announcement`);
       }
     }

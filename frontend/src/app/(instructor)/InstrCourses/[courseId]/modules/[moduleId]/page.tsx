@@ -190,7 +190,7 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) =>
     <div className="resources mt-6">
       <h2 className="text-3xl font-bold mb-4 text-gray-800">Resources</h2>
       {resources.map((res: any) => (
-        <ResourceCard key={res._id} onDelete={handleDeleteResource} onUpdate={handleUpdateResource} resource={res} />
+        <ResourceCard key={res._id} userRole='instructor' onDelete={handleDeleteResource} onUpdate={handleUpdateResource} resource={res} />
       ))}
       <div className="add-resource">
         <AddResourceForm moduleId={module._id as string} InstructorId={module?.instructor_id as string} />

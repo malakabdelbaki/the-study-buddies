@@ -141,7 +141,7 @@ export class ChatService {
 
       if (
         course.students.some((student) => student._id.toString() === participant.toString()) ||
-        (course.instructor_id.toString() === participant.toString() && user.role !== Role.Student)
+        (course.instructor_id._id.toString() === participant.toString() && user.role !== Role.Student)
       ) {
         console.log('valid');
         validParticipants.push(participant);
@@ -190,7 +190,7 @@ export class ChatService {
 
       if (
         course.students.some((student) => student._id.toString() === participant.toString()) ||
-        (course.instructor_id.toString() === participant.toString() && user.role !== Role.Student)
+        (course.instructor_id._id.toString() === participant.toString() && user.role !== Role.Student)
       ) {
         chat.participants.push(participant);   
       }
