@@ -32,15 +32,22 @@ export async function POST(req: Request) {
       throw new Error('Unauthorized: Insufficient permissions');
     }
 
-    // // Extract module ID from the URL
-    // const urlParams = new URLSearchParams(window.location.search);
-    // const moduleId = urlParams.get("moduleId");
-    // if (!moduleId) throw new Error("Module ID not found in URL");
+    // Parse the request body
+    const body = await req.json();
+    const module_id  = body.module_id;  
+    console.log("in quiz route **********",module_id);
+
+    if (!module_id) {
+      return NextResponse.json(
+        { error: 'Missing required field: module_id' },
+        { status: 400 }
+      );
+    }
 
     // External call to create a new quiz
     const response = await axios.post(
-      `${process.env.EXTERNAL_API_URL || 'http://localhost:3000/api'}/quizzes`,{
-        module_id: "675f733844d8ccdfb2bb820d",
+      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'}/quizzes`,{
+        module_id: module_id,
         user_id: userId
       },
       {

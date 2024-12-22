@@ -69,7 +69,7 @@ export default function RegisterPage() {
         <option value="instructor">Instructor</option>
       </select>
 
-      <button type="submit">Register</button>
+      <button type="submit" onClick={handleRegister}>Register</button>
     </form>
   );
 };
