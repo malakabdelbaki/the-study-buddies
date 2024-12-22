@@ -4,7 +4,7 @@ import { AnnouncementController } from './announcement.controller';
 import { AnnouncementService } from './announcement.service';
 import { Announcement, AnnouncementSchema } from '../Models/announcement.schema';
 import { CoursesService } from 'src/courses/courses.service';
-import { User } from 'src/models/user.schema';
+import { User } from 'src/Models/user.schema';
 import { UserService } from 'src/users/users.service';
 import { NotificationsGateway } from 'src/WebSockets/notification/notification.gateway';
 import { CoursesModule } from 'src/courses/courses.module';

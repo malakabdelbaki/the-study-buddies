@@ -4,7 +4,7 @@ import { IsString, IsEnum, IsArray, IsMongoId, IsOptional, Validate } from 'clas
 import { ApiProperty } from '@nestjs/swagger';
 import { Course_diff } from 'src/enums/course-diff.enum';
 import { Types } from 'mongoose';
-import { User } from 'src/models/user.schema';
+import { User } from 'src/Models/user.schema';
 import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 
 export class UpdateCourseDto extends PartialType(CreateCourseDto) {

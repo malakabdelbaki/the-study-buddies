@@ -17,7 +17,7 @@ import { ValidatorsModule } from 'src/common/validators/validators.module';
 import { LogsModule } from 'src/log/log.module';
 import { UserSchema } from 'src/Models/user.schema';
 import { ProgressSchema } from 'src/Models/progress.schema';
-import { QuizSchema } from 'src/models/quiz.schema';
+import { QuizSchema } from 'src/Models/quiz.schema';
 
 @Module({
   imports :[MongooseModule.forFeature([{ name: 'Module', schema: ModuleSchema }]),

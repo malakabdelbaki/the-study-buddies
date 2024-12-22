@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ExistsOnDatabaseValidator } from './validators/exists-on-database.validator';
 import { ModuleSchema } from '../Models/modules.schema';
-import { ResponseSchema } from '../models/response.schema';
-import { CourseSchema } from '../models/course.schema';
-import { ProgressSchema } from '../models/progress.schema';
-import { User, UserSchema } from '../models/user.schema';
-import { ThreadSchema } from '../models/thread.schema';
-import { ReplySchema } from '../models/reply.schema';
+import { ResponseSchema } from '../Models/response.schema';
+import { CourseSchema } from '../Models/course.schema';
+import { ProgressSchema } from '../Models/progress.schema';
+import { User, UserSchema } from '../Models/user.schema';
+import { ThreadSchema } from '../Models/thread.schema';
+import { ReplySchema } from '../Models/reply.schema';
 
 @Module({
   imports: [

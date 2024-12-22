@@ -5,7 +5,7 @@ import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
-import { ModuleDocument } from 'src/models/modules.schema';
+import { ModuleDocument } from 'src/Models/modules.schema';
 import { CourseDocument } from 'src/Models/course.schema';
 import { Question, QuestionDocument } from 'src/Models/question.schema';
 import { Resource, ResourceDocument } from 'src/Models/resource.schema';
@@ -14,7 +14,7 @@ import { UpdateResourceDto } from './dto/update-resource.dto';
 import { UserDocument } from 'src/Models/user.schema';
 import { Role } from 'src/enums/role.enum';
 //import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { QuizDocument } from 'src/models/quiz.schema';
+import { QuizDocument } from 'src/Models/quiz.schema';
 
 @Injectable()
 export class ModuleService {
