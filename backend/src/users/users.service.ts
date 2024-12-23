@@ -396,13 +396,16 @@ async getCompletedCoursesOfStudent(userId: string): Promise<any> {
         select: 'title', // Only fetch the title field from courseModel
       });
 
-    if (!completed.length) throw new NotFoundException('No completed courses found.');
+      console.log("*******************************",completed);
+      console.log("*******************************",completed.length);
+    // if (!completed.length) throw new NotFoundException('No completed courses found.');
 
     // Map the data to return the required structure
     const result = completed.map((progress) => ({
       progressId: progress._id,
       title: (progress.courseId as any).title, // Use type assertion
     }));
+    console.log(result);
 
     return result;
   } catch (error) {
