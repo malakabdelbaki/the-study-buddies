@@ -62,7 +62,6 @@ export default function ChatPage() {
 
   return (
     <div className="flex justify-center w-full p-4">
-      <p>Chat Page</p>
       <Chat initialData={initialData} />
     </div>
   );
