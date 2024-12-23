@@ -84,9 +84,7 @@ export async function fetchStudent() {
     const userid = (decodedToken as any)?.userid; 
     const userRole = (decodedToken as any)?.role; 
 
-    const ret ={id:userid,role:userRole};
-    console.log("rrr",typeof ret,ret); 
-    return ret;
+    return {id:userid,role:userRole};
   } catch (error:any) {
     console.error('Error fetching user:', error.message);
     throw error;
@@ -94,11 +92,10 @@ export async function fetchStudent() {
 }
 
 
-
-
 // Rate a course
 export async function rateCourse(courseId: string, rating: number) {
   try {
+    console.log('tosend',courseId);
     const { data } = await axiosInstance.post(`/courses/${courseId}/rate`, {
       rating,
     });
@@ -111,8 +108,9 @@ export async function rateCourse(courseId: string, rating: number) {
 
 export async function rateInstructor(tosend: {targetId: string, rating: number}) {
   try {
+    console.log(tosend);
     const { data } = await axiosInstance.post(`/users/rate/instructor`, tosend);
-    console.log(data);
+    console.log('dddddd',data);
     return data;
   } catch (error:any) {
     console.error('Error rating course:', error);

@@ -165,7 +165,7 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseI
       </div>
        {/* Rating */}
      <div className="text-lg text-gray-700 mb-4">
-          <span className="font-semibold">Rate this course:</span>
+          <span className="font-semibold">Rate this Module:</span>
           <div className="flex items-center space-x-2 mt-2">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
