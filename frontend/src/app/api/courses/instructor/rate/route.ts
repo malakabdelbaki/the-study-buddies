@@ -7,7 +7,7 @@ import axios from 'axios';
 export async function POST(req: NextRequest) {
   try {
     const { targetId, rating } = await req.json();
-
+    console.log("lllll",targetId,rating)
     if (!targetId || rating === undefined) {
       return new NextResponse('Bad Request: Missing targetId or rating', { status: 400 });
     }

@@ -1,58 +1,35 @@
-import { NextRequest, NextResponse } from 'next/server';
-import axios from 'axios';
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import { NextRequest } from 'next/server';
+import axios from 'axios';
 
+// POST: Rate an instructor
 export async function POST(req: NextRequest) {
   try {
     const { pathname } = new URL(req.url);
     const pathSegments = pathname.split('/');
-    const courseId = pathSegments[pathSegments.length - 2];
-
-    const { rating } = await req.json();
-
-    if (!courseId) {
-      return NextResponse.json({ message: 'courseId is required' }, { status: 400 });
+    const course_id = pathSegments[pathSegments.length - 1];
+    
+    const data = await req.text(); // if it's text/plain or application/json
+    const rating = JSON.parse(data).rating;
+    
+    if (!course_id || rating === undefined) {
+      return new NextResponse('Bad Request: Missing targetId or rating', { status: 400 });
     }
 
-    if (typeof rating !== 'number' || rating < 1 || rating > 5) {
-      return NextResponse.json({ message: 'Rating must be a number between 1 and 5' }, { status: 400 });
-    }
-
-    const cookieStore = await cookies();
-    const tokenCookie = cookieStore.get('token');
-
-    if (!tokenCookie) {
-      return new Response('Unauthorized', { status: 401 });
-    }
-
-    const decodedToken = jwt.decode(tokenCookie.value);
-
-    if (!decodedToken) {
-      return new Response('Invalid Token', { status: 401 });
-    }
-
-    const userId = (decodedToken as any)?.userid;
-
-    const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}/rate`,
-      { rating },
+    const response = await axios.post(`http://localhost:3000/api/cousrse${course_id}/rate`, 
+      {rating},
       {
         headers: {
-          Authorization: `Bearer ${tokenCookie.value}`,
+          Authorization: `Bearer ${(await cookies()).get('token')?.value}`,
         },
       }
     );
 
-    const data = response.data;
-
-    if (response.status !== 200 && response.status !== 201) {
-      return NextResponse.json({ message: data.message || 'Error rating course' }, { status: response.status });
-    }
-
-    return NextResponse.json(data, { status: 200 });
-  } catch (error) {
-    console.error('Error rating course:', error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(response.data);
+  } catch (error: any) {
+    console.error('Error rating instructor:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

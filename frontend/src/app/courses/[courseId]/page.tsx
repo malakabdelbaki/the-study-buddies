@@ -96,7 +96,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   const fetchStudents = async () => {
     try {
       setError(null); // Reset error message
-      if (instructor?.role === 'student') {
+      if (User?.userRole === 'student') {
         throw new Error('Access denied: Only instructors or admins can view the student list.');
       }
 
@@ -168,7 +168,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
           </p>
         )}
 
-        {(instructor?.role === 'admin') && (
+        {(User?.userRole === 'admin') && (
         <button
           onClick={fetchStudents}
           className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors mb-4"
@@ -194,7 +194,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
               </ul>
             </div>
           )}
-                {(instructor?.role==='student')?
+                {(User?.userRole==='student')?
                  ( !IsEnroll ? (
   
                 <button

@@ -541,8 +541,8 @@ import path from 'path';
   @ApiBody({ type: RateDto })
   @SetMetadata(ROLES_KEY, [Role.Student])
   async rateInstructor(@Body() dto: RateDto, @Req() req: any) {
+    console.log(dto);
     const loggedInUser = req.user.userid;
-    
     try {
       return await this.userService.rateInstructor(loggedInUser,dto);
     } catch (error) {

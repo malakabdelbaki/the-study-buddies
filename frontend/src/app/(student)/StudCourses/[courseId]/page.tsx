@@ -29,8 +29,8 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     ...course,
     key_words: course?.key_words || [], // Make sure key_words is always an array
   }));  
-  const [InstructorRating, setInstructorRating] = useState<number>(0);
-  const [CourseRating, setCourseRating] = useState<number>(0);
+  const [instructorRating, setInstructorRating] = useState<number | null>(null);
+  const [courseRating, setCourseRating] = useState<number | null>(null);
  const [userId, setUserId] = useState<string | null>(null);
 
   const router = useRouter();
@@ -41,17 +41,18 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   };
   // Handle rating
   const handleRatingClick = async (type: "instructor" | "course", star: number) => {
-    if (type === Role.Instructor && Instructor) {
+    if (type === "instructor" && Instructor) {
       setInstructorRating(star);
-      const rateRes = await fetch(`/api/user/instructor/${Instructor._id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ rating: star }),
-      });
-
-      
+      const response = await fetch(`/api/courses/instructor/rate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify ({ targetId: Instructor?._id, rating: star })
+        }
+        );
+        
+  
+      console.log("Instructor Rating Response:", response);
     } else if (type === "course" && course) {
       setCourseRating(star);
       const response = await fetch(`/api/courses/${course._id}/rate`, {
@@ -80,14 +81,14 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
         // Fetch course, student, and Instructor details
         const { courseId } = await params;
         const fetchedCourse = await fetchCourseById(courseId);
-        const fetchedStudent = await fetchStudent() as {id:string,role:string};
+        const fetchedStudent = await fetchStudent() as {id: string, role: string};
 
         if (fetchedCourse && fetchedStudent) {
           setCourse(fetchedCourse);
-          setStudent(fetchedStudent );
+          setStudent(fetchedStudent);
 
-          if (fetchedCourse.Instructor_id) {
-            setInstructor(fetchedCourse.Instructor_id);
+          if (fetchedCourse.instructor_id) {
+            setInstructor(fetchedCourse.instructor_id);
           }
 
           if (fetchedCourse.students.includes(fetchedStudent.id)) {
@@ -98,17 +99,16 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
             setModules(await response.json());
           }
 
-          // if (fetchedCourse && fetchedCourse.ratings){
-          //   console.log("ok",typeof fetchedCourse.ratings , fetchedCourse.ratings);
+          if (fetchedCourse && fetchedCourse.ratings) {
+            const courseRatingsMap = new Map(Object.entries(fetchedCourse.ratings as Map<string,number>) );
+            setCourseRating(courseRatingsMap.get(fetchedStudent.id) || null);
+          }
 
-          //   setCourseRating(fetchedCourse.ratings.get(fetchedStudent.id));
-          // }
-
-          // if(Instructor && Instructor.ratings){
-          //   setInstructorRating(Instructor.ratings.get(fetchedStudent.id) as number)
-          // }
+          if (fetchedCourse.instructor_id && fetchedCourse.instructor_id.ratings) {
+            const instructorRatingsMap = new Map(Object.entries(fetchedCourse.instructor_id.ratings as Map<string,number>));
+            setInstructorRating(instructorRatingsMap.get(fetchedStudent.id) || null);
+          }
         }
-
       } catch (error) {
         console.error("Error loading course details:", error);
       }
@@ -152,12 +152,11 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
           <p>
             Ratings:{" "}
             {course.ratings
-                  ? (
-                      Object.values(course.ratings).reduce((sum, value) => sum + value, 0) /
-                      Object.values(course.ratings).length
-                    ).toFixed(2)
-                  : 0}
-
+              ? (
+                  Object.values(course.ratings).reduce((sum, value) => sum + Number(value), 0) /
+                  Object.values(course.ratings).length
+                ).toFixed(2)
+              : 0}
             / 5
           </p>
         </div>
@@ -183,7 +182,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
                     key={star}
                     onClick={() => handleRatingClick("instructor", star)}
                     className={`text-2xl ${
-                      InstructorRating >= star ? "text-yellow-500" : "text-gray-400"
+                      (instructorRating || 0) >= star ? "text-yellow-500" : "text-gray-400"
                     } hover:text-yellow-500`}
                   >
                     ★
@@ -200,7 +199,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
                     key={star}
                     onClick={() => handleRatingClick("course", star)}
                     className={`text-2xl ${
-                      CourseRating >= star ? "text-yellow-500" : "text-gray-400"
+                      (courseRating || 0) >= star ? "text-yellow-500" : "text-gray-400"
                     } hover:text-yellow-500`}
                   >
                     ★
@@ -252,4 +251,4 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
 };
 
 export default CourseDetails;
- 
+
