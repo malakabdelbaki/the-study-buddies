@@ -25,8 +25,15 @@ const CoursesPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const gett = await getCourses({ filters });
-        setCourses(gett as Course[]);
+
+        
+        const params = new URLSearchParams(filters);
+        const response = await fetch(`/api/courses/all?${params}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch courses');
+        }
+        const data = await response.json();
+        setCourses(data as Course[]);
       } catch (err) {
         setError("Failed to load courses.");
       } finally {

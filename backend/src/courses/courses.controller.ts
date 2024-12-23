@@ -75,7 +75,7 @@ export class CoursesController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
-      console.log(id);
+      console.log('gett',typeof id);
       const objectId = new Types.ObjectId(id);
       return await this.coursesService.findOne(objectId);
     } catch (err) {
@@ -93,7 +93,7 @@ export class CoursesController {
   @Patch(':id')
   async update(@Req() request,@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
     try {
-      console.log('wwwwwww')
+      console.log('wwwwwww',updateCourseDto);
       if (!request.user || !request.user.userid)
         throw new HttpException('You Can not update this Course!', HttpStatus.INTERNAL_SERVER_ERROR);
       
