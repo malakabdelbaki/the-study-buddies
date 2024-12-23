@@ -18,8 +18,7 @@ export async function fetchCourses(filters = {}) {
     let { data } = await axiosInstance.get(`users/${id}/courses/enrolled`, {
       params: filters,
     });
-   
-    data = data as Course[]; 
+    console.log('go and return',data)
     return data;
 
   } catch (error:any) {
@@ -83,12 +82,16 @@ export async function fetchStudent() {
     const userid = (decodedToken as any)?.userid; 
     const userRole = (decodedToken as any)?.role; 
 
-    return {id:userid,role:userRole};
+    const ret ={id:userid,role:userRole};
+    console.log("rrr",typeof ret,ret); 
+    return ret;
   } catch (error:any) {
     console.error('Error fetching user:', error.message);
     throw error;
   }
 }
+
+
 
 
 // Rate a course

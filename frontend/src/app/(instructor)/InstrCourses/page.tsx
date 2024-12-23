@@ -77,6 +77,8 @@ const CoursesPage = () => {
     }
     loadCourses();
     getInstructor();
+    console.log(user);
+
   }, []);
 
   return (
