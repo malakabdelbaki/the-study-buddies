@@ -144,4 +144,12 @@ export class NoteService {
     return note.userId.toString()===userId.toString();
   }
 
+  async canDisableNotes( courseId: string): Promise<boolean> {
+    const notes = await this.noteModel.find(new Types.ObjectId(courseId));
+    console.log("notes **********",notes); 
+    if (!notes || notes.length === 0) {
+      return true;
+    }
+    return false;
+  }
 }

@@ -23,6 +23,41 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   const [newKeyword, setNewKeyword] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [newModule, setNewModule] = useState<Module>({title:'',content:'',quiz_type:'',quiz_length:0,module_difficulty:''});
+  const [canDisableNotes, setCanDisableNotes] = useState<boolean | null>(null);
+
+  const enableNotes = async () => {
+    try {
+      const { courseId } = await params;
+      await fetch(`/api/courses/${courseId}/enableNotes`, { method: 'PATCH' });
+      const updatedCourse = await fetchCourseById(courseId);
+      setCourse(updatedCourse);
+    } catch (err) {
+      console.error("Failed to enable notes:", err);
+    }
+  };
+
+  const disableNotes = async () => {
+    try {
+      const { courseId } = await params;
+      await fetch(`/api/courses/${courseId}/disableNotes`, { method: 'PATCH' });
+      const updatedCourse = await fetchCourseById(courseId);
+      setCourse(updatedCourse);
+    } catch (err) {
+      console.error("Failed to disable notes:", err);
+    }
+  };
+
+  const checkcanDisableNotes = async () => {
+    try {
+      const { courseId } = await params;
+      const response = await fetch(`/api/notes/course/${courseId}/canDisableNotes`);
+      const data = await response.json();
+      console.log(data);
+      setCanDisableNotes(data);
+    } catch (err) {
+      console.error("Failed to check if notes can be enabled:", err);
+    }
+  };
 
   const handleInputChangeForm = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setNewModule({
@@ -85,6 +120,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
         setModules(modules);
         setCourse(course);
         setEditedCourse(course);
+      await checkcanDisableNotes();
     } catch (err) {
         console.log(err);
       }
@@ -92,7 +128,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     loadCourse();
   }, []);
 
-  if (!course) {
+  if (!course || !canDisableNotes) {
     return <p className="text-center text-lg">Loading course details...</p>;
   }
 
@@ -123,6 +159,29 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
           course.title
         )}
       </h1>
+
+      <div className="mt-6">
+      {course.isNoteEnabled ? (
+  canDisableNotes ? (
+    <button
+      onClick={disableNotes}
+      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+    >
+      Disable Notes
+    </button>
+  ) : (
+    <p className="text-gray-600">Notes cannot be disabled for this course.</p>
+  )
+) : (
+  <button
+    onClick={enableNotes}
+    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+  >
+    Enable Notes
+  </button>
+)}
+
+      </div>
 
       <div className="bg-white shadow-md rounded-lg p-6">
   {/* Description */}
@@ -284,7 +343,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
 
         <div className="grid grid-cols-1 gap-6">
           {modules?.map((module, index) => (
-            <ModuleCard key={index} module={module} />
+            <ModuleCard key={index} module={module}  course={course} />
           ))}
         </div>
     </div>

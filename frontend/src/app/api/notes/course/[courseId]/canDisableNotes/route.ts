@@ -8,13 +8,10 @@ export async function GET(req: NextRequest ) {
 
     const { pathname } = new URL(req.url);
     const pathSegments = pathname.split('/');
-    const course_id = pathSegments[pathSegments.length - 3];
-    const module_id = pathSegments[pathSegments.length - 1];
+    const course_id = pathSegments[pathSegments.length - 2];
 
-
-    console.log("in notes route **********",course_id,module_id);
-    if (!course_id || !module_id) {
-      return new Response('Bad Request: Missing course ID or module ID', { status: 400 });
+    if (!course_id) {
+      return new Response('Bad Request: Missing course ID', { status: 400 });
     }
 
     // Get token from cookies
@@ -25,10 +22,8 @@ export async function GET(req: NextRequest ) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    console.log("in notes route **********",tokenCookie.value);
     const courseId = course_id;
-    const moduleId = module_id;
-    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/note/course/${courseId}/module/${moduleId}`, {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/note/course/${courseId}/canDisableNotes`, {
       headers: {
         Authorization: `Bearer ${tokenCookie.value}`,
       },

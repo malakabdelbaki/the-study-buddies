@@ -10,7 +10,6 @@ import { Role } from 'src/enums/role.enum';
 import { IsNoteCreatorGuard } from 'src/auth/guards/IsNoteCreator.guard';
 
 @UseGuards(AuthGuard, authorizationGuard, IsNoteCreatorGuard)
-@SetMetadata(ROLES_KEY, [Role.Student])
 @Controller('note')
 export class NoteController {
   constructor(
@@ -18,6 +17,7 @@ export class NoteController {
   ) {}
 
   @Get()
+  @SetMetadata(ROLES_KEY, [Role.Student])
   async getNotes(
     @Req() req,
   ) {
@@ -25,6 +25,7 @@ export class NoteController {
   }
 
   @Get('course/:courseId')
+  @SetMetadata(ROLES_KEY, [Role.Student])
   async getCourseNotes(
     @Param('courseId') courseId: string,
     @Req() req,
@@ -34,6 +35,7 @@ export class NoteController {
 
 
   @Get(':noteId')
+  @SetMetadata(ROLES_KEY, [Role.Student])
   async getNote(
     @Param('noteId') noteId: string,
     @Req() req,
@@ -41,7 +43,8 @@ export class NoteController {
     return this.noteService.getNote(req.user.userid, noteId);
   }
 
-  @Get('course/:courseId/module/:moduleId') 
+  @Get('course/:courseId/module/:moduleId')
+  @SetMetadata(ROLES_KEY, [Role.Student]) 
   async getModuleNotes(
     @Param('courseId') courseId: string,
     @Param('moduleId') moduleId: string,
@@ -51,6 +54,7 @@ export class NoteController {
   }
 
   @Post()
+  @SetMetadata(ROLES_KEY, [Role.Student])
   async createNote(
     @Body() createNoteDto: CreateNoteDto,
     @Req() req,
@@ -60,6 +64,7 @@ export class NoteController {
 
 
   @Patch(':noteId') 
+  @SetMetadata(ROLES_KEY, [Role.Student])
   async updateNote(
     @Param('noteId') noteId: string,
     @Body() updateNoteDto: UpdateNoteDto,
@@ -69,6 +74,7 @@ export class NoteController {
   }
 
   @Delete(':noteId')
+  @SetMetadata(ROLES_KEY, [Role.Student])
   async deleteNote(
     @Param('noteId') noteId: string,
     @Req() req,
@@ -78,6 +84,7 @@ export class NoteController {
 
 
   @Patch(':noteId/autosave')
+  @SetMetadata(ROLES_KEY, [Role.Student])
   async autoSaveNote(
     @Param('noteId') noteId: string,
     @Body() body: { content: string; clientUpdatedAt: string },
@@ -102,6 +109,15 @@ export class NoteController {
       }
       throw err; 
     }
+  }
+
+  @Get('course/:courseId/canDisableNotes')
+  @SetMetadata(ROLES_KEY, [Role.Instructor])
+  async canDisableNotes(
+    @Param('courseId') courseId: string,
+  ) {
+    console.log("in controller **********",courseId);
+    return this.noteService.canDisableNotes(courseId);
   }
 
 }
