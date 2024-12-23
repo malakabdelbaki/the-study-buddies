@@ -8,8 +8,10 @@ import EditThreadModal from "@/components/forum/EditThreadModal";
 import { Thread } from "@/types/Thread";
 import { Role } from '../../../../../../../backend/src/enums/role.enum';
 import { Reply } from '@/types/reply';
+import { useAuthorization } from '@/hooks/useAuthorization';
 
 const ThreadPage = () => {
+  useAuthorization(['student', 'instructor'])
   const forum_id = useParams().forumId as string;
   const thread_id = useParams().threadId as string;
   const [thread, setThread] = useState<Thread | null>(null);

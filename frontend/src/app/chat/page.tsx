@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import Chat from "@/components/chat/Chat";
+import { useAuthorization } from "@/hooks/useAuthorization";
 
 export default function ChatPage() {
+  useAuthorization(['student', 'instructor'])
   const [initialData, setInitialData] = useState<any>({});
   useEffect(() => {
     const fetchData = async () => {

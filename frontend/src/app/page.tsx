@@ -3,7 +3,7 @@ import Link from "next/link"; // Import Link for navigation
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] bg-gradient-to-b from-white to-[#f4f4f4]">
+    <div className="grid grid-rows-[20px_1fr] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] bg-gradient-to-b from-white to-[#f4f4f4]">
       {/* Header Section */}
       <header className="flex items-center justify-between w-full">
         <div className="flex items-center gap-4">
@@ -42,12 +42,12 @@ export default function Home() {
               Sign Up Now
             </Button>
           </Link>
-          <Link href="/learn-more"> {/* Example of a Learn More button */}
+          <Link href="/login">
             <Button
               variant="outline"
               className="border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white rounded-full px-8 py-3"
             >
-              Learn More
+              Login
             </Button>
           </Link>
         </div>
@@ -80,36 +80,6 @@ export default function Home() {
           <p className="text-gray-700 mt-2">Join study groups and collaborate with fellow students on assignments.</p>
         </div>
       </section>
-
-      {/* Call to Action Section */}
-      <section className="mt-16 flex flex-col items-center text-center">
-        <h2 className="text-3xl font-bold text-black">Ready to start learning?</h2>
-        <div className="mt-6 flex gap-6 justify-center">
-          <Link href="/register">
-            <Button
-              variant="default"
-              className="bg-blue-500 text-white hover:bg-blue-600 rounded-full px-8 py-3"
-            >
-              Join Now
-            </Button>
-          </Link>
-          <Link href="/login">
-            <Button
-              variant="outline"
-              className="border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white rounded-full px-8 py-3"
-            >
-              Login
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center mt-20 text-gray-600">
-        <a href="https://www.studybuddies.com" className="hover:underline">Privacy Policy</a>
-        <a href="https://www.studybuddies.com" className="hover:underline">Terms of Service</a>
-        <a href="https://www.studybuddies.com" className="hover:underline">Contact</a>
-      </footer>
     </div>
   );
 }

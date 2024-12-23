@@ -12,6 +12,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { useAuthorization } from "@/hooks/useAuthorization";
 
 ChartJS.register(
   CategoryScale, // Register category scale
@@ -36,7 +37,7 @@ interface StudentPerformanceData {
 
 // ////workingggggggg
 export default function StudentPerformancePage() {
-  
+  useAuthorization(['student'])
   // const [performanceData, setPerformanceData] = useState<any>(null);
   // const [error, setError] = useState<string | null>(null);
 

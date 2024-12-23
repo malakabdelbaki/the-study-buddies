@@ -82,11 +82,6 @@ export default function LoginPage() {
     <div className="flex items-center justify-center h-screen bg-gradient-to-b from-blue-800 to-blue-400">
       <Card className="w-full max-w-md p-6 space-y-6 bg-white shadow-lg rounded-md">
         <div className="text-center">
-          <img
-            src="/path-to-your-logo/owl-logo.png"
-            alt="Logo"
-            className="w-16 h-16 mx-auto mb-3"
-          />
           <h1 className="text-2xl font-bold text-gray-800">Welcome Back!</h1>
           <p className="text-sm text-gray-600">
             Let’s continue your learning journey. Login to access your account.
@@ -126,7 +121,6 @@ export default function LoginPage() {
               />
             </div>
           </div>
-          {/* Conditional styling for success and error messages */}
           <p className={`text-sm text-center ${formState.message === 'Login successful!' ? 'text-green-500' : 'text-red-500'}`}>
             {formState.message}
           </p>

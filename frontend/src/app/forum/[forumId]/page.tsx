@@ -10,9 +10,11 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import ThreadSearchBar from "@/components/forum/ThreadSearchBar";
 import Link from "next/link";
+import { useAuthorization } from "@/hooks/useAuthorization";
 
 
 const ForumPage = () => {
+  useAuthorization(['student', 'instructor'])
   const [userId, setUserId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<Role>();
   const [forum, setForum] = useState<any>(null); // Holds the forum data

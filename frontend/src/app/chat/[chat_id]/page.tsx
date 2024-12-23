@@ -3,10 +3,12 @@
 import { useParams } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import dynamic from 'next/dynamic';
+import { useAuthorization } from '@/hooks/useAuthorization';
 
 const ChatRoom = dynamic(() => import('../../../components/chat/ChatRoom'));
 
 export default function ChatPage() {
+  useAuthorization(['student', 'instructor'])
   const { chat_id } = useParams<{ chat_id: string }>();
   const [initialData, setInitialData] = useState<any | null>(null);
   const [ user, setUser] = useState<any>()
