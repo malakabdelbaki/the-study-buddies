@@ -178,12 +178,14 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseI
           </div>
       </div>
       <div className="mb-4 text-sm text-gray-600">
-      <button
-        className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        onClick={() => handelTakeQuiz()}
-      >
-        Take Quiz
-      </button>
+      {module.quiz_type !== "no-quiz" && (
+        <button
+          className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          onClick={() => handelTakeQuiz()}
+        >
+          Take Quiz
+        </button>
+      )}
       </div>
       
     </div>
