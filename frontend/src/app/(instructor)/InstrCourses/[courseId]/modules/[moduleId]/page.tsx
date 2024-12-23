@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Module } from "@/types/Module";
-import { deleteModuleResource, deleteQuestionFromModule, fetchModuleResources, fetchQuestionBank, getModule, updateModule, updateQuestionInModule, updateResourceMetadata } from "@/app/api/courses/instructor/moduleRoute";
+import { addQuestionToModule, deleteModuleResource, deleteQuestionFromModule, fetchModuleResources, fetchQuestionBank, getModule, updateModule, updateQuestionInModule, updateResourceMetadata } from "@/app/api/courses/instructor/moduleRoute";
 import AddQuestionForm from "@/components/course/instructor/QuestionInput";
 import { Question } from "@/types/Question";
 import QuestionCard from "@/components/course/instructor/questionCard";
@@ -90,6 +90,16 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) =>
     const deleted = await deleteQuestionFromModule(questionId);
     console.log(deleted);
     setQuestions((prev) => prev.filter((ques) => ques._id !== questionId));
+  };
+  
+  const handleAddQuestion = async (newQuestion: Question) => {
+    try {
+      const addedQuestion = await addQuestionToModule(newQuestion);
+      setQuestions((prevQuestions) => [...prevQuestions, addedQuestion]);
+      console.log("Question added successfully:", addedQuestion);
+    } catch (error) {
+      console.error("Failed to add question:", error);
+    }
   };
 
 
