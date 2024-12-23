@@ -12,9 +12,11 @@ import ResourceCard from "@/components/course/instructor/resourceCard";
 import { Resource } from "@/types/Resource";
 import { useRouter } from "next/navigation";
 
+import { useAuthorization } from "@/hooks/useAuthorization";
 
 
 const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) => {
+  useAuthorization(['student'])
   const router = useRouter();
   const [module, setModule] = useState<Module>();
   const [questions, setQuestions] = useState<Question[]>([]);

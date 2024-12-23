@@ -10,8 +10,10 @@ import ModuleCard from "../../../../components/course/general/moduleCard";
 import { createModule } from "../../../api/courses/instructor/moduleRoute";
 import { Types } from "mongoose";
 import ForumPreview from "@/components/forum/ForumPreview";
+import { useAuthorization } from "@/hooks/useAuthorization";
 
 const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) => {
+  useAuthorization(['instructor'])
   const [course, setCourse] = useState<Course>();
   const [modules, setModules] = useState<Module[]>();
   const [Instructor,setInstructor] = useState<{id:string,role:string}>();

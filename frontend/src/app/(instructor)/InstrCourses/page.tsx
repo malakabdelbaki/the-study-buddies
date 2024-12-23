@@ -6,11 +6,13 @@ import React, { useState, useEffect } from "react";
 import { Course } from "@/types/Course";
 import CourseCard from "@/components/course/general/courseCard";
 import { createCourse, fetchCourses, fetchInstructor } from "../../api/courses/instructor/courseRoute";
+import { useAuthorization } from "@/hooks/useAuthorization";
 
 
 // import CourseCard from "./components/courseCard";
 
 const CoursesPage = () => {
+  useAuthorization(['instructor'])
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

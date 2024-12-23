@@ -25,7 +25,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const router = useRouter();
 
-  const isAuthPage = pathname === '/login' || pathname === '/signup';
+  const isAuthPage = pathname === '/login' || pathname === '/register';
   const pathStart = pathname.split('/')[1];
 
   let userRole: UserRole = 'student';

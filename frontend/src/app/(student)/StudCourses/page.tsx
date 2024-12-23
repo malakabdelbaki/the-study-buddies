@@ -6,8 +6,11 @@ import CourseCard from "@/components/course/general/courseCard";
 import { fetchCourses, fetchStudent } from "../../api/courses/student/courseRoute";
 import { getCompletedCoursesOfStudent } from "@/app/api/user/home/route";
 import { User } from "@/types/User";
+import { useAuthorization } from "@/hooks/useAuthorization";
+
 
 const StudentCoursesPage = () => {
+  useAuthorization(['student'])
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
