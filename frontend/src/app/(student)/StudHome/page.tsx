@@ -3,15 +3,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuthorization } from "@/hooks/useAuthorization"
 import { BarChart, BookOpen, Bell } from 'lucide-react'
 import EnrolledCoursesClient from "@/components/user/studProgress"
-
+import { decodeToken } from "@/app/utils/decodeToken";
 import React from "react"
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+
 
 export default function StudentHomePage() {
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+   useEffect(() => {
+    const token = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("token="))?.split("=")[1]; 
+    if (token) {
+      const userId = decodeToken(token)?.userid; 
+      const role = decodeToken(token)?.role;
+      setUserId(userId); 
+      setUserRole(role);
+      setUserName(userName);
+    }
+  }, []);
   useAuthorization(['student'])
   return (
     <div className="p-8">
-      <h1 className="text-4xl font-bold mb-8">Welcome Back, Student!</h1>
+      <h1 className="text-4xl font-bold mb-8">Welcome Back, </h1> userId={userId} userName={userName}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Student Performance Card */}
@@ -66,4 +84,6 @@ export default function StudentHomePage() {
     </div>
   )
 }
+
+
 
