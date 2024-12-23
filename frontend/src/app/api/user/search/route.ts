@@ -111,3 +111,31 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+// DELETE: Delete User Account
+export async function DELETE(req: Request) {
+  try {
+    const { role, token } = await getUserFromToken();
+
+    // Extract userId from the request URL params
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId');
+    console.log(userId)
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
+
+    // Perform the deletion
+    const response = await axios.delete(`http://localhost:3000/api/users/${userId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    console.log('User deleted:', response.data);
+
+    return NextResponse.json({ success: true, data: response.data });
+  } catch (error: any) {
+    console.error('Error deleting user:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+

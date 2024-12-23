@@ -1,7 +1,9 @@
   import { Controller, Get, Post, Body, Put, Param, Req, UseGuards
   ,InternalServerErrorException, Delete, Patch, ForbiddenException,BadRequestException,
   SetMetadata,
-  Query,}  from '@nestjs/common';
+  Query,
+  UploadedFile,
+  UseInterceptors,}  from '@nestjs/common';
   import { UserService } from './users.service';
   import { CreateUserDto } from './dtos/create-user.dto';
   import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
@@ -11,12 +13,16 @@
   import { Role } from '../enums/role.enum';
   import { Public } from '../auth/decorators/public.decorator';
   import { User } from 'src/Models/user.schema';
-  import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiProperty, ApiQuery } from '@nestjs/swagger';
+  import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiProperty, ApiQuery, ApiConsumes } from '@nestjs/swagger';
   import { ChangePasswordDto } from './dtos/change-password-dto';
   import { RateDto } from './dtos/rate-dto';
   import { EnrollInCourseDto } from './dtos/enroll-in-course-dto';
   import { CreateProgressDto } from './dtos/create-progress-dto';
   import { AuthGuard } from 'src/auth/guards/authentication.guard';
+  import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import path from 'path';
+
 
 //@SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
 
@@ -27,7 +33,24 @@
   export class UserController {
     constructor(private readonly userService: UserService) {}
 
+    @Delete(':userId')
+    @ApiOperation({ summary: 'Delete a user account' })
+    @ApiParam({ name: 'userId', description: 'The ID of the user to delete' , required: false,})
+    @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor, Role.Student])
+    async deleteUser(@Param('userId') userId: string, @Req() req: any): Promise<{ message: string }> {
 
+      const loggedInUser = req.user;
+
+        if (!loggedInUser) {
+          throw new ForbiddenException('User is not logged in.');
+        }
+
+        try {
+        return await this.userService.deleteUser(userId);
+        } catch (error) {
+        throw new InternalServerErrorException(error.message);
+        }
+    }
     
 
     @Get('progress')
@@ -226,24 +249,7 @@
 
 
 
-    @Delete(':userId')
-    @ApiOperation({ summary: 'Delete a user account' })
-    @ApiParam({ name: 'userId', description: 'The ID of the user to delete' , required: false,})
-    @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor, Role.Student])
-    async deleteUser(@Param('userId') userId: string, @Req() req: any): Promise<{ message: string }> {
-
-      const loggedInUser = req.user;
-
-        if (!loggedInUser) {
-          throw new ForbiddenException('User is not logged in.');
-        }
-
-        try {
-        return await this.userService.deleteUser(userId);
-        } catch (error) {
-        throw new InternalServerErrorException(error.message);
-        }
-    }
+    
 
 
     @Patch('change-password/:userId')
@@ -325,7 +331,7 @@
         }
     }
   
-    // Update personal information 
+    //Update personal information 
     @Put(':userId/personal-info')
     @ApiOperation({ summary: 'Update personal information of a user' })
     @ApiParam({ name: 'userId', description: 'The ID of the user to update' })
@@ -338,6 +344,46 @@
       const currentUser = req.user.userid;
   
       return this.userService.updatePersonalInfo(currentUser, updateDto);
+    }
+
+
+    @Post(':userid/profile-picture')
+    @ApiOperation({ summary: 'Update profile picture of the logged-in user' })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+      schema: {
+        type: 'object',
+        properties: {
+          profilePicture: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    })
+    @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor, Role.Student])
+    @UseInterceptors(FileInterceptor('profilePicture', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, callback) => {
+          if (!file) {
+            callback(new BadRequestException('No file provided'), null);
+            return;
+          }
+          // const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+          // const ext = path.extname(file.originalname);
+          // const filename = `${file.originalname.replace(/\s+/g, '_')}_${uniqueSuffix}${ext}`;
+          callback(null, file.originalname);
+        },
+      }),
+    }))
+    async updateProfilePic(
+      @UploadedFile() file: Express.Multer.File,
+      @Req() req: any,
+    ) {
+      console.log(file);  // Check if file is received correctly in the controller
+      const currentUser = req.user.userid;
+      return this.userService.updateProfilePic(currentUser, file);
     }
   
     // View enrolled courses of a student
