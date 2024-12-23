@@ -10,7 +10,7 @@ import { NotificationProvider } from '@/context/NotificationContext';
 import NotificationToast from '@/components/Notifications/NotificationToast';
 import useNotifications from '@/hooks/useNotifications';
 import styles from '@/app/styles/NotificationToast.module.css'
-//import { getUserRoleFromToken } from './_lib/extractRole';
+//cd import { getUserRoleFromToken } from './_lib/extractRole';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -26,7 +26,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const router = useRouter();
 
-  const isAuthPage = pathname === '/login' || pathname === '/register';
+  const isAuthPage = pathname === '/login' || pathname === '/register' || pathname == '/';
   const pathStart = pathname.split('/')[1];
 
   // let userRole: UserRole = 'student';
