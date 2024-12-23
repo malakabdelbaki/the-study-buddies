@@ -27,7 +27,7 @@ export async function GET() {
       },
     });
 
-
+     console.log(response.data, +"HEREEEE")
     return NextResponse.json(response.data);
   } catch (error) {
     console.error("Error encountered:", error);
