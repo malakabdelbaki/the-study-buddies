@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import getCourses from "../api/courses/general/getCourses";
 import { Course } from "@/types/Course";
 import CourseCard from "../../components/course/general/courseCard";
 

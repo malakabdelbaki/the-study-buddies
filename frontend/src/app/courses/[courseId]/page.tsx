@@ -2,7 +2,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import getCourseDetails from '../../api/courses/general/getCourseDetails';
 import { Module } from '@/types/Module';
 import { Course } from '@/types/Course';
 import { User } from '@/types/User';
@@ -157,7 +156,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
         </div>
 
         <p className="text-lg text-gray-700 mb-4">
-          <span className="font-semibold">Rating:</span> {course.ratings?.keys?.length} / 5
+          <span className="font-semibold">Rating:</span> {course.ratings?.keys?.length || 0} / 5
         </p>
         <p className="text-lg text-gray-700 mb-6">
           <span className="font-semibold">Number of Students:</span> {course.students?.length}
@@ -169,7 +168,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
           </p>
         )}
 
-        {(instructor?.role === 'instructor' || instructor?.role === 'admin') && (
+        {(instructor?.role === 'admin') && (
         <button
           onClick={fetchStudents}
           className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors mb-4"
@@ -195,7 +194,8 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
               </ul>
             </div>
           )}
-                {(instructor?.role==='student') && !IsEnroll ? (
+                {(instructor?.role==='student')?
+                 ( !IsEnroll ? (
   
                 <button
                     onClick={handleEnroll}
@@ -213,7 +213,11 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
                       Go to your courses
                     </Link>
                   </div>
-                  )
+                  )): (instructor?._id === course.instructor_id?._id) && <div>
+                    <Link href={`/InstrCourses/${course?._id}`} className="text-blue-500 hover:underline text-lg font-semibold ml-2">
+                        Go to your courses
+                    </Link>
+                    </div>
             };
     </div>
     </div>)
