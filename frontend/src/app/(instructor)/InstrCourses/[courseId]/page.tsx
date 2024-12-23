@@ -22,10 +22,12 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   const [editedCourse, setEditedCourse] = useState<Course>({} as Course);
   const [newKeyword, setNewKeyword] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [newModule, setNewModule] = useState<Module>({title:'', content:'', quiz_type:'', quiz_length:0, module_difficulty:''});
+  const [newModule, setNewModule] = useState<Module>({
+    title:'', content:'', quiz_type:'', quiz_length:0, module_difficulty:''});
   const [canDisableNotes, setCanDisableNotes] = useState<boolean | null>(null);
   const router = useRouter();
-
+  const [students, setStudents] = useState<User[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const enableNotes = async () => {
     try {
       let {courseId} = await params;
@@ -55,6 +57,37 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     }
   };
 
+  const fetchStudents = async () => {
+    try {
+      setError(null); // Reset error message
+      if (instructor?.role === 'student') {
+        throw new Error('Access denied: Only instructors or admins can view the student list.');
+      }
+
+    
+      const { courseId } = await params; // Extract courseId from params
+      console.log(courseId)
+
+      const response = await fetch(`/api/courses/students/${courseId}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${document.cookie.split('token=')[1]}`,
+        },
+      });
+      
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch students');
+      }
+
+      const data = await response.json();
+      setStudents(data);
+    } catch (err: any) {
+      setError(err.message);
+      setStudents(null); // Clear any previously fetched students
+    }
+  };
+
   const checkCanDisableNotes = async () => {
     try {
       let {courseId} = await params;
@@ -76,7 +109,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
 
   const handleAddModule = async () => {
     let {courseId} = await params;
-
+    newModule.course_id = courseId;
     const response = await fetch(`/api/courses/${courseId}/modules`, {
       method: 'POST',
       headers: {
@@ -364,6 +397,33 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     <span className="font-semibold">Number of Students:</span>{" "}
     {course?.students?.length}
   </div>
+
+  {(
+        <button
+          onClick={fetchStudents}
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors mb-4"
+        >
+          View Students
+        </button>
+      )}
+
+        {error && <p className="text-red-500 text-lg">{error}</p>}
+
+                  {students && (
+            <div className="mt-4">
+              <h3 className="text-lg font-bold">Students Enrolled:</h3>
+              <ul className="list-disc list-inside">
+                {students.map((student) => (
+                  <li key={student._id}>
+                    <p><strong>Name:</strong> {student.name}</p>
+                    <p><strong>Email:</strong> {student.email}</p>
+                    <p><strong>Role:</strong> {student.role}</p>
+                    <p><strong>Average Grade In Course:</strong> {student.averageGrade}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+    )}
 
   {/* Save and Edit Buttons */}
   <div className="flex space-x-4">

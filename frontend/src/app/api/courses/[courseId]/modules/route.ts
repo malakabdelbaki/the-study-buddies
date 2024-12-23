@@ -33,3 +33,35 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
   }
 }
 
+
+
+export async function POST(req: NextRequest) {
+    try {
+      const data = await req.text(); // if it's text/plain or application/json
+      const parsed_data = JSON.parse(data);
+      const newModule = {
+        module_difficulty:parsed_data.module_difficulty,
+        title:parsed_data.title,
+        quiz_type:parsed_data.quiz_type,
+        quiz_length:parsed_data.quiz_length,
+        content:parsed_data.content,
+        course_id:parsed_data.course_id
+      }
+     
+      const response = await axios.post(`http://localhost:3000/api/modules`, 
+        newModule,
+        {
+          headers: {
+            Authorization: `Bearer ${(await cookies()).get('token')?.value}`,
+          },
+        }
+      );
+  
+      return NextResponse.json(response.data);
+    } catch (error: any) {
+      console.error('Error rating course:', error.message);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+  }
+
+  

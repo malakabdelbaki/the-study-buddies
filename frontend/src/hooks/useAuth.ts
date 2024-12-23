@@ -9,7 +9,7 @@ export function useAuth() {
 
   useEffect(() => {
     const token = getCookie('token');
-    const publicPaths = ['/login', '/register']; // Define public routes
+    const publicPaths = ['/login', '/register', '/']; // Define public routes
 
     if (!token && !publicPaths.includes(window.location.pathname)) {
       router.replace('/login'); // Redirect to login if unauthenticated

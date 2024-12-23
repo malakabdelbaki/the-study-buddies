@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Home, BookOpen, MessageSquare, ClipboardList, Users, User, LogOut } from 'lucide-react'
+import { Home, BookOpen, MessageSquare, ClipboardList, Users, User, LogOut, Library, LibraryIcon } from 'lucide-react'
 
 
 type UserRole = 'student' | 'instructor' | 'admin'
@@ -42,24 +42,24 @@ const Navigation = () => {
   const navItems: Record<UserRole, NavItem[]> = {
     student: [
       { name: 'Home', href: '/StudHome', icon: Home },
-      { name: 'Courses', href: '/courses', icon: BookOpen },
-      { name: 'Discussion', href: '/discussion', icon: MessageSquare },
-      { name: 'Quizzes', href: '/quizzes', icon: ClipboardList },
+      //{ name: 'My Courses', href: '/StudCourses', icon: BookOpen },
+      { name: 'chats', href: '/chat', icon: MessageSquare },
+      { name: 'Courses', href: '/courses', icon: LibraryIcon },
     ],
     instructor: [
       { name: 'Home', href: '/InstrHome', icon: Home },
-      { name: 'Courses', href: '/courses', icon: BookOpen },
-      { name: 'Discussion', href: '/discussion', icon: MessageSquare },
-      { name: 'Quizzes', href: '/quizzes', icon: ClipboardList },
-      { name: 'Students', href: '/students', icon: Users },
+      //{ name: 'My Courses', href: '/InstrCourses', icon: BookOpen },
+      { name: 'chats', href: '/chat', icon: MessageSquare },
+      { name: 'Courses', href: '/courses', icon: LibraryIcon },
+      //{ name: 'Students', href: '/students', icon: Users },
     ],
     admin: [
       { name: 'Home', href: '/AdminHome', icon: Home },
-      { name: 'Courses', href: '/courses', icon: BookOpen },
-      { name: 'Discussion', href: '/discussion', icon: MessageSquare },
-      { name: 'Quizzes', href: '/quizzes', icon: ClipboardList },
-      { name: 'Students', href: '/students', icon: Users },
-      { name: 'Instructors', href: '/instructors', icon: Users },
+      { name: 'Courses', href: '/courses', icon: LibraryIcon },
+      //{ name: 'Discussion', href: '/chat', icon: MessageSquare },
+      { name: 'Logs', href: '/log', icon: ClipboardList },
+      //{ name: 'Students', href: '/students', icon: Users },
+      //{ name: 'Instructors', href: '/instructors', icon: Users },
     ],
   }
 
