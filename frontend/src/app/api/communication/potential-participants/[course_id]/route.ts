@@ -9,6 +9,7 @@ export async function GET(req: Request) {
     const pathSegments = url.pathname.split('/');
     const course_id = pathSegments[pathSegments.length - 1];
 
+    console.log('Course ID:', course_id);
     if (!course_id) {
       return new Response('Bad Request: Missing course ID', { status: 400 });
     }
@@ -16,12 +17,13 @@ export async function GET(req: Request) {
     // Get token from cookies
     const cookieStore = await cookies();
     const tokenCookie = cookieStore.get('token');
+    console.log('Token cookie:', tokenCookie);
     if (!tokenCookie) {
       return new Response('Unauthorized', { status: 401 });
     }
 
     // Make the request to the API with the course_id
-    const response = await axios.get(`http://localhost:${process.env.NEXT_PUBLIC_PORT}/api/chat/potential-participants/${course_id}`, {
+    const response = await axios.get(`http://localhost:3000/api/chat/potential-participants/${course_id}`, {
       headers: {
         Authorization: `Bearer ${tokenCookie.value}`,
       },
