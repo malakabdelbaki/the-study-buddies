@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
+import { Role } from 'src/enums/role.enum';
 
 export async function GET(req: Request) {
   try {
@@ -24,7 +25,7 @@ export async function GET(req: Request) {
       console.log({ token: tokenCookie.value, decodedToken, userId, userRole });
 
     const endpoint =
-      userRole === 'student'
+      userRole === Role.Student
         ? `http://localhost:${process.env.NEXT_PUBLIC_PORT}/api/users/${userId}/courses/enrolled`
         : `http://localhost:${process.env.NEXT_PUBLIC_PORT}/api/users/${userId}/courses`;
 

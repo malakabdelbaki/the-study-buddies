@@ -2,6 +2,7 @@ import { Type } from '@nestjs/common';
 import { IsString, IsMongoId, IsNotEmpty } from 'class-validator';
 import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decorator';
 import { Types } from 'mongoose';
+import { IsNoteEnabled } from 'src/common/validators/notes-enabled.validator';
 export class CreateNoteDto {
 
   @IsMongoId()

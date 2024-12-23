@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { Module } from "@/types/Module";
 import { addQuestionToModule, deleteModuleResource, deleteQuestionFromModule, fetchModuleResources, fetchQuestionBank, getModule, rateModule, updateModule, updateQuestionInModule, updateResourceMetadata } from "@/app/api/courses/instructor/moduleRoute";
+import fetchCourse from "@/app/api/courses/general/getCourseDetails";
 import AddQuestionForm from "@/components/course/instructor/QuestionInput";
 import { Question } from "@/types/Question";
 import QuestionCard from "@/components/course/instructor/questionCard";
@@ -11,19 +12,38 @@ import AddResourceForm from "@/components/course/instructor/ResourceInput";
 import ResourceCard from "@/components/course/instructor/resourceCard";
 import { Resource } from "@/types/Resource";
 import { useRouter } from "next/navigation";
+import { Course } from "@/types/Course";
+import { Button } from "@/components/ui/button"; // Adjust the import path as necessary
 
 import { useAuthorization } from "@/hooks/useAuthorization";
 
 
-const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) => {
+const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseId:string }> }) => {
   useAuthorization(['student'])
   const router = useRouter();
   const [module, setModule] = useState<Module>();
+  const [course, setCourse] = useState<Course>();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
   const [ModuleRating, setModuleRating] = useState<number>(0);
 
-
+  useEffect(() => {
+    async function handleNotes() {
+      const courseId = await params.then((p) => p.courseId);
+      const moduleId = await params.then((p) => p.moduleId);
+      const course = await fetchCourse(courseId);
+      if ('message' in course) {
+        console.error(course.message);
+      } else {
+        setCourse(course);
+      }
+    }
+    handleNotes();
+  }, []);
+  
+  const handleRedirectToNotes = () => {
+    router.push(`/notes?courseId=${course?._id}&moduleId=${module?._id}`);
+  };
 
   useEffect(() => {
     async function loadModule() {
@@ -172,6 +192,15 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) =>
     </div>
   
   
+    {course?.isNoteEnabled && (
+        <Button
+          className="mt-4 bg-baby-blue text-navy"
+          onClick={handleRedirectToNotes}
+        >
+          Go to Notes
+        </Button>
+      )}
+
     {/* Resources Section */}
     <div className="resources mt-6">
       <h2 className="text-3xl font-bold mb-4 text-gray-800">Resources</h2>

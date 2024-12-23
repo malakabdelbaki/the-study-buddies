@@ -11,6 +11,8 @@ import ForumPreview from "@/components/forum/ForumPreview";
 import { createModule } from "../../../api/courses/instructor/moduleRoute";
 import { Types } from "mongoose";
 import { useAuthorization } from "@/hooks/useAuthorization";
+import { Role } from "@/enums/role.enum";
+import { decodeToken } from "@/app/utils/decodeToken";
 
 const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) => {
   useAuthorization(['student'])
@@ -25,10 +27,10 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   }));  
   const [InstructorRating, setInstructorRating] = useState<number>(0);
   const [CourseRating, setCourseRating] = useState<number>(0);
-
+ const [userId, setUserId] = useState<string | null>(null);
 
   async function handleRatingClick(what:string,star: number) {
-    if (what==='instructor'){
+    if (what===Role.Instructor){
       setInstructorRating(star);
         let response = await rateInstructor({targetId:course?.instructor_id?._id as string,rating:star} );
         console.log(response);
@@ -39,15 +41,25 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
       console.log(response);
     }
   }
+  useEffect(() => {
+    const token = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("token="))?.split("=")[1];
 
+    if (token) {
+      const userId = decodeToken(token)?.userid;
+      setUserId(userId);
+    }}, []);
 
   useEffect(() => {
     async function loadCourse() {
       try {
         const { courseId } = await params;
         let course = await fetchCourseById(courseId);
-        if(course.students.includes(Student?._id)){
+        if(course.students.includes(userId)){
+          console.log('enrolled');
            let modules = await fetchCourseModules(courseId);
+           console.log(modules);
            setModules(modules);
            setIsEnroll(true);
         }
@@ -198,7 +210,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
 
         <div className="grid grid-cols-1 gap-6">
           {modules?.map((module, index) => (
-            <ModuleCard key={index} module={module} />
+            <ModuleCard key={index} module={module} course={course} />
           ))}
         </div>
     </div>

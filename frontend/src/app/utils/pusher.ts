@@ -1,6 +1,6 @@
 import Pusher from 'pusher-js';
 import { decodeToken } from './decodeToken';
-import { NotificationType } from '../../../../backend/src/enums/notification-type.enum';
+import { NotificationType } from 'src/enums/notification-type.enum';
 
 const pusher = new Pusher('977b667134c0ca0f9d91', {
   cluster: 'eu',

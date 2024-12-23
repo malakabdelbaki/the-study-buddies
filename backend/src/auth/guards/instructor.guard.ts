@@ -22,7 +22,6 @@ export class InstructorGuard implements CanActivate {
     console.log("request", request);
     const userId = request.user?.userid; // Get logged-in user ID
      if (!userId) {
-      console.log("hnt7r",userId);
       throw new HttpException(
         'Invalid request. Missing user ID.',
         HttpStatus.FORBIDDEN,

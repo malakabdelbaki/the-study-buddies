@@ -254,4 +254,26 @@ export class CoursesService {
       await course.save();
       return course;
   }
+
+
+  async enableNotes(courseId: Types.ObjectId){
+    let course = await this.findOne(courseId);
+    if(!course){
+      throw new Error ('no Course Found with this ID');
+    }
+    course.isNoteEnabled = true;
+    await course.save();
+    return course;
+  }
+
+  async disableNotes(courseId: Types.ObjectId){
+    let course = await this.findOne(courseId);
+    if(!course){
+      throw new Error ('no Course Found with this ID');
+    }
+    course.isNoteEnabled = false;
+    await course.save();
+    return course;
+  }
+
 }

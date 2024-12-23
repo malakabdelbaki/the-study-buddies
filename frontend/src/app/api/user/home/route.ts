@@ -71,14 +71,14 @@ export async function GET(req: Request) {
 }
 
 
-export async function getCompletedCoursesOfStudent(userId: string) {
-  try {
-    const { data } = await axiosInstance.get(`/users/${userId}/courses/completed`);
-    return data;
-  } catch (error:any) {
-    console.error('Error fetching course modules:', error.message);
-    throw error;
-  }
-}
+// export async function getCompletedCoursesOfStudent(userId: string) {
+//   try {
+//     const { data } = await axiosInstance.get(`/users/${userId}/courses/completed`);
+//     return data;
+//   } catch (error:any) {
+//     console.error('Error fetching course modules:', error.message);
+//     throw error;
+//   }
+//}
 
 
