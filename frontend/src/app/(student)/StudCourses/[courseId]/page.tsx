@@ -34,7 +34,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
 
   // Handle rating
   const handleRatingClick = async (type: "instructor" | "course", star: number) => {
-    if (type === "instructor" && Instructor) {
+    if (type === Role.Instructor && Instructor) {
       setInstructorRating(star);
       const response = await rateInstructor({ targetId: Instructor._id, rating: star });
       console.log("Instructor Rating Response:", response);
