@@ -22,6 +22,7 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
             Authorization: `Bearer ${(await cookies()).get('token')?.value}`,
           },
         });
+        console.log('Module response:', moduleResponse.data);
         return moduleResponse.data;
       })
     );
