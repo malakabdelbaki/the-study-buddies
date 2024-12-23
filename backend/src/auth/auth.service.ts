@@ -76,7 +76,7 @@ export class AuthService{
       const payload = { userid: user._id, role: user.role, username: user.name }; //payload is the user id and role and name
       const token = await this.jwtService.signAsync(payload, {
         secret: process.env.JWT_SECRET,
-        expiresIn: '1h',
+        expiresIn: process.env.JWT_EXPIRES_IN,
       });
       return {
           access_token:token, //this creates a token for the user

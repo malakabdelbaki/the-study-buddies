@@ -1,133 +1,4 @@
 
-// 'use client';
-
-// import { useEffect, useState } from 'react';
-// import { useSearchParams } from 'next/navigation';
-// import axios from 'axios';
-// import { User } from '@/types/User';
-
-// const SearchPage = () => {
-//   const searchParams = useSearchParams();
-//   const searchTerm = searchParams.get('searchTerm');
-//   const [results, setResults] = useState<User[]>([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState<string | null>(null);
-//   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
-
-//   useEffect(() => {
-//     const fetchLoggedInUser = async () => {
-//       try {
-//         const response = await axios.get('/api/user/profile');
-//         setLoggedInUser(response.data);
-//       } catch (err: any) {
-//         console.error('Error fetching logged-in user:', err.message);
-//       }
-//     };
-
-//     const fetchResults = async () => {
-//       if (!searchTerm) {
-//         setError('Search term is missing');
-//         setLoading(false);
-//         return;
-//       }
-
-//       try {
-//         const response = await axios.get('/api/user/search', {
-//           params: { searchTerm },
-//         });
-//         setResults(response.data || []);
-//         setError(null);
-//       } catch (err: any) {
-//         console.error('Error fetching search results:', err.message);
-//         setError('Failed to fetch search results. Please try again.');
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchLoggedInUser();
-//     fetchResults();
-//   }, [searchTerm]);
-
-//   const handleDeleteUser = async (userId: string) => {
-//     const confirmed = window.confirm('Are you sure you want to delete this user?');
-//     if (!confirmed) return;
-
-//     try {
-//       const response = await axios.delete(`/api/user/search?userId=${userId}`, {
-//         headers: {
-//           Authorization: `Bearer ${document.cookie.split('token=')[1]}`,
-//         },
-//       });
-//       alert('User deleted successfully');
-//       // Remove the deleted user from the results
-//       setResults((prevResults) => prevResults.filter((user) => user._id !== userId));
-//     } catch (err: any) {
-//       console.error('Error deleting user:', err.message);
-//       alert('Failed to delete user. Please try again.');
-//     }
-//   };
-
-//   if (loading) return <p>Loading...</p>;
-//   if (error) return <p className="text-red-500">{error}</p>;
-
-//   return (
-//     <div className="p-4">
-//       <h1 className="text-2xl font-bold mb-4">Search Results</h1>
-//       {results.length === 0 ? (
-//         <p>No results found for "{searchTerm}"</p>
-//       ) : (
-//         <ul className="space-y-2">
-//           {results.map((user) => (
-//             <li key={user._id} className="border p-4 rounded bg-gray-50 shadow-md">
-//               <p>
-//                 <strong>Name:</strong> {user.name}
-//               </p>
-//               <p>
-//                 <strong>Email:</strong> {user.email}
-//               </p>
-//               <p>
-//                 <strong>Role:</strong> {user.role}
-//               </p>
-//               {user.role === 'student' && (
-//                 <>
-//                   {user.enrolledCourses && user.enrolledCourses.length > 0 && (
-//                     <p>
-//                       <strong>Enrolled Courses:</strong>{' '}
-//                       {user.enrolledCourses.join(', ')}
-//                     </p>
-//                   )}
-//                   {user.completedCourses && user.completedCourses.length > 0 && (
-//                     <p>
-//                       <strong>Completed Courses:</strong>{' '}
-//                       {user.completedCourses.join(', ')}
-//                     </p>
-//                   )}
-//                 </>
-//               )}
-//               {user.role === 'instructor' && user.taughtCourses && user.taughtCourses.length > 0 && (
-//                 <p>
-//                   <strong>Taught Courses:</strong> {user.taughtCourses.join(', ')}
-//                 </p>
-//               )}
-//               {loggedInUser?.role === 'admin' && (
-//                 <button
-//                   onClick={() => handleDeleteUser(user._id)}
-//                   className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors mt-2"
-//                 >
-//                   Delete User
-//                 </button>
-//               )}
-//             </li>
-//           ))}
-//         </ul>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default SearchPage;
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -220,7 +91,7 @@ const SearchPage = () => {
 
     try {
       console.log("here it is:"+ studentId)
-      await axios.put(`/api/user/search/assign/${selectedCourseId}`, {
+      await axios.put(`/api/user/search/assign?courseId=${selectedCourseId}`, {
         studentIds: [studentId],
       });
       alert('Student assigned to course successfully');
@@ -279,7 +150,7 @@ const SearchPage = () => {
                       </select>
                       <button
                       onClick={(e) => {
-                        e.stopPropagation();
+                        // e.stopPropagation();
                         console.log("Button clicked for user:", user._id);
                         handleAssignStudentToCourse(user._id);
                       }} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-2"

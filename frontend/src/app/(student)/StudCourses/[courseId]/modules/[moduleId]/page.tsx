@@ -28,9 +28,13 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseI
     async function handleNotes() {
       const courseId = await params.then((p) => p.courseId);
       const moduleId = await params.then((p) => p.moduleId);
-      const course = await fetch(`/api/courses/${courseId}`,{
-        method:'GET'
-      });
+      const course = await fetch(`api/courses/${courseId}`,{
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).then((res) => res.json());
+    
       if ('message' in course) {
         console.error(course.message);
       } else {
@@ -55,6 +59,7 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseI
       setModuleRating(courseRatingsMap.get(fetchedStudent.id) || null);
 
       setModule(fetchedModule);
+      console.log(fetchedModule);
       //setEditedModule(fetchedModule);
      
 
@@ -73,9 +78,15 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseI
 
 
   async function handleRatingClick(star: number) {
-      const {moduleId} = await params
+      const {moduleId} = await params;
       setModuleRating(star);
-      const response = await rateModule(moduleId,star);
+      const response = await fetch(`/api/courses/modules/${moduleId}/rate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({star}),
+      }
+      );
+
       console.log(response);
     
   }

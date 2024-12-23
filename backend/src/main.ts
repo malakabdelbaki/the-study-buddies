@@ -7,10 +7,15 @@ import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import {useContainer, Validator} from "class-validator";
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import * as express from 'express';
+import { join } from 'path';
 
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
+
 
   app.useGlobalPipes(new ValidationPipe({
     transform: true, // Enable transformation

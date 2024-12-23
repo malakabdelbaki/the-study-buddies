@@ -56,8 +56,11 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
   try {
     const { role, token } = await getUserFromToken();
-    const url = new URL(req.url);
-    const courseId = url.pathname.split('/')[4]; // Extract courseId from the URL
+    // const url = new URL(req.url);
+    // const courseId = url.pathname.split('/')[4]; // Extract courseId from the URL
+
+    const { searchParams } = new URL(req.url);
+    const courseId = searchParams.get('courseId');
 
     console.log(courseId)
 

@@ -55,7 +55,12 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
       console.log("Instructor Rating Response:", response);
     } else if (type === "course" && course) {
       setCourseRating(star);
-      const response = await rateCourse(course._id as string, star);
+      const response = await fetch(`/api/courses/${course._id}/rate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating: star }),
+      }
+      )
       console.log("Course Rating Response:", response);
     }
   }
@@ -88,8 +93,12 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
 
           if (fetchedCourse.students.includes(fetchedStudent.id)) {
             setIsEnroll(true);
-            const fetchedModules = await fetchCourseModules(courseId);
-            setModules(fetchedModules);
+            const response = await fetch(`/api/courses/${courseId}/modules`,{
+              method: 'GET'
+            })
+
+            setModules(await response.json());
+          
           }
 
           if (fetchedCourse && fetchedCourse.ratings) {
@@ -209,8 +218,8 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     <div className="modules-section mt-8">
         <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Modules</h2>
 
-        <div className="grid grid-cols-1 gap-6">
-          {modules?.map((module, index) => (
+         <div className="grid grid-cols-1 gap-6">
+          {modules && modules?.map((module, index) => (
             <ModuleCard key={index} module={module} course={course} />
           ))}
         </div>

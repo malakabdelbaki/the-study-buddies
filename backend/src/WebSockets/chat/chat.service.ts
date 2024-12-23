@@ -311,6 +311,7 @@ export class ChatService {
   }
   async getPublicChatsOfCourse(courseId: Types.ObjectId){
     const course = await this.coursesService.findOne(courseId);
+    console.log("pub chat", course);
     if (!course) {
       throw new EntityDoesNotExistException('Course', courseId.toString());
     }
@@ -338,7 +339,7 @@ export class ChatService {
     console.log("hi", courses);
     for(const course of courses){
       console.log("hello", course);
-      const chatsOfCourse = await this.getPublicChatsOfCourse(course.id);
+      const chatsOfCourse = await this.getPublicChatsOfCourse(course._id);
       chats.push(...chatsOfCourse); 
     }
   }

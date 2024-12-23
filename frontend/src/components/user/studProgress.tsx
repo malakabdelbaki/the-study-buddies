@@ -116,7 +116,7 @@ const EnrolledCoursesClient = () => {
           progress: data.progressData[index]?.completionPercentage || 0,
         })));
       } catch (err) {
-        setError('Error loading courses or progress.');
+        setError('You dont have any current course progresses');
         console.error(err);
       } finally {
         setLoading(false);
