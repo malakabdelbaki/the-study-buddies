@@ -75,7 +75,18 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
             const fetchedModules = await fetchCourseModules(courseId);
             setModules(fetchedModules);
           }
+
+          // if (fetchedCourse && fetchedCourse.ratings){
+          //   console.log("ok",typeof fetchedCourse.ratings , fetchedCourse.ratings);
+
+          //   setCourseRating(fetchedCourse.ratings.get(fetchedStudent.id));
+          // }
+
+          // if(Instructor && Instructor.ratings){
+          //   setInstructorRating(Instructor.ratings.get(fetchedStudent.id) as number)
+          // }
         }
+
       } catch (error) {
         console.error("Error loading course details:", error);
       }
