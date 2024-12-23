@@ -98,7 +98,7 @@ export class ModuleController {
   @Roles(Role.Student)
   @UseGuards(authorizationGuard)
   @Post(':id/rate')
-  async RateCourse(@Req() request,@Param('id') id: string ,@Body() ratingbody:{rating:number}) {
+  async RateModule(@Req() request,@Param('id') id: string ,@Body() ratingbody:{rating:number}) {
     try {
       const {rating} = ratingbody;
       const moduleid = new Types.ObjectId(id);

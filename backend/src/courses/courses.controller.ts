@@ -110,7 +110,7 @@ export class CoursesController {
   @Get(':id/modules')
   async getModules(@Req() request,@Param('id') id: string) {
     try {
-      
+      console.log("hello from cont");
       const user_id = request.user?.userid; // Extract instructorId
       if(!user_id || !request.user){
         throw new HttpException('Error not found an instructor', HttpStatus.INTERNAL_SERVER_ERROR);

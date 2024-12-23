@@ -68,9 +68,15 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseI
 
 
   async function handleRatingClick(star: number) {
-      const {moduleId} = await params
+      const {moduleId} = await params;
       setModuleRating(star);
-      const response = await rateModule(moduleId,star);
+      const response = await fetch(`/api/courses/modules/${moduleId}/rate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({star}),
+      }
+      );
+
       console.log(response);
     
   }
