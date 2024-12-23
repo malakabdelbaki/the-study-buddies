@@ -1,5 +1,6 @@
 import { registerDecorator, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
 import { Injectable } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { CoursesService } from 'src/courses/courses.service';
 @Injectable()
 @ValidatorConstraint({ async: true })
@@ -8,9 +9,9 @@ constructor(
   private readonly CoursesService: CoursesService,
 ) {}
 
-  async validate(courseId: any, args: ValidationArguments) {
+  async validate(courseId: Types.ObjectId, args: ValidationArguments) {
 
-    const course = await this.CoursesService.findOne(courseId);
+    const course = await this.CoursesService.findOne(new Types.ObjectId(courseId));
     if (course && course.isNoteEnabled) {
       return true;
     }

@@ -62,7 +62,7 @@ export class NoteController {
   @Patch(':noteId') 
   async updateNote(
     @Param('noteId') noteId: string,
-    updateNoteDto: UpdateNoteDto,
+    @Body() updateNoteDto: UpdateNoteDto,
     @Req() req,
   ) {
     return this.noteService.updateNote(req.user.userid, noteId, updateNoteDto);

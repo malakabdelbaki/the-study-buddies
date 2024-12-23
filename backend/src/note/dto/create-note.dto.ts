@@ -8,13 +8,12 @@ export class CreateNoteDto {
   @IsMongoId()
   @IsNotEmpty()
   @ExistsOnDatabase({ modelName: 'Course', column: '_id' })
- @IsNoteEnabled()
-  course_id: Types.ObjectId;
+  courseId: Types.ObjectId;
 
   @IsMongoId()
   @IsNotEmpty()
   @ExistsOnDatabase({ modelName: 'Module', column: '_id' })
-  module_id: Types.ObjectId;
+  moduleId: Types.ObjectId;
 
   @IsString()
   @IsNotEmpty()

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Pusher from 'pusher-js';
-import { NotificationType } from '../../../backend/src/enums/notification-type.enum';
+import { NotificationType } from 'src/enums/notification-type.enum';
 
 export default function useNotifications(userId: string | null) {
   const [notifications, setNotifications] = useState<string[]>([]);

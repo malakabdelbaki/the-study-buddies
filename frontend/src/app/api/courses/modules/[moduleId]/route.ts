@@ -2,26 +2,27 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import axios from 'axios';
 import { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
-import { Role } from 'src/enums/role.enum';
 
 export async function GET(req: NextRequest ) {
   try {
 
+    const { pathname } = new URL(req.url);
+    const pathSegments = pathname.split('/');
+    const moduleId = pathSegments[pathSegments.length - 1];
+
+    if (!moduleId) {
+      return new Response('Bad Request: Missing forum ID', { status: 400 });
+    }
+
+    // Get token from cookies
     const cookieStore = await cookies();
     const tokenCookie = cookieStore.get('token');
     
     if (!tokenCookie) {
       return new Response('Unauthorized', { status: 401 });
     }
-    const decodedToken = jwt.decode(tokenCookie.value);
-    const userId = (decodedToken as any)?.userid;
-    const userRole = (decodedToken as any)?.role;
-    if(userRole !== Role.Student) {
-      return new Response('Unauthorized', { status: 401 });
-    }
 
-    const response = await axios.get(`http://localhost:3000/api/forum/student`, {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/modules/${moduleId}`, {
       headers: {
         Authorization: `Bearer ${tokenCookie.value}`,
       },

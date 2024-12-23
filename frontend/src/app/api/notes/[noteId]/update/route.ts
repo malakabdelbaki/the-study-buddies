@@ -23,7 +23,7 @@ export async function PATCH(req: NextRequest) {
     if (!tokenCookie) {
       return NextResponse.json({ message: 'Authorization token is missing' }, { status: 401 });
     }
-
+    console.log("in notes route **********",note_id,title,content);
     const response = await axios.patch(
       `${process.env.NEXT_PUBLIC_API_URL}/note/${note_id}`,
       {
@@ -36,6 +36,7 @@ export async function PATCH(req: NextRequest) {
       }
     );
     const data = await response.data;
+    console.log("in notes route **********",data);
 
     if (response.status !== 200) {
       return NextResponse.json({ message: data.message || 'Error updating forum' }, { status: response.status });

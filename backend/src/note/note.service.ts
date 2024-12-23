@@ -92,13 +92,12 @@ export class NoteService {
     noteId: string,
     updateNoteDto: UpdateNoteDto,
   ): Promise<Note> {
-    const user = new Types.ObjectId(userId);
     const note_id = new Types.ObjectId(noteId);
     const note = await this.noteModel.findOne({ _id : note_id }).exec();
     if(note.userId.toString() !== userId){
       throw new UnauthorizedException('Unauthorized');
     }
-    const updatedNote = this.noteModel.findOneAndUpdate({ userId : user, _id : note }, updateNoteDto, { new: true });
+    const updatedNote = this.noteModel.findOneAndUpdate({ _id : note_id }, updateNoteDto, { new: true });
     if (!updatedNote) {
       throw new NotFoundException('Note not found');
     }

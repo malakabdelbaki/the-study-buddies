@@ -3,8 +3,10 @@ import { ExistsOnDatabase } from 'src/common/decorators/exists-on-database.decor
 export class UpdateNoteDto {
 
   @IsString()
-  content: string;
+  title: string;
   
   @IsString()
-  title: string;
+  content: string;
+  
+
 }
