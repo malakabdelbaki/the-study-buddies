@@ -252,7 +252,8 @@ export class CoursesService {
 
       course.ratings.set(student_id,rating);
       await course.save();
-      return course;
+      let trys = this.courseModel.findById(course_id);
+      return trys;
   }
 
 

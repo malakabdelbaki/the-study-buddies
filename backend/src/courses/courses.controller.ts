@@ -146,13 +146,16 @@ export class CoursesController {
   @Post(':id/rate')
   async RateCourse(@Req() request,@Param('id') id: string ,@Body() ratingbody:{rating:number}) {
     try {
+      console.log('reached controller',ratingbody)
       const {rating} = ratingbody;
       const courseid = new Types.ObjectId(id);
       const studentid = request.user?.userid; // Extract instructorId
       if(!studentid || !request.user){
         throw new HttpException('Error not found a student', HttpStatus.INTERNAL_SERVER_ERROR);
       }
-      return await this.coursesService.rateCourse(studentid,courseid,rating);
+      let ret = await this.coursesService.rateCourse(studentid,courseid,rating);
+      console.log(ret);
+      return ret;
     } catch (err) {
       console.log(err.message);
       throw new HttpException('Error Rating a Course', HttpStatus.INTERNAL_SERVER_ERROR);

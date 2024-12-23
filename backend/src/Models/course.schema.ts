@@ -36,7 +36,7 @@ export class Course{
         of: Number, // The value type (rating) is a number
         default: {},
       })
-      ratings: Map<Types.ObjectId, number>;
+      ratings: Map<Types.ObjectId,number>;
 
 
     @Prop({required:true,default:false})
