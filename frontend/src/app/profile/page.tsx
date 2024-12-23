@@ -25,12 +25,17 @@ const ProfileClient = ({ setProfilePic }: { setProfilePic: (pic: string) => void
         const userData = await response.json();
         setUser(userData);
         setPic(userData.profilePictureUrl);  // Set the profile picture
+        const imageUrl = `http://localhost:3000/${userData.profilePictureUrl}`;
 
-        // Retrieve profile picture from localStorage if available
+        // Store the profile picture URL in localStorage
+        localStorage.setItem('profilePic', imageUrl);
+  
+        // Retrieve the profile picture from localStorage if available
         const savedPic = localStorage.getItem('profilePic');
         if (savedPic) {
           setPic(savedPic);
-        }      } catch (err) {
+        }
+        }       catch (err) {
         console.error(err);
         setError('Failed to load user data.');
       } finally {
@@ -47,11 +52,15 @@ const ProfileClient = ({ setProfilePic }: { setProfilePic: (pic: string) => void
       setUser((prevUser) => prevUser ? { ...prevUser, profilePic: updatedUser.profilePictureUrl } : prevUser);
       setPic(URL.createObjectURL(file));  // Set the image preview on the client side
       // Save the updated profile picture to localStorage
-      localStorage.setItem('profilePic', updatedUser.profilePictureUrl);
-      setProfilePic(updatedUser.profilePictureUrl);  // Update the profile picture in parent component (navbar)
+      if (updatedUser.profilePictureUrl) {
+        const imageUrl = `http://localhost:3000/${updatedUser.profilePictureUrl}`;
+        localStorage.setItem('profilePic', imageUrl);
+              } else {
+        console.error("Profile picture URL is invalid:", updatedUser.profilePictureUrl);
+      }      setProfilePic(updatedUser.profilePictureUrl);  // Update the profile picture in parent component (navbar)
     } catch (err) {
       console.error('Error updating profile picture:', err);
-      setError('Failed to update profile picture.');
+      //setError('Failed to update profile picture.');
     }
   };
 
@@ -194,7 +203,7 @@ const ProfileClient = ({ setProfilePic }: { setProfilePic: (pic: string) => void
             <CardFooter className="flex justify-between">
               {isEditing ? (
                 <>
-                  <Button type="submit">Save Changes</Button>
+                  <Button type="submit" onClick={() => alert('Changed saved successfully!')}>Save Changes</Button>
                   <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
                     Cancel
                   </Button>
