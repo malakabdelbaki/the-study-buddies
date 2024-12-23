@@ -6,6 +6,7 @@ import CourseCard from "@/components/course/general/courseCard";
 import { fetchCourses, fetchStudent } from "../../api/courses/student/courseRoute";
 import { User } from "@/types/User";
 import { useAuthorization } from "@/hooks/useAuthorization";
+import { getCompletedCoursesOfStudent } from "@/app/api/user/home/route";
 
 
 type token = {
