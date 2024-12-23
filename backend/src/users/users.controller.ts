@@ -373,11 +373,12 @@
     @SetMetadata(ROLES_KEY, [Role.Admin, Role.Instructor, Role.Student])
     async getCompletedCoursesOfStudent(@Param('userId') userId: string | undefined , @Req() req: any) {
       const loggedInUser = req.user;
-
+      console.log('3333333333333333')
       // Check if the logged-in user is an admin or instructor
       if (loggedInUser.role === Role.Admin || loggedInUser.role === Role.Instructor) {
           return this.userService.getCompletedCoursesOfStudent(userId);
       }
+      console.log('4444444')
 
       if (loggedInUser.role === Role.Student) {
 
