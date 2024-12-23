@@ -126,7 +126,10 @@ export default function LoginPage() {
               />
             </div>
           </div>
-          <p className="text-sm text-red-500 text-center">{formState.message}</p>
+          {/* Conditional styling for success and error messages */}
+          <p className={`text-sm text-center ${formState.message === 'Login successful!' ? 'text-green-500' : 'text-red-500'}`}>
+            {formState.message}
+          </p>
           <Button type="submit" className="w-full bg-blue-800 hover:bg-blue-900 text-white">
             Login
           </Button>

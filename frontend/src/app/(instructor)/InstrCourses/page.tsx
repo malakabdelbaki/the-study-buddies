@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 // import courseServer from "./api/courseServer";
-// import getCourses from "./api/getCourses";
 import { Course } from "@/types/Course";
 import CourseCard from "@/components/course/general/courseCard";
 import { createCourse, fetchCourses, fetchInstructor } from "../../api/courses/instructor/courseRoute";

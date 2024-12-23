@@ -51,6 +51,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
       console.log("Course Rating Response:", response);
     }
   }
+  
   useEffect(() => {
     const token = document.cookie
       .split("; ")

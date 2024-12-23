@@ -377,6 +377,7 @@ export class UserService {
       if (!courses.length) throw new NotFoundException('No courses found for this user.');
       courses = courses.filter((course)=>course.is_deleted === false);
       console.log("Courses hereeee "+ courses);
+      
       return courses;
     } catch (error) {
         throw new InternalServerErrorException('Error fetching enrolled courses', error.message);
@@ -396,15 +397,25 @@ async getCompletedCoursesOfStudent(userId: string): Promise<any> {
         select: 'title', // Only fetch the title field from courseModel
       });
 
+<<<<<<< HEAD
+=======
+      console.log("*******************************",completed);
+      console.log("*******************************",completed.length);
+>>>>>>> 1452a9f04b430a7cc16c432db5f28b4c3a2ae5e0
     // if (!completed.length) throw new NotFoundException('No completed courses found.');
 
     // Map the data to return the required structure
-    const result = completed.map((progress) => ({
-      progressId: progress._id,
-      title: (progress.courseId as any).title, // Use type assertion
-    }));
+    // const result = completed.map((progress) => ({
+    //   progressId: progress._id,
+    //   title: (progress.courseId as any).title, // Use type assertion
+    // }));
+    // console.log(result);\
+    let completedCourses = [];
+    for( const comp of completed){
+      completedCourses.push(await this.courseModel.findById(comp.courseId));
+    }
 
-    return result;
+    return completedCourses;
   } catch (error) {
     throw new InternalServerErrorException('Error fetching completed courses', error.message);
   }
