@@ -573,32 +573,20 @@ async getCompletedCoursesOfStudent(userId: string): Promise<any> {
   }
 
   // Rate an Instructor
-  async rateInstructor(studentId: string,dto: RateDto) {
-    const instructor = await this.userModel.findById(dto.targetId);
-    if (!instructor || instructor.role !== 'instructor')
-      throw new NotFoundException('Instructor not found');
-
-    // Fetch all courses taught by the instructor
-    const instructorCourses = await this.getCoursesByInstructor(dto.targetId);
-
-    // Fetch all courses the student is enrolled in
-    const studentCourses = await this.getEnrolledCoursesOfStudent(studentId);
-
-    // Check if there is any overlap between student's courses and instructor's courses
-    const hasCommonCourse = studentCourses.some(studentCourse =>
-      instructorCourses.some(instructorCourse => instructorCourse.id.toString() === studentCourse.id.toString())
-    );
-
-    if (!hasCommonCourse) {
-      throw new BadRequestException(`You are not enrolled in any course taught by this instructor.`);
+  async rateInstructor(student_id:Types.ObjectId,inst_id:Types.ObjectId,rating:number){
+    let ins = await this.userModel.findById(inst_id);
+    if(!ins){
+      throw new Error ('no Course Found with this ID');
     }
-    console.log(instructor.ratings);
-    instructor.ratings.set(new Types.ObjectId(studentId),dto.rating)
-    console.log(instructor.ratings);
-    //instructor.ratings.push(dto.rating);
-    await instructor.save();
-    return { message: 'Instructor rated successfully', ratings: instructor.ratings };
-  }
+    
+    if (!rating){
+      throw new Error(' You must Enter a rating');
+    }
+
+    ins.ratings.set(student_id,rating);
+    ins.save();
+    return ins;
+}
 
   // Enroll in a Course and create progress automatically
   async enrollInCourse(studentId: string, dto: EnrollInCourseDto) {

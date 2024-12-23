@@ -4,7 +4,6 @@
 import React, { useState, useEffect } from "react";
 import { Module } from "@/types/Module";
 import { fetchModuleResources, getModule, rateModule } from "@/app/api/courses/instructor/moduleRoute";
-import fetchCourse from "@/app/api/courses/general/getCourseDetails";
 import { Question } from "@/types/Question";
 import ResourceCard from "@/components/course/instructor/resourceCard";
 import { Resource } from "@/types/Resource";
@@ -13,6 +12,7 @@ import { Course } from "@/types/Course";
 import { Button } from "@/components/ui/button"; // Adjust the import path as necessary
 
 import { useAuthorization } from "@/hooks/useAuthorization";
+import { fetchStudent } from "@/app/api/courses/student/courseRoute";
 
 
 const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseId:string }> }) => {
@@ -28,11 +28,13 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseI
     async function handleNotes() {
       const courseId = await params.then((p) => p.courseId);
       const moduleId = await params.then((p) => p.moduleId);
-      const course = await fetchCourse(courseId);
+      const course = await fetch(`/api/courses/${courseId}`,{
+        method:'GET'
+      });
       if ('message' in course) {
         console.error(course.message);
       } else {
-        setCourse(course);
+        setCourse(course as Course);
       }
     }
     handleNotes();
@@ -47,7 +49,10 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseI
       const { moduleId } = await params;
       const fetchedModule = await getModule(moduleId);
       const fetchedResources = await fetchModuleResources(moduleId);
+      const fetchedStudent = await fetchStudent() as {id: string, role: string};
 
+      const courseRatingsMap = new Map(Object.entries(fetchedModule.ratings as Map<string,number>) );
+      setModuleRating(courseRatingsMap.get(fetchedStudent.id) || null);
 
       setModule(fetchedModule);
       //setEditedModule(fetchedModule);
