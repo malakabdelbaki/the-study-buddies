@@ -56,7 +56,7 @@ export default async function register(prevState:any,formData:FormData){
       catch(error: any){
         console.log('Full error:', error);
         console.log('hi',error.response)
-        let m = error.response;
+        const m = error.response;
         return {message:m} //i feel like this was sent bas idk why
       }
 }

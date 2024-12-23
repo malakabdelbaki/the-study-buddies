@@ -71,9 +71,9 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseI
 
 
   async function handleRatingClick(star: number) {
-      let {moduleId} = await params
+      const {moduleId} = await params
       setModuleRating(star);
-      let response = await rateModule(moduleId,star);
+      const response = await rateModule(moduleId,star);
       console.log(response);
     
   }

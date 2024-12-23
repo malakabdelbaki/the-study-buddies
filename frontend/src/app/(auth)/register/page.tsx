@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 //import axiosInstance from '@/app/utils/axiosInstance';
-let backend_url = "http://localhost:3001";
+const backend_url = "http://localhost:3001";
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

@@ -20,7 +20,7 @@ export default async function getCourses(courseId : string)
     //Error handeling: (might improve)!!
       catch(error: any){
         console.log('ERROR',error.response)
-        let m = error.response.message;
+        const m = error.response.message;
         return {message:m}
       }
 }

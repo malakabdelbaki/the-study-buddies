@@ -55,7 +55,7 @@ export default async function courseServer(prevState:any,formData:FormData){
       catch(error: any){
         console.log('Full error:', error);
         console.log('hi',error.response)
-        let m = error.response;
+        const m = error.response;
         return {message:m}
       }
 }

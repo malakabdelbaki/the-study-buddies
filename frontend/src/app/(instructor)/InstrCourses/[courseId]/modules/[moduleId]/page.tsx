@@ -62,7 +62,7 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) =>
 
 
   const handleUpdateQuestion =async (updatedQuestion: Question) => {
-    let updated = await updateQuestionInModule(updatedQuestion._id as string,updatedQuestion);
+    const updated = await updateQuestionInModule(updatedQuestion._id as string,updatedQuestion);
     setQuestions((prev) =>
       prev.map((q) => (q._id === updatedQuestion._id ? updatedQuestion : q))
     );
@@ -70,7 +70,7 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) =>
 
 
   const handleUpdateResource = async (updatedResource: any) => {
-    let updated = await updateResourceMetadata(updatedResource._id,updatedResource);
+    const updated = await updateResourceMetadata(updatedResource._id,updatedResource);
     console.log(updated);
     setResources((prev) =>
       prev.map((resource) =>
@@ -81,13 +81,13 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) =>
   };
 
   const handleDeleteResource = async (resourceId: string) => {
-    let deleted = await deleteModuleResource(resourceId);
+    const deleted = await deleteModuleResource(resourceId);
     console.log(deleted);
     setResources((prev) => prev.filter((resource) => resource._id !== resourceId));
   };
 
   const handleDeleteQuestion = async (questionId: string) => {
-    let deleted = await deleteQuestionFromModule(questionId);
+    const deleted = await deleteQuestionFromModule(questionId);
     console.log(deleted);
     setQuestions((prev) => prev.filter((ques) => ques._id !== questionId));
   };

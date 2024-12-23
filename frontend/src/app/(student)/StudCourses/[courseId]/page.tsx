@@ -32,12 +32,12 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   async function handleRatingClick(what:string,star: number) {
     if (what===Role.Instructor){
       setInstructorRating(star);
-        let response = await rateInstructor({targetId:course?.instructor_id?._id as string,rating:star} );
+        const response = await rateInstructor({targetId:course?.instructor_id?._id as string,rating:star} );
         console.log(response);
     }
     else {
       setCourseRating(star);
-      let response = await rateCourse(course?._id as string,star);
+      const response = await rateCourse(course?._id as string,star);
       console.log(response);
     }
   }
@@ -55,26 +55,26 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     async function loadCourse() {
       try {
         const { courseId } = await params;
-        let course = await fetchCourseById(courseId);
+        const course = await fetchCourseById(courseId);
         if(course.students.includes(userId)){
           console.log('enrolled');
-           let modules = await fetchCourseModules(courseId);
+           const modules = await fetchCourseModules(courseId);
            console.log(modules);
            setModules(modules);
            setIsEnroll(true);
         }
 
-        let student = await fetchStudent() as {id:string,role:string};
+        const student = await fetchStudent() as {id:string,role:string};
         //let instructor = await get();
        setInstructor(course.instructor_id );
         setCourse(course);
         setEditedCourse(course);
         
 
-        let rateins = Instructor?.ratings?.get(student.id);
+        const rateins = Instructor?.ratings?.get(student.id);
         if(rateins)setInstructorRating(rateins)
 
-        let ratecourse = course?.ratings?.get(courseId);
+        const ratecourse = course?.ratings?.get(courseId);
         if(ratecourse)setInstructorRating(ratecourse)
     } catch (err) {
         console.log(err);

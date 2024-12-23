@@ -42,7 +42,7 @@ const CoursesPage = () => {
       // Handle success
       console.log('Course created successfully:', response);
       alert('Course created successfully!');
-      let gett = await fetchCourses({ filters: {} }); 
+      const gett = await fetchCourses({ filters: {} }); 
       setCourses(gett);
       // Optionally reset the form
       setTitle('');
@@ -62,7 +62,7 @@ const CoursesPage = () => {
   useEffect(() => {
     async function loadCourses() {
       try {
-        let gett = await fetchCourses({ filters: {} }); 
+        const gett = await fetchCourses({ filters: {} }); 
         setCourses(gett);
       } catch (err) {
         setError("Failed to load courses.");
@@ -72,7 +72,7 @@ const CoursesPage = () => {
     }
 
     async function getInstructor(){ 
-      let user = await fetchInstructor();
+      const user = await fetchInstructor();
       setUser(user as {id:string,role:string});
     }
     loadCourses();

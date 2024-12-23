@@ -35,7 +35,7 @@ export default async function getCourses({filters}:
       catch(error: any){
         console.log('Full error:', error);
         console.log('hi',error.response)
-        let m = error.response;
+        const m = error.response;
         return {message:m}
       }
 }

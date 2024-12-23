@@ -6,7 +6,7 @@ import { Course } from "@/types/Course";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 
 const CourseCard = ({ course, user ,explore}: { course: Course; user: { id?: string; role?: string } | null,explore?:boolean}) => {
-  let inst_info = course.instructor_id as unknown as User;
+  const inst_info = course.instructor_id as unknown as User;
 
   return (
     <Card className="w-full max-w-md mx-auto">

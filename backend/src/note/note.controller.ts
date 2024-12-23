@@ -9,7 +9,7 @@ import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
 import { IsNoteCreatorGuard } from 'src/auth/guards/IsNoteCreator.guard';
 
-@UseGuards(AuthGuard, authorizationGuard, IsNoteCreatorGuard)
+@UseGuards(AuthGuard, authorizationGuard)
 @Controller('note')
 export class NoteController {
   constructor(
@@ -24,6 +24,25 @@ export class NoteController {
     return this.noteService.getNotes(req.user.userid);
   }
 
+  @Get('course/:courseId/canDisableNotes')
+  @SetMetadata(ROLES_KEY, [Role.Instructor])
+  async canDisableNotes(
+    @Param('courseId') courseId: string,
+  ) {
+    console.log("in controller **********",courseId);
+    return this.noteService.canDisableNotes(courseId);
+  }
+
+  @Get('course/:courseId/module/:moduleId')
+  @SetMetadata(ROLES_KEY, [Role.Student]) 
+  async getModuleNotes(
+    @Param('courseId') courseId: string,
+    @Param('moduleId') moduleId: string,
+    @Req() req,
+  ) {
+    return this.noteService.getModuleNotes(req.user.userid, courseId, moduleId);
+  }
+  
   @Get('course/:courseId')
   @SetMetadata(ROLES_KEY, [Role.Student])
   async getCourseNotes(
@@ -43,15 +62,7 @@ export class NoteController {
     return this.noteService.getNote(req.user.userid, noteId);
   }
 
-  @Get('course/:courseId/module/:moduleId')
-  @SetMetadata(ROLES_KEY, [Role.Student]) 
-  async getModuleNotes(
-    @Param('courseId') courseId: string,
-    @Param('moduleId') moduleId: string,
-    @Req() req,
-  ) {
-    return this.noteService.getModuleNotes(req.user.userid, courseId, moduleId);
-  }
+  
 
   @Post()
   @SetMetadata(ROLES_KEY, [Role.Student])
@@ -111,13 +122,6 @@ export class NoteController {
     }
   }
 
-  @Get('course/:courseId/canDisableNotes')
-  @SetMetadata(ROLES_KEY, [Role.Instructor])
-  async canDisableNotes(
-    @Param('courseId') courseId: string,
-  ) {
-    console.log("in controller **********",courseId);
-    return this.noteService.canDisableNotes(courseId);
-  }
+
 
 }

@@ -145,7 +145,8 @@ export class NoteService {
   }
 
   async canDisableNotes( courseId: string): Promise<boolean> {
-    const notes = await this.noteModel.find(new Types.ObjectId(courseId));
+    console.log("in service **********",courseId);
+    const notes = await this.noteModel.find({ courseId });
     console.log("notes **********",notes); 
     if (!notes || notes.length === 0) {
       return true;
