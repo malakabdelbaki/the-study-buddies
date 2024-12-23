@@ -1,9 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert } from "@/components/ui/alert";
 import { Thread } from '@/types/Thread';
 import Link from 'next/link';

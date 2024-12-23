@@ -2,11 +2,10 @@
 //allows user to enter their creds, submit login form, trigger login server action
 
 'use client'; //marker: code runs on client side (enables: react hooks, browser apis, client-side interactivity)
-import { useActionState, useState } from "react"; //useActionState: helps manage submissions
+import { useState } from "react"; //useActionState: helps manage submissions
 //useState: manages local state of email and pass inputs
 import { useRouter } from "next/navigation"; //allows page to redirect after sucessful login
 //import axiosInstance from "@/app/utils/axiosInstance"; 
-import login from "./login.server"; //handles login logic
 import { extractToken } from "@/app/_lib/tokenExtract";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +37,6 @@ export default function LoginPage() {
       });
 
       if (response.ok) {
-        const data = await response.json(); // Parse JSON data from the response
         setFormState({ message: 'Login successful!' });
 
         //------------------redirection

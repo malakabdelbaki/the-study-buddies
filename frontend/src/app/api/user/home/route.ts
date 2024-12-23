@@ -1,8 +1,11 @@
+'use server';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
 import axiosInstance from '@/app/utils/axiosInstance';
+import Server from '@/app/about/me/server/page';
+import { Course } from '@/types/Course';
 
 // Helper to decode JWT and extract user info
 const getUserFromToken = async () => {
@@ -22,9 +25,9 @@ const getUserFromToken = async () => {
 };
 
 // GET: Retrieve Enrolled Courses and their Progress
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const { userId, token, role } = await getUserFromToken();
+    const { userId, token } = await getUserFromToken();
 
     // Step 1: Fetch enrolled courses for the student or any courses if the user is an admin or instructor
     let enrolledCoursesResponse;
@@ -70,15 +73,24 @@ export async function GET(req: Request) {
   }
 }
 
+export async function getCompletedCoursesOfStudent(userId: string): Promise<Course[]> {
+  try {
+    console.log('Fetching completed courses for user:', userId);
 
-// export async function getCompletedCoursesOfStudent(userId: string) {
-//   try {
-//     const { data } = await axiosInstance.get(`/users/${userId}/courses/completed`);
-//     return data;
-//   } catch (error:any) {
-//     console.error('Error fetching course modules:', error.message);
-//     throw error;
-//   }
-//}
+    // Perform the API call
+    const response = await axiosInstance.get(`/users/${userId}/courses/completed`);
+    console.log('Raw response data:', response.data);
+
+    // Extract the array of completed courses (assuming response.data is an array)
+    const completedCourses = response.data.map((item: { progress: any; course: Course }) => item.course);
+
+    console.log('Extracted courses:', completedCourses);
+    return completedCourses;
+  } catch (error: any) {
+    console.error('Error fetching completed courses:', error.message);
+    throw error;
+  }
+}
+
 
 

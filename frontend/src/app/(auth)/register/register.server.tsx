@@ -1,10 +1,8 @@
 'use server'; //marker: server-side action
-import { redirect } from "next/navigation";
 import axios from "axios";
 import { cookies } from "next/headers"; //allows server to interact with cookies
 
-export default async function register(prevState:any,formData:FormData){
-    const cookieStore=await cookies()
+export default async function register(formData:FormData){
     console.log(formData.get('email'))
     try{
     const response = await axios.post(`auth/register`, { //send login cred to backend for auth
@@ -56,7 +54,7 @@ export default async function register(prevState:any,formData:FormData){
       catch(error: any){
         console.log('Full error:', error);
         console.log('hi',error.response)
-        let m = error.response;
+        const m = error.response;
         return {message:m} //i feel like this was sent bas idk why
       }
 }

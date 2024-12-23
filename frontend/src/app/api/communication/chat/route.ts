@@ -19,10 +19,6 @@ export async function GET(req: Request) {
       return new Response('Invalid Token', { status: 401 });
     }
 
-    const userid = (decodedToken as any)?.userId; 
-    const userRole = (decodedToken as any)?.role; 
-
-
     // Call the external endpoint and pass token
     const response = await axios.get(`http://localhost:${process.env.NEXT_PUBLIC_PORT}/api/chat`, {
       headers: {

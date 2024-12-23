@@ -1,15 +1,18 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-
 import { Module } from "@/types/Module";
 import { Course } from "@/types/Course";
 import { User } from "@/types/User";
-import { fetchCourseModules,fetchCourseById, rateCourse, rateInstructor, fetchStudent } from "../../../api/courses/student/courseRoute";
+import {
+  fetchCourseModules,
+  fetchCourseById,
+  rateCourse,
+  rateInstructor,
+  fetchStudent,
+} from "../../../api/courses/student/courseRoute";
 import ModuleCard from "../../../../components/course/general/moduleCard";
 import ForumPreview from "@/components/forum/ForumPreview";
-import { createModule } from "../../../api/courses/instructor/moduleRoute";
-import { Types } from "mongoose";
 import { useAuthorization } from "@/hooks/useAuthorization";
 import { Role } from "@/enums/role.enum";
 import { decodeToken } from "@/app/utils/decodeToken";
@@ -19,7 +22,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   const [course, setCourse] = useState<Course>();
   const [modules, setModules] = useState<Module[]>();
   const [Instructor,setInstructor] = useState<User>();
-  const [Student,setStudent] = useState<User>();
+  const [Student,setStudent] = useState<{id:string,role:string}>();
   const [IsEnroll,setIsEnroll] =useState<boolean>(false);
   const [editedCourse, setEditedCourse] = useState(() => ({
     ...course,
@@ -29,16 +32,16 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   const [CourseRating, setCourseRating] = useState<number>(0);
  const [userId, setUserId] = useState<string | null>(null);
 
-  async function handleRatingClick(what:string,star: number) {
-    if (what===Role.Instructor){
+  // Handle rating
+  const handleRatingClick = async (type: "instructor" | "course", star: number) => {
+    if (type === "instructor" && Instructor) {
       setInstructorRating(star);
-        let response = await rateInstructor({targetId:course?.instructor_id?._id as string,rating:star} );
-        console.log(response);
-    }
-    else {
+      const response = await rateInstructor({ targetId: Instructor._id, rating: star });
+      console.log("Instructor Rating Response:", response);
+    } else if (type === "course" && course) {
       setCourseRating(star);
-      let response = await rateCourse(course?._id as string,star);
-      console.log(response);
+      const response = await rateCourse(course._id as string, star);
+      console.log("Course Rating Response:", response);
     }
   }
   useEffect(() => {
@@ -52,155 +55,128 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     }}, []);
 
   useEffect(() => {
-    async function loadCourse() {
+    const loadCourseDetails = async () => {
       try {
+        // Fetch course, student, and Instructor details
         const { courseId } = await params;
-        let course = await fetchCourseById(courseId);
-        if(course.students.includes(userId)){
-          console.log('enrolled');
-           let modules = await fetchCourseModules(courseId);
-           console.log(modules);
-           setModules(modules);
-           setIsEnroll(true);
+        const fetchedCourse = await fetchCourseById(courseId);
+        const fetchedStudent = await fetchStudent() as {id:string,role:string};
+
+        if (fetchedCourse && fetchedStudent) {
+          setCourse(fetchedCourse);
+          setStudent(fetchedStudent );
+
+          if (fetchedCourse.Instructor_id) {
+            setInstructor(fetchedCourse.Instructor_id);
+          }
+
+          if (fetchedCourse.students.includes(fetchedStudent.id)) {
+            setIsEnroll(true);
+            const fetchedModules = await fetchCourseModules(courseId);
+            setModules(fetchedModules);
+          }
         }
-
-        let student = await fetchStudent() as {id:string,role:string};
-        //let instructor = await get();
-       setInstructor(course.instructor_id );
-        setCourse(course);
-        setEditedCourse(course);
-        
-
-        let rateins = Instructor?.ratings?.get(student.id);
-        if(rateins)setInstructorRating(rateins)
-
-        let ratecourse = course?.ratings?.get(courseId);
-        if(ratecourse)setInstructorRating(ratecourse)
-    } catch (err) {
-        console.log(err);
+      } catch (error) {
+        console.error("Error loading course details:", error);
       }
-    }
-    loadCourse();
-  }, []);
+    };
+
+    loadCourseDetails();
+  }, [params]);
 
   if (!course) {
     return <p className="text-center text-lg">Loading course details...</p>;
   }
 
-
   return (
     <div className="course-details p-6 max-w-4xl mx-auto">
-      <h1 className="text-4xl font-bold mb-4 text-center text-gray-800">
-        {(
-          course.title
-        )}
-      </h1>
+      <h1 className="text-4xl font-bold mb-4 text-center text-gray-800">{course.title}</h1>
 
       <div className="bg-white shadow-md rounded-lg p-6">
-  {/* Description */}
-  <div className="text-lg text-gray-700 mb-4">
-    <span className="font-semibold">Description:</span>{" "}
-    {(
-      course.description
-    )}
-  </div>
-
-  {/* Category */}
-  <div className="text-lg text-gray-700 mb-4">
-    <span className="font-semibold">Category:</span>{" "}
-    { (
-      course.category
-    )}
-  </div>
-
-  {/* Difficulty Level */}
-  <div className="text-lg text-gray-700 mb-4">
-    <span className="font-semibold">Difficulty Level:</span>{" "}
-    {(
-      course.difficulty_level
-    )}
-  </div>
-
-  {/* Key Words */}
-  <div className="text-lg text-gray-700 mb-4">
-    <span className="font-semibold">Key Words:</span>{" "}
-    { (
-      <div className="flex flex-wrap gap-2">
-        {course.key_words?.map((keyword, index) => (
-          <span
-            key={index}
-            className="bg-blue-100 text-blue-800 rounded px-3 py-1"
-          >
-            {keyword}
-          </span>
-        ))}
-      </div>
-    )}
-  </div>
-
-  {/* Number of Modules */}
-  <div className="text-lg text-gray-700 mb-4">
-    <span className="font-semibold">Number of Modules:</span>{" "}
-    {course.modules?.length || 0}
-  </div>
-
-  {/* Rating */}
-  <div className="text-lg text-gray-700 mb-4">
-     <p>Ratings:  {course.ratings?.values
-    ? (Array.from(course.ratings.values()).reduce((sum, value) => sum + value, 0) /
-       Array.from(course.ratings.values()).length).toFixed(2)
-    : 0} / 5</p>
-  </div>
-
-  {/* Number of Students */}
-  <div className="text-lg text-gray-700 mb-6">
-    <span className="font-semibold">Number of Students:</span>{" "}
-    {course.students?.length}
-  </div>
-
-  {/* Instructor Info */}
-  <div className="text-lg text-gray-700 mb-6">
-    <span className="font-semibold">Instructor Name:</span>{" "}
-    {Instructor?.name}
-    <span className="font-semibold">Instructor Email:</span>{" "}
-    {Instructor?.email}
-    {IsEnroll &&
-    <div className="text-lg text-gray-700 mb-4">
-          <span className="font-semibold">Rate this Instructor:</span>
-          <div className="flex items-center space-x-2 mt-2">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                onClick={() => handleRatingClick('instructor',star)}
-                className={`text-2xl ${
-                  InstructorRating >= star ? "text-yellow-500" : "text-gray-400"
-                } hover:text-yellow-500`}
-              >
-                ★
-              </button>
+        <div className="text-lg text-gray-700 mb-4">
+          <span className="font-semibold">Description:</span> {course.description}
+        </div>
+        <div className="text-lg text-gray-700 mb-4">
+          <span className="font-semibold">Category:</span> {course.category}
+        </div>
+        <div className="text-lg text-gray-700 mb-4">
+          <span className="font-semibold">Difficulty Level:</span> {course.difficulty_level}
+        </div>
+        <div className="text-lg text-gray-700 mb-4">
+          <span className="font-semibold">Key Words:</span>
+          <div className="flex flex-wrap gap-2">
+            {course.key_words?.map((keyword, index) => (
+              <span key={index} className="bg-blue-100 text-blue-800 rounded px-3 py-1">
+                {keyword}
+              </span>
             ))}
           </div>
-      </div>
-      }
-  </div>
-      {IsEnroll &&
-     <div className="text-lg text-gray-700 mb-4">
-          <span className="font-semibold">Rate this course:</span>
-          <div className="flex items-center space-x-2 mt-2">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                onClick={() => handleRatingClick('course',star)}
-                className={`text-2xl ${
-                  CourseRating >= star ? "text-yellow-500" : "text-gray-400"
-                } hover:text-yellow-500`}
-              >
-                ★
-              </button>
-            ))}
+        </div>
+        <div className="text-lg text-gray-700 mb-4">
+          <span className="font-semibold">Number of Modules:</span> {course.modules?.length || 0}
+        </div>
+        <div className="text-lg text-gray-700 mb-4">
+          <p>
+            Ratings:{" "}
+            {course.ratings
+                  ? (
+                      Object.values(course.ratings).reduce((sum, value) => sum + value, 0) /
+                      Object.values(course.ratings).length
+                    ).toFixed(2)
+                  : 0}
+
+            / 5
+          </p>
+        </div>
+        <div className="text-lg text-gray-700 mb-6">
+          <span className="font-semibold">Number of Students:</span> {course.students?.length}
+        </div>
+
+        {Instructor && (
+          <div className="text-lg text-gray-700 mb-6">
+            <span className="font-semibold">Instructor Name:</span> {Instructor.name}
+            <br />
+            <span className="font-semibold">Instructor Email:</span> {Instructor.email}
           </div>
-      </div>    
-      }
+        )}
+
+        {IsEnroll && (
+          <>
+            <div className="text-lg text-gray-700 mb-4">
+              <span className="font-semibold">Rate this Instructor:</span>
+              <div className="flex items-center space-x-2 mt-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => handleRatingClick("instructor", star)}
+                    className={`text-2xl ${
+                      InstructorRating >= star ? "text-yellow-500" : "text-gray-400"
+                    } hover:text-yellow-500`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="text-lg text-gray-700 mb-4">
+              <span className="font-semibold">Rate this Course:</span>
+              <div className="flex items-center space-x-2 mt-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => handleRatingClick("course", star)}
+                    className={`text-2xl ${
+                      CourseRating >= star ? "text-yellow-500" : "text-gray-400"
+                    } hover:text-yellow-500`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
   {/* __________________________________ModulesPart_______________________________________ */}
@@ -228,3 +204,4 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
 };
 
 export default CourseDetails;
+ 

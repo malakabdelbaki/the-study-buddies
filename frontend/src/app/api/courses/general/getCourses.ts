@@ -5,8 +5,6 @@
 
 'use server'; //marker: server-side action
 import axiosInstance from "@/app/utils/axiosInstance"; //send HTTP reqs to backend server
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers"; //allows server to interact with cookies
 import { Course } from "@/types/Course";
 
 export default async function getCourses({filters}:
@@ -35,7 +33,7 @@ export default async function getCourses({filters}:
       catch(error: any){
         console.log('Full error:', error);
         console.log('hi',error.response)
-        let m = error.response;
+        const m = error.response;
         return {message:m}
       }
 }

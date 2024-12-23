@@ -14,7 +14,7 @@ import { Types } from "mongoose";
 export async function createModule(moduleData: Module) {
   try {
     console.log(moduleData);
-    let instr =  await fetchInstructor() as {id:string,role:string};
+    const instr =  await fetchInstructor() as {id:string,role:string};
     console.log(instr.id);
     const { data } = await axiosInstance.post('/modules',{...moduleData,instructor_id:instr.id});
     console.log(data);
@@ -96,7 +96,7 @@ export async function addQuestionToModule(createQuestionDto:Question) {
   export async function updateQuestionInModule(quesId:string, updateQuestionDto:Question) {
     try {
       console.log("anat3bt",quesId,updateQuestionDto)
-      let sentq = {
+      const sentq = {
         correct_answer: updateQuestionDto.correct_answer,
         difficulty_level: updateQuestionDto.difficulty_level,
         question_type: updateQuestionDto.question_type,

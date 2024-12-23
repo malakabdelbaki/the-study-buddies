@@ -134,7 +134,7 @@ import { cookies } from 'next/headers';
 
 const backendUrl = 'http://localhost:3000/api/performance';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     // Extract token from cookies
     const cookieStore = await cookies();

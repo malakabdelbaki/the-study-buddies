@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
       const cookieStore = await cookies();
       const tokenCookie = cookieStore.get('token');  

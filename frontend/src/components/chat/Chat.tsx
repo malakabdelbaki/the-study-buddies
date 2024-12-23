@@ -4,9 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ChatList from "@/components/chat/ChatList";
 import CreateChat from "@/components/chat/CreateChat";
-import ChatForm from "@/components/chat/ChatForm";
-import ChatMessage from "@/components/chat/ChatMessage";
-import { getSocket } from "@/lib/socket-client";
 import {Card} from "@/components/ui/card";
 import { User } from "@/types/User";
 import { ChatType } from '../../../../backend/src/enums/chat-type.enum';
@@ -28,10 +25,8 @@ interface InitialData {
   courses: any[];
 }
 
-export default function Chat({ initialData }: { initialData: InitialData }) {
+export default function Chat({ initialData }: { readonly initialData: InitialData }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [joined, setJoined] = useState<boolean>(false);
-  const [data, setData] = useState<any[]>([]);
   const router = useRouter();
 
   useEffect(() => {

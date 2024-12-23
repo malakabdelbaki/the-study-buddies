@@ -77,7 +77,7 @@ export async function createCourse(courseData: object) {
 export async function updateCourse(courseId: string, updateData: Course ={}) {
   try {
     console.log('haa',updateData);
-    let sent = {
+    const sent = {
       description:updateData.description,
       title:updateData.title,
       key_words:updateData.key_words,
