@@ -4,6 +4,7 @@ import { User } from '../../types/User';
 import { ChatType } from '../../../../backend/src/enums/chat-type.enum';
 import { ChatVisibility } from '../../../../backend/src/enums/chat-visibility.enum';
 import { Role } from '../../../../backend/src/enums/role.enum';
+import { Course } from '../../types/Course';
 
 
 export interface CourseInfo {
@@ -12,7 +13,7 @@ export interface CourseInfo {
 }
 interface CreateChatProps {
   userId: string;
-  courseList: CourseInfo[];
+  courseList: Course[];
   userRole: Role;
   onCreateChat: (participants: User[], chatType: ChatType, chatName: string, visibility: ChatVisibility, courseId: string) => void;
 }
@@ -21,7 +22,7 @@ const CreateChat: React.FC<CreateChatProps> = ({userId, courseList, userRole, on
   const [chatName, setChatName] = useState<string>('');
   const [chatType, setChatType] = useState<ChatType>(ChatType.Direct);
   const [chatVisibility, setChatVisibility] = useState<ChatVisibility>(ChatVisibility.PRIVATE);
-  const [selectedCourse, setSelectedCourse] = useState<string>('');
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [usersList, setUserList] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User[]>([]);
  
@@ -31,7 +32,7 @@ const CreateChat: React.FC<CreateChatProps> = ({userId, courseList, userRole, on
     const fetchParticipants = async () => {
       try {
         const response = await fetch(
-          `/api/communication/potential-participants/${selectedCourse}`,
+          `/api/communication/potential-participants/${selectedCourse._id}`,
           {
             method: "GET",
             cache: "no-store",
@@ -53,13 +54,13 @@ const CreateChat: React.FC<CreateChatProps> = ({userId, courseList, userRole, on
 }, [selectedCourse]);
  
 const handleCreateChat = () => {
-    if (selectedUser && selectedCourse) {
+    if (selectedUser && selectedCourse && selectedCourse._id) {
       onCreateChat(
         selectedUser,
         chatType,
         chatName,
         chatVisibility,
-        selectedCourse
+        selectedCourse._id
       );
     }
   };
@@ -83,12 +84,16 @@ const handleCreateChat = () => {
       </div>
       <select
         className="w-full p-2 border rounded"
-        value={selectedCourse}
-        onChange={(e) => setSelectedCourse(e.target.value)}
+        key={selectedCourse?._id}
+        value={selectedCourse?.title}
+        onChange={(e) => {
+          const selectedCourse = courseList.find(course => course._id === e.target.value) || null;
+          setSelectedCourse(selectedCourse);
+        }}
       >
         <option value="">Select a course</option>
         {courseList.map((course) => (
-          <option key={course.id} value={course.id}>
+          <option key={course._id} value={course._id}>
             {course.title}
           </option>
         ))}

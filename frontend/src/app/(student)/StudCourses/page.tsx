@@ -45,6 +45,8 @@ const StudentCoursesPage = () => {
         const enrolledCoursesData: Course[] = await responseEnrolled.json();
 
         // Filter "In-Progress Courses" by excluding "Completed Courses"
+        console.log("enr", enrolledCoursesData);
+        console.log("comp",completedCoursesData);
         const inProgressCourses = enrolledCoursesData.filter(
           (enrolledCourse) =>
             !completedCoursesData.some(

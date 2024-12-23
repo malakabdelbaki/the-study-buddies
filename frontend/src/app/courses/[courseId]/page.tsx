@@ -218,7 +218,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
                         Go to your courses
                     </Link>
                     </div>
-            };
+            }
     </div>
     </div>)
 };
