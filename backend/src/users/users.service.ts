@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException, ConsoleLogger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import  mongoose,{ Model } from 'mongoose';
 import { User, UserDocument } from '../Models/user.schema';
@@ -350,6 +350,7 @@ export class UserService {
       // Update the user's profile picture URL
       const profilePictureUrl = path.join('uploads', file.filename);
       user.profilePictureUrl = profilePictureUrl;
+      
 
       // Save the updated user
       await user.save();
@@ -392,18 +393,17 @@ async getCompletedCoursesOfStudent(userId: string): Promise<any> {
       .find({ userId: studentObjectId, completionPercentage: 100 })
       .populate({
         path: 'courseId', // Ensure courseId is a reference in progressModel
-       // select: 'title', // Only fetch the title field from courseModel
+        select: 'title', // Only fetch the title field from courseModel
       });
-      console.log('reeeek',completed);
 
-    if (!completed.length) return [];
+    if (!completed.length) throw new NotFoundException('No completed courses found.');
 
     // Map the data to return the required structure
     const result = completed.map((progress) => ({
       progressId: progress._id,
-      course: progress.courseId, // Use type assertion
+      title: (progress.courseId as any).title, // Use type assertion
     }));
-    console.log('reeeeee',result);
+
     return result;
   } catch (error) {
     throw new InternalServerErrorException('Error fetching completed courses', error.message);
