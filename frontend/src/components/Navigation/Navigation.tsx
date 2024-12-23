@@ -1,18 +1,25 @@
-'use client'
+'use client';
 
+<<<<<<< Updated upstream
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Home, BookOpen, MessageSquare, ClipboardList, Users, User, LogOut, Library, LibraryIcon } from 'lucide-react'
+=======
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import { Home, BookOpen, MessageSquare, ClipboardList, Users, User, LogOut } from 'lucide-react';
+>>>>>>> Stashed changes
 
-
-type UserRole = 'student' | 'instructor' | 'admin'
+type UserRole = 'student' | 'instructor' | 'admin';
 
 interface NavItem {
-  name: string
-  href: string
-  icon: React.ElementType
+  name: string;
+  href: string;
+  icon: React.ElementType;
 }
 
 const Navigation = () => {
@@ -20,8 +27,28 @@ const Navigation = () => {
   const [profileImage, setProfileImage] = useState('/placeholder.svg');
   const [userRole, setUserRole] = useState<UserRole | null>(null);
 
-
+  // Fetch profile image
   useEffect(() => {
+    const fetchProfileImage = async () => {
+      try {
+        const response = await fetch('/api/user/profile', { method: 'GET' });
+        if (response.ok) {
+          const data = await response.json();
+          const imageUrl = `http://localhost:3000/${data.profilePictureUrl}`;
+          setProfileImage(imageUrl);
+          // Store the profile picture URL in localStorage
+        localStorage.setItem('profilePic', imageUrl);
+  
+        // Retrieve the profile picture from localStorage if available
+        const savedPic = localStorage.getItem('profilePic');
+        } else {
+          console.error('Failed to fetch profile image');
+        }
+      } catch (error) {
+        console.error('Error fetching profile image:', error);
+      }
+    };
+
     const fetchRole = async () => {
       try {
         const response = await fetch('/api/auth/role');
@@ -36,6 +63,7 @@ const Navigation = () => {
       }
     };
 
+    fetchProfileImage();
     fetchRole();
   }, []);
 
@@ -61,15 +89,14 @@ const Navigation = () => {
       //{ name: 'Students', href: '/students', icon: Users },
       //{ name: 'Instructors', href: '/instructors', icon: Users },
     ],
-  }
+  };
 
-  const isActive = (path: string) => pathname === path
+  const isActive = (path: string) => pathname === path;
 
   const handleLogout = async () => {
     try {
       const response = await fetch('api/auth/logout', { method: 'POST' });
       if (response.ok) {
-        // Redirect to login page or refresh the page to clear sensitive data
         window.location.href = '/login';
       } else {
         console.error('Logout failed');
@@ -94,25 +121,25 @@ const Navigation = () => {
 
       {/* Navigation Items */}
       <div className="flex-1 flex flex-col items-center gap-6">
-      {userRole &&
+        {userRole &&
           navItems[userRole].map((item) => {
-          const Icon = item.icon
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`p-3 rounded-xl transition-colors ${
-                isActive(item.href)
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
-              }`}
-              title={item.name}
-            >
-              <Icon className="w-6 h-6" />
-              <span className="sr-only">{item.name}</span>
-            </Link>
-          )
-        })}
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`p-3 rounded-xl transition-colors ${
+                  isActive(item.href)
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
+                }`}
+                title={item.name}
+              >
+                <Icon className="w-6 h-6" />
+                <span className="sr-only">{item.name}</span>
+              </Link>
+            );
+          })}
       </div>
 
       {/* Bottom Actions */}
@@ -135,8 +162,7 @@ const Navigation = () => {
         </button>
       </div>
     </nav>
-  )
-}
+  );
+};
 
-export default Navigation
-
+export default Navigation;
