@@ -57,10 +57,10 @@ const EnrolledCoursesClient = () => {
       </CardHeader>
       <CardContent>
         {courses.length === 0 ? (
-          <p> No enrolled courses found.</p>
+          <p>No enrolled courses found.</p>
         ) : (
-          courses.map((course) => (
-            <div key={course.courseId} className="mb-6 flex items-center gap-4">
+          courses.map((course, index) => (
+            <div key={`${course.courseId}-${index}`} className="mb-6 flex items-center gap-4">
               {/* Icon next to the course title */}
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                 <BookOpen className="w-6 h-6 text-primary" />
@@ -73,7 +73,7 @@ const EnrolledCoursesClient = () => {
             </div>
           ))
         )}
-      </CardContent>
+</CardContent>
     </Card>
   );
 };
