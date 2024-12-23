@@ -10,29 +10,33 @@ import Link from "next/link";
 
 const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) => {
   const [course, setCourse] = useState<Course>();
-  const [modules, setModules] = useState<Module[]>();
   const [Instructor,setInstructor] = useState<User>();
   const [IsEnroll,setIsEnroll] = useState<boolean>();
+  const [IsInstructor,setIsInstructor] = useState<boolean>();
+  const [User,setUser] = useState<{userId?:string,userRole?:string}>()
   useEffect(() => {
     async function loadCourse() {
       try {
         const { courseId } = await params;
-        let course = await getCourseDetails(courseId)as Course;
+        const response = await fetch(`/api/courses/${courseId}`);
+        console.log(response);
+        if (!response.ok) {
+          return 'no data';
+        }
+          const course = await response.json();
+          setCourse(course);
+        
+        
         let user = await getUser();
-        const instructor = course.instructor_id;
+        setUser(user);
+        setIsInstructor(user?.userRole ==='instructor')
 
-        setCourse(course);
-        setInstructor(instructor as unknown as User);
-        const mods: Module[] = [];
-        course.modules?.forEach((module) => {
-          mods.push(module as unknown as Module);
-        });
-        console.log(course.students);
-        console.log(course.students?.includes(user?.userId as string));
+
+        const instructor = course?.instructor_id;
+        setInstructor(instructor as unknown as User);       
         setIsEnroll(course.students?.includes(user?.userId as string));
         setCourse(course);
         setInstructor(instructor as unknown as User);
-        setModules(mods);
       } catch (err) {
         console.log(err);
       }
@@ -82,17 +86,27 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
         <p className="text-lg text-gray-700 mb-6">
           <span className="font-semibold">Number of Students:</span> {course.students?.length}
         </p>
-        {!IsEnroll &&
-        <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-          Enroll in this Course
-        </button>
-        }
-        {IsEnroll && (
+        {!IsInstructor && 
           <div>
-          <span className="font-semibold">You are already in this course</span> {course.students?.length}
-          <Link href="/StudCourses" className="text-blue-500 hover:underline text-lg font-semibold">go to your courses</Link>
-          </div>
-        )}
+            {!IsEnroll &&
+            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+              Enroll in this Course
+            </button>
+            }
+            {IsEnroll && (
+              <div>
+              <span className="font-semibold">You are already in this course</span> {course.students?.length}
+              <Link href="/StudCourses" className="text-blue-500 hover:underline text-lg font-semibold">go to your courses</Link>
+              </div>
+            )}
+            </div>
+          }
+          {
+            IsInstructor && User?.userId === course.instructor_id?._id && 
+            <div>
+                <Link href={`/InstrCourses/${course._id}`} className="text-blue-500 hover:underline text-lg font-semibold">go to your courses</Link>
+              </div>
+          }
       </div>
     </div>
   );

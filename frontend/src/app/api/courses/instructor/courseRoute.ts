@@ -151,6 +151,8 @@ export async function fetchInstructor() {
   }
 }
 
+
+
 //the instructor can not rate a course !!
 
 // // Rate a course

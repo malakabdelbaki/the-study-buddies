@@ -16,22 +16,20 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   useAuthorization(['instructor'])
   const [course, setCourse] = useState<Course>();
   const [modules, setModules] = useState<Module[]>();
-  const [Instructor,setInstructor] = useState<{id:string,role:string}>();
+  const [instructor, setInstructor] = useState<{id: string, role: string}>();
   const [isEditing, setIsEditing] = useState(false);
-  const [editedCourse, setEditedCourse] = useState(() => ({
-    ...course,
-    key_words: course?.key_words || [], // Make sure key_words is always an array
-  }));  
+  const [editedCourse, setEditedCourse] = useState<Course>({} as Course);
   const [newKeyword, setNewKeyword] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [newModule, setNewModule] = useState<Module>({title:'',content:'',quiz_type:'',quiz_length:0,module_difficulty:''});
+  const [newModule, setNewModule] = useState<Module>({title:'', content:'', quiz_type:'', quiz_length:0, module_difficulty:''});
   const [canDisableNotes, setCanDisableNotes] = useState<boolean | null>(null);
 
   const enableNotes = async () => {
     try {
-      const { courseId } = await params;
+      let {courseId} = await params;
+
       await fetch(`/api/courses/${courseId}/enableNotes`, { method: 'PATCH' });
-      const updatedCourse = await fetchCourseById(courseId);
+      const updatedCourse = await fetchCourseById();
       setCourse(updatedCourse);
     } catch (err) {
       console.error("Failed to enable notes:", err);
@@ -40,9 +38,10 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
 
   const disableNotes = async () => {
     try {
-      const { courseId } = await params;
+      let courseId = await params;
+
       await fetch(`/api/courses/${courseId}/disableNotes`, { method: 'PATCH' });
-      const updatedCourse = await fetchCourseById(courseId);
+      const updatedCourse = await fetchCourseById();
       setCourse(updatedCourse);
     } catch (err) {
       console.error("Failed to disable notes:", err);
@@ -51,15 +50,13 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
 
   const checkCanDisableNotes = async () => {
     try {
-      console.log("Checking if notes can be disabled...");
-      const { courseId } = await params;
-      console.log(courseId);
+      let {courseId} = await params;
+
       const response = await fetch(`/api/notes/course/${courseId}/canDisableNotes`);
       const data = await response.json();
-      console.log(data);
       setCanDisableNotes(data);
     } catch (err) {
-      console.error("Failed to check if notes can be enabled:", err);
+      console.error("Failed to check if notes can be disabled:", err);
     }
   };
 
@@ -71,35 +68,54 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   };
 
   const handleAddModule = async () => {
-      const {courseId} = await params;
-      const data = await createModule({...newModule,course_id:courseId}); // Call the parent-provided function to add the module
-      setModules(await fetchCourseModules(courseId));
-      setNewModule({title:"",content:''}); // Reset form
-      setShowForm(false); // Hide the form
-      console.log(data);
+    let {courseId} = await params;
+
+    const response = await fetch(`/api/courses/${courseId}/modules`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newModule),
+    });
+    if (response.ok) {
+      await fetchCourseModules();
+      setNewModule({title:"", content:'', quiz_type:'', quiz_length:0, module_difficulty:''});
+      setShowForm(false);
+    }
   };
-
-
 
   const handleEditClick = () => {
     setIsEditing(true);
   };
 
   const handleSaveClick = async () => {
-    // Call the API to save the updated course
-    const {courseId} = await params;
-    updateCourse(courseId,editedCourse);
-    setIsEditing(false);
-    setCourse( await fetchCourseById(courseId));
+    //handleKeywordChange()
+    let {courseId} = await params;
+    console.log(editedCourse)
+    const response = await fetch(`/api/courses/${courseId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(editedCourse),
+    });
+    if (response.ok) {
+      setIsEditing(false);
+      await fetchCourseById();
+    }
   };
 
-  const handleInputChange = (e:any) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setEditedCourse({ ...editedCourse, [name]: value });
+    // setNewModule({
+    //   ...newModule,
+    //   [e.target.name]: e.target.value,
+    // });
   };
 
-  const handleKeywordChange = (e:any, index:any) => {
-    const updatedKeywords = [...editedCourse?.key_words];
+  const handleKeywordChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const updatedKeywords = [...(editedCourse.key_words || [])];
     updatedKeywords[index] = e.target.value;
     setEditedCourse({ ...editedCourse, key_words: updatedKeywords });
   };
@@ -107,46 +123,70 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   const addKeywordField = () => {
     setEditedCourse({
       ...editedCourse,
-      key_words: [...(editedCourse.key_words || []), newKeyword], // Handle undefined case
+      key_words: [...(editedCourse.key_words || []), newKeyword],
     });
     setNewKeyword('');
   };
 
+  const fetchCourseById = async () => {
+    let {courseId} = await params;
+    const response = await fetch(`/api/courses/${courseId}`);
+    console.log(response);
+    if (response.ok) {
+      const courseData = await response.json();
+      setCourse(courseData);
+      setEditedCourse(courseData);
+      return courseData;
+    }
+  };
+
+  const fetchCourseModules = async () => {
+    let {courseId} = await params;
+
+    const response = await fetch(`/api/courses/${courseId}/modules`);
+    if (response.ok) {
+      const modulesData = await response.json();
+      setModules(modulesData);
+    }
+  };
 
   useEffect(() => {
     async function loadCourse() {
       try {
-        const { courseId } = await params;
-        const course = await fetchCourseById(courseId);
-        const modules = await fetchCourseModules(courseId);
-        const instructor = await fetchInstructor();
-        setInstructor(instructor as {id:string,role:string});
-        setModules(modules);
-        setCourse(course);
-        setEditedCourse(course);
-      await checkCanDisableNotes();
-    } catch (err) {
+        await fetchCourseById();
+        await fetchCourseModules();
+        const instructorResponse = await fetch('/api/auth/me');
+        if (instructorResponse.ok) {
+          const instructorData = await instructorResponse.json();
+          setInstructor(instructorData);
+        }
+        await checkCanDisableNotes();
+      } catch (err) {
         console.log(err);
       }
     }
     loadCourse();
-  }, []);
+  }, [params]);
 
-  if (!course || !canDisableNotes) {
-    return <p className="text-center text-lg">Loading course details...</p>;
-  }
+  const handleDeleteKeyword = (index: number) => {
+    if (!editedCourse) return;
 
-  function handleDeleteKeyword(index: number): void {
-    if (!editedCourse) return; // Handle case where editedCourse might be undefined
-    const updatedKeywords = editedCourse.key_words.filter((_, ind) => ind !== index);
+    const updatedKeywords = editedCourse?.key_words?.filter((_, ind) => ind !== index);
     setEditedCourse({ ...editedCourse, key_words: updatedKeywords });
-  }
+  };
 
-  const handleDelete = async ()=>{
-    const response = await deleteCourse(course._id as string);
-    alert (response);
-  }
-  
+  const handleDelete = async () => {
+    let {courseId} = await params;
+    const response = await fetch(`/api/courses/${courseId}`, {
+      method: 'DELETE',
+    });
+    if (response.ok) {
+      alert('Course deleted successfully');
+      // Redirect to courses page or handle as needed
+    } else {
+      alert('Failed to delete course');
+    }
+  };
 
   return (
     <div className="course-details p-6 max-w-4xl mx-auto">
@@ -160,12 +200,12 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
             className="text-4xl font-bold text-center w-full mb-4"
           />
         ) : (
-          course.title
+          course?.title
         )}
       </h1>
 
       <div className="mt-6">
-{course.isNoteEnabled && canDisableNotes && (
+{course?.isNoteEnabled && canDisableNotes && (
   <button
     onClick={disableNotes}
     className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
@@ -174,11 +214,11 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   </button>
 )}
 
-{course.isNoteEnabled && !canDisableNotes && (
+{course?.isNoteEnabled && !canDisableNotes && (
   <p className="text-gray-600">Notes cannot be disabled for this course.</p>
 )}
 
-{!course.isNoteEnabled && (
+{!course?.isNoteEnabled && (
   <button
     onClick={enableNotes}
     className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
@@ -201,7 +241,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
         className="w-full"
       />
     ) : (
-      course.description
+      course?.description
     )}
   </div>
 
@@ -217,7 +257,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
         className="w-full"
       />
     ) : (
-      course.category
+      course?.category
     )}
   </div>
 
@@ -226,15 +266,19 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   <div className="text-lg text-gray-700 mb-4">
     <span className="font-semibold">Difficulty Level:</span>{" "}
     {isEditing ? (
-      <input
-        type="text"
-        name="difficulty_level"
-        value={editedCourse?.difficulty_level}
-        onChange={handleInputChange}
-        className="w-full"
-      />
+      <select
+      name="difficulty_level"
+      value={editedCourse.difficulty_level}
+      onChange={handleInputChange}
+      className="border p-2 rounded w-full mb-2"
+    >
+      <option value="">Select Difficulty</option>
+      <option value="Advenced">Advenced</option>
+      <option value="Intermediate">Intermediate</option>
+      <option value="Easy">Easy</option>
+    </select>
     ) : (
-      course.difficulty_level
+      course?.difficulty_level
     )}
   </div>
 
@@ -244,7 +288,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     {isEditing ? (
       <>
         <div className="flex flex-wrap gap-2 mb-4">
-          {editedCourse.key_words.map((keyword, index) => (
+          {editedCourse?.key_words?.map((keyword, index) => (
             <div
               key={index}
               className="flex items-center bg-blue-100 text-blue-800 rounded px-3 py-1"
@@ -277,7 +321,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
       </>
     ) : (
       <div className="flex flex-wrap gap-2">
-        {course.key_words?.map((keyword, index) => (
+        {course?.key_words?.map((keyword, index) => (
           <span
             key={index}
             className="bg-blue-100 text-blue-800 rounded px-3 py-1"
@@ -292,17 +336,17 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   {/* Number of Modules */}
   <div className="text-lg text-gray-700 mb-4">
     <span className="font-semibold">Number of Modules:</span>{" "}
-    {course.modules?.length || 0}
+    {course?.modules?.length || 0}
   </div>
 
   <div className="text-lg text-gray-700 mb-4">
     <span className="font-semibold">Is Deleted ?</span>{" "}
-    {course.is_deleted? "YES":"NO"}
+    {course?.is_deleted? "YES":"NO"}
   </div>
 
   {/* Rating */}
   <div className="text-lg text-gray-700 mb-4">
-     <p>Ratings:  {course.ratings?.values
+     <p>Ratings:  {course?.ratings?.values
     ? (Array.from(course.ratings.values()).reduce((sum, value) => sum + value, 0) /
        Array.from(course.ratings.values()).length).toFixed(2)
     : 0} / 5</p>
@@ -311,7 +355,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   {/* Number of Students */}
   <div className="text-lg text-gray-700 mb-6">
     <span className="font-semibold">Number of Students:</span>{" "}
-    {course.students?.length}
+    {course?.students?.length}
   </div>
 
   {/* Save and Edit Buttons */}
@@ -349,7 +393,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
 
         <div className="grid grid-cols-1 gap-6">
           {modules?.map((module, index) => (
-            <ModuleCard key={index} module={module}  course={course} />
+            <ModuleCard key={index} module={module}  course={course as Course} />
           ))}
         </div>
     </div>
@@ -434,8 +478,8 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   
       <div className="modules-section mt-8">
       <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Forum</h2>
-      {course._id && course.title && (
-        <ForumPreview courseId={course._id} courseTitle={course.title} />
+      {course?._id && course.title && (
+        <ForumPreview courseId={course._id} courseTitle={course?.title} />
       )}
 
        </div>

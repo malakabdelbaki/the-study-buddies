@@ -17,53 +17,63 @@ const CoursesPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [title,setTitle] = useState<string>('');
-  const [difficulty_level,setDifficulty_level] = useState<string>('');
-  const [category,setCategory] = useState<string>('');
-  const [user,setUser] = useState<{id?:string,role?:string}>({});
-  const [formState, setFormState] = useState<{ message: string | null }>({ message: null });
+  const [title, setTitle] = useState<string>('');
+  const [difficulty_level, setDifficulty_level] = useState<string>('');
+  const [category, setCategory] = useState<string>('');
+  const [user, setUser] = useState<{id?: string, role?: string}>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [enableNotes, setEnableNotes] = useState<boolean>(true);
 
-  const handleSubmit = async (e:any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      // Prepare the course data
       const courseData = {
         title,
         category,
         difficulty_level,
+        isNote_enabled:enableNotes,
       };
 
-      // Call the createCourse function
-      const response = await createCourse(courseData);
+      const response = await fetch('/api/courses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(courseData),
+      });
 
-      // Handle success
-      console.log('Course created successfully:', response);
+      if (!response.ok) {
+        throw new Error('Failed to create course');
+      }
+
       alert('Course created successfully!');
-      const gett = await fetchCourses({ filters: {} }); 
-      setCourses(gett);
-      // Optionally reset the form
+      const coursesResponse = await fetch('/api/courses');
+      const coursesData = await coursesResponse.json();
+      setCourses(coursesData);
+
       setTitle('');
       setCategory('');
       setDifficulty_level('');
       setEnableNotes(true);
       setIsModalOpen(false);
     } catch (error) {
-      // Handle error
       console.error('Error creating course:', error);
       alert('Failed to create the course.');
     }
   };
-  
-
 
   useEffect(() => {
     async function loadCourses() {
       try {
-        const gett = await fetchCourses({ filters: {} }); 
-        setCourses(gett);
+        const response = await fetch('/api/courses',{
+          method: 'GET',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch courses');
+        }
+        const coursesData = await response.json();
+        setCourses(coursesData);
       } catch (err) {
         setError("Failed to load courses.");
       } finally {
@@ -71,14 +81,16 @@ const CoursesPage = () => {
       }
     }
 
-    async function getInstructor(){ 
-      const user = await fetchInstructor();
-      setUser(user as {id:string,role:string});
+    async function getInstructor() {
+      const response = await fetch('/api/auth/me');
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      }
     }
+
     loadCourses();
     getInstructor();
-    console.log(user);
-
   }, []);
 
   return (
@@ -104,7 +116,7 @@ const CoursesPage = () => {
       {!loading && courses.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {courses.map((c) => (
-            <CourseCard key={c._id} course={c} user={user}/>
+            <CourseCard key={c?._id} course={c} user={user}/>
           ))}
         </div>
       )}
