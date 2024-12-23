@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuthorization } from "@/hooks/useAuthorization"
 import { BarChart, BookOpen, Bell } from 'lucide-react'
 import EnrolledCoursesClient from "@/components/user/studProgress"
-// import { decodeToken } from "@/app/utils/decodeToken";
+import { decodeToken } from "@/app/utils/decodeToken";
 import React from "react"
 import Link from "next/link";
 // import { useEffect, useState } from "react";
@@ -51,7 +51,7 @@ export default function StudentHomePage() {
           </CardContent>
         </Card>
 
-        {/* Announcements Card */}
+        {/* Announcements Card
         <Card>
           <CardHeader>
             <CardTitle>Announcements</CardTitle>
@@ -71,7 +71,7 @@ export default function StudentHomePage() {
             </div>
           </CardContent>
         </Card>
-        <EnrolledCoursesClient />
+        <EnrolledCoursesClient /> */}
       </div>
 
       {/* Link to student dashboard Page */}
