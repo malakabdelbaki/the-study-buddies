@@ -4,14 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuthorization } from "@/hooks/useAuthorization"
 import { BarChart, BookOpen, Bell, Calendar, Target, Clock } from 'lucide-react'
 import EnrolledCoursesClient from "@/components/user/studProgress"
-<<<<<<< Updated upstream
-import { decodeToken } from "@/app/utils/decodeToken";
-import React from "react"
-import Link from "next/link";
-// import { useEffect, useState } from "react";
-
-
-=======
 import { Button } from "@/components/ui/button"
 // import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -19,7 +11,6 @@ import { Badge } from "@/components/ui/badge"
 
 import React from "react"
 import Link from "next/link"
->>>>>>> Stashed changes
 
 export default function StudentHomePage() {
   // const [userRole, setUserRole] = useState<string | null>(null);
@@ -40,20 +31,6 @@ export default function StudentHomePage() {
   useAuthorization(['student'])
 
   return (
-<<<<<<< Updated upstream
-    <div className="p-8">
-      <h1 className="text-4xl font-bold mb-8">Welcome Back, </h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-
-        {/* Announcements Card
-        <Card>
-          <CardHeader>
-            <CardTitle>Announcements</CardTitle>
-            <CardDescription>Latest updates from your courses</CardDescription>
-          </CardHead        Student Performance Card
-=======
     <div className="p-8 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <div>
@@ -77,7 +54,6 @@ export default function StudentHomePage() {
       </div> */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
->>>>>>> Stashed changes
         <Card>
           <CardHeader>
             <CardTitle>Your Performance</CardTitle>
@@ -95,9 +71,6 @@ export default function StudentHomePage() {
                 </div>
             </div>
           </CardContent>
-<<<<<<< Updated upstream
-        </Card>er>
-=======
         </Card>
 
         <Card>
@@ -105,7 +78,6 @@ export default function StudentHomePage() {
             <CardTitle>Announcements</CardTitle>
             <CardDescription>Latest updates from your courses</CardDescription>
           </CardHeader>
->>>>>>> Stashed changes
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center gap-4">
@@ -130,18 +102,6 @@ export default function StudentHomePage() {
               </div>
             </div>
           </CardContent>
-<<<<<<< Updated upstream
-        </Card>*/}
-        <EnrolledCoursesClient />
-      </div>
-
-      {/* Link to student dashboard Page */}
-        <div className="mt-8">
-          <Link href="/studentPerformance" className="text-blue-500 hover:underline text-lg font-semibold">
-            View student dashboard
-          </Link>
-        </div>
-=======
         </Card>
       </div>
 
@@ -154,7 +114,6 @@ export default function StudentHomePage() {
           <EnrolledCoursesClient />
         </CardContent>
       </Card>
->>>>>>> Stashed changes
 
       <div className="mt-8 text-center">
         <Button asChild size="lg">

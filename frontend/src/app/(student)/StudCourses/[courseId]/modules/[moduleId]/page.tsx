@@ -4,7 +4,6 @@
 import React, { useState, useEffect } from "react";
 import { Module } from "@/types/Module";
 import { fetchModuleResources, getModule, rateModule } from "@/app/api/courses/instructor/moduleRoute";
-import fetchCourse from "@/app/api/courses/general/getCourseDetails";
 import { Question } from "@/types/Question";
 import ResourceCard from "@/components/course/instructor/resourceCard";
 import { Resource } from "@/types/Resource";
@@ -28,7 +27,13 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseI
     async function handleNotes() {
       const courseId = await params.then((p) => p.courseId);
       const moduleId = await params.then((p) => p.moduleId);
-      const course = await fetchCourse(courseId);
+      const course = await fetch(`api/courses/${courseId}`,{
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).then((res) => res.json());
+    
       if ('message' in course) {
         console.error(course.message);
       } else {
@@ -50,6 +55,7 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseI
 
 
       setModule(fetchedModule);
+      console.log(fetchedModule);
       //setEditedModule(fetchedModule);
      
 

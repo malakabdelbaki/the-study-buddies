@@ -1,18 +1,10 @@
 'use client';
 
-<<<<<<< Updated upstream
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Home, BookOpen, MessageSquare, ClipboardList, Users, User, LogOut, Library, LibraryIcon } from 'lucide-react'
-=======
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { Home, BookOpen, MessageSquare, ClipboardList, Users, User, LogOut } from 'lucide-react';
->>>>>>> Stashed changes
 
 type UserRole = 'student' | 'instructor' | 'admin';
 

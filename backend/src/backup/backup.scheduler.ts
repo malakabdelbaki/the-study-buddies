@@ -10,7 +10,7 @@ export class BackupScheduler {
     private readonly logsService: LogsService
   ) {}
 
-  //@Cron('0 0 * * *') // Runs daily at midnight
+  @Cron('0 0 * * *') // Runs daily at midnight
   // @Cron('*/5 * * * *') // Runs every 5 minutes (for testing!)
   async handleCron() {
     this.logsService.logInfo('Backup job started.');
