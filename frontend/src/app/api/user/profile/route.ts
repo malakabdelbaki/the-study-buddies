@@ -1,7 +1,13 @@
+
+'use server'
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
+//import multer from 'multer';
+import path from 'path';
+import fs from 'fs/promises';
+import axiosInstance from '@/app/utils/axiosInstance';
 
 // Helper to decode JWT and extract user info
 const getUserFromToken = async () => {
@@ -114,3 +120,84 @@ export async function DELETE() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+
+export async function uploadPic(fileData:any) {
+  try {
+    const { userId, role, token } = await getUserFromToken();
+   
+    const formData =new FormData();
+    console.log(fileData);
+    // formData.append('title', fileData.get('title'));
+    // formData.append('description', fileData.get('description'));
+    // formData.append('type', fileData.get('type'));
+    formData.append('profilePicture', fileData);
+
+    //const blob = new Blob([], { type: 'application/pdf' });
+    //formData.append('file', fileData.get('file'));
+    const { data } = await axiosInstance.post(`users/${userId}/profile-picture`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    return data ;
+  } catch (error:any) {
+    console.error('Error uploading resource:', error);
+    throw error;
+  }
+}
+
+
+
+// Configure multer for file uploads
+// const upload = multer({
+//   storage: multer.diskStorage({
+//     destination: './uploads',
+//     filename: (req: any, file: { originalname: string; }, callback: (arg0: Error | null, arg1: string | null) => void) => {
+//       if (!file) {
+//         return callback(new Error('No file provided'), null);
+//       }
+//       const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+//       const ext = path.extname(file.originalname);
+//       const filename = `${file.originalname.replace(/\s+/g, '_')}_${uniqueSuffix}${ext}`;
+//       callback(null, filename);
+//     },
+//   }),
+// }).single('profilePicture');
+// // POST: Update Profile Picture
+// export async function POST(req: Request) {
+//   try {
+//     const { userId, token } = await getUserFromToken();
+
+//     // Handle the multipart/form-data file upload
+//     const form = new FormData();
+//     const file = req.body?.file; // Assuming the file is sent as a binary in the request body
+
+//     if (!file) {
+//       throw new Error('No file provided');
+//     }
+
+//     // Write the file to disk
+//     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+//     const ext = path.extname(file.originalname || 'file.jpg');
+//     const filename = `${file.originalname.replace(/\s+/g, '_')}_${uniqueSuffix}${ext}`;
+//     const filePath = path.join('./uploads', filename);
+
+//     await fs.writeFile(filePath, file.buffer);
+
+//     // Update the user's profile picture using the API
+//     const response = await axios.post(
+//       `http://localhost:${process.env.NEXT_PUBLIC_PORT}/api/users/${userId}/profile-picture`,
+//       { profilePictureUrl: filePath },
+//       {
+//         headers: { Authorization: `Bearer ${token}` },
+//       }
+//     );
+
+//     return NextResponse.json(response.data);
+//   } catch (error: any) {
+//     console.error('Error updating profile picture:', error.message);
+//     return NextResponse.json({ error: error.message }, { status: 400 });
+//   }
+// }
