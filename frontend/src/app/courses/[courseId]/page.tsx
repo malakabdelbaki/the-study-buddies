@@ -14,7 +14,6 @@ import { decodeToken } from "@/app/utils/decodeToken";
 
 const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) => {
   const [course, setCourse] = useState<Course>();
-  const [modules, setModules] = useState<Module[]>();
   const [instructor, setInstructor] = useState<User>();
   const [IsEnroll,setIsEnroll] = useState<boolean>(); 
   const [loading, setLoading] = useState(false);
@@ -27,18 +26,31 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     const [ userRole, setUserRole ] = useState<Role | null>(null);  
 
 
+  const [IsInstructor,setIsInstructor] = useState<boolean>();
+  const [User,setUser] = useState<{userId?:string,userRole?:string}>()
   useEffect(() => {
     async function loadCourse() {
       try {
         const { courseId } = await params;
-        const course = (await getCourseDetails(courseId)) as Course;
+        const response = await fetch(`/api/courses/${courseId}`);
+        console.log(response);
+        if (!response.ok) {
+          return 'no data';
+        }
+          const course = await response.json();
+          setCourse(course);
+        
+        
         let user = await getUser();
-        const instructor = course.instructor_id;
+        setUser(user);
+        setIsInstructor(user?.userRole ==='instructor')
 
+
+        const instructor = course?.instructor_id;
+        setInstructor(instructor as unknown as User);       
+        setIsEnroll(course.students?.includes(user?.userId as string));
         setCourse(course);
         setInstructor(instructor as unknown as User);
-        setModules(course.modules?.map(module => module as unknown as Module) || []);
-        setIsEnroll(course.students?.includes(user?.userId as string));
       } catch (err) {
         console.log(err);
       }
@@ -120,7 +132,6 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
    return (
     <div className="course-details p-6 max-w-4xl mx-auto">
       <h1 className="text-4xl font-bold mb-4 text-center text-gray-800">{course.title}</h1>
-      <h1 className="text-4xl font-bold mb-4 text-center text-gray-800">{course.title}</h1>
 
       <div className="bg-white shadow-md rounded-lg p-6">
         <p className="text-lg text-gray-700 mb-4">
@@ -131,13 +142,11 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
         </p>
         <p className="text-lg text-gray-700 mb-4">
           <span className="font-semibold">Difficulty Level:</span> {course.difficulty_level}
-          <span className="font-semibold">Difficulty Level:</span> {course.difficulty_level}
         </p>
         <p className="text-lg text-gray-700 mb-4">
           <span className="font-semibold">Key Words:</span> {course.key_words?.join(', ')}
         </p>
         <p className="text-lg text-gray-700 mb-4">
-          <span className="font-semibold">Number of Modules:</span> {course.modules?.length || 0}
           <span className="font-semibold">Number of Modules:</span> {course.modules?.length || 0}
         </p>
 
@@ -186,30 +195,29 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
               </ul>
             </div>
           )}
-                {!IsEnroll ? (
+                {(instructor?.role==='student') && !IsEnroll ? (
   
-        <button
-            onClick={handleEnroll}
-            disabled={loading}
-            className={`bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            {loading ? "Enrolling..." : "Enroll in this Course"}
-          </button>
-) : (
-          <div>
-            <span className="font-semibold text-green-700">You are already enrolled in this course.</span>
-            <Link href="/StudCourses" className="text-blue-500 hover:underline text-lg font-semibold ml-2">
-              Go to your courses
-            </Link>
-          </div>
-        )}
-      </div>
-      )}
-      </div>
+                <button
+                    onClick={handleEnroll}
+                    disabled={loading}
+                    className={`bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors ${
+                      loading ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    {loading ? "Enrolling..." : "Enroll in this Course"}
+                  </button>
+                    ) : (
+                  <div>
+                    <span className="font-semibold text-green-700">You are already enrolled in this course.</span>
+                    <Link href="/StudCourses" className="text-blue-500 hover:underline text-lg font-semibold ml-2">
+                      Go to your courses
+                    </Link>
+                  </div>
+                  )
+            };
     </div>
-  );
+    </div>)
 };
+
 
 export default CourseDetails;
