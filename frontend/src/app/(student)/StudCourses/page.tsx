@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Course } from "@/types/Course";
 import CourseCard from "@/components/course/general/courseCard";
 import { fetchCourses, fetchStudent } from "../../api/courses/student/courseRoute";
-import { getCompletedCoursesOfStudent } from "@/app/api/user/home/route";
 import { User } from "@/types/User";
 import { useAuthorization } from "@/hooks/useAuthorization";
 

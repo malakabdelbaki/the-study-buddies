@@ -16,9 +16,11 @@ import ForumPreview from "@/components/forum/ForumPreview";
 import { createModule } from "../../../api/courses/instructor/moduleRoute";
 import { Types } from "mongoose";
 import { useAuthorization } from "@/hooks/useAuthorization";
+import { Role } from "@/enums/role.enum";
+import { decodeToken } from "@/app/utils/decodeToken";
 
 const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) => {
-  //useAuthorization(['student'])
+  useAuthorization(['student'])
   const [course, setCourse] = useState<Course>();
   const [modules, setModules] = useState<Module[]>();
   const [Instructor,setInstructor] = useState<User>();
@@ -30,7 +32,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   }));  
   const [InstructorRating, setInstructorRating] = useState<number>(0);
   const [CourseRating, setCourseRating] = useState<number>(0);
-
+ const [userId, setUserId] = useState<string | null>(null);
 
   // Handle rating
   const handleRatingClick = async (type: "instructor" | "course", star: number) => {
@@ -43,7 +45,16 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
       const response = await rateCourse(course._id as string, star);
       console.log("Course Rating Response:", response);
     }
-  };
+  }
+  useEffect(() => {
+    const token = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("token="))?.split("=")[1];
+
+    if (token) {
+      const userId = decodeToken(token)?.userid;
+      setUserId(userId);
+    }}, []);
 
   useEffect(() => {
     const loadCourseDetails = async () => {
@@ -177,7 +188,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
 
         <div className="grid grid-cols-1 gap-6">
           {modules?.map((module, index) => (
-            <ModuleCard key={index} module={module} />
+            <ModuleCard key={index} module={module} course={course} />
           ))}
         </div>
     </div>

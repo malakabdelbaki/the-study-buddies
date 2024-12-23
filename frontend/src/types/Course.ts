@@ -14,4 +14,5 @@ export type Course = {
   key_words?: string[]; // Optional, default is an empty array
   ratings?: Map<string, number>; // Required, default is an empty Map
   enrolledStudents?: string[];
+  isNoteEnabled?: boolean;
 }

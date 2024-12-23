@@ -1,4 +1,4 @@
-import { IsArray, IsEnum, isEnum, IsMongoId, isMongoId, IsOptional, IsString } from "class-validator";
+import { IsArray, IsBoolean, IsEnum, isEnum, IsMongoId, isMongoId, IsOptional, IsString } from "class-validator";
 import { Types } from "mongoose";
 import { ExistsOnDatabase } from "src/common/decorators/exists-on-database.decorator";
 import { Course_diff } from "src/enums/course-diff.enum";
@@ -25,4 +25,8 @@ export class CreateCourseDto {
     @IsOptional()
     @IsArray()
     key_words?:string[];
+
+    @IsOptional()
+    @IsBoolean()
+    isNoteEnabled?: boolean = true;
 }
