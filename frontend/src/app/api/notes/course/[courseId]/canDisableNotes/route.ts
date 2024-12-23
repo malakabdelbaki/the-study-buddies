@@ -35,10 +35,7 @@ export async function GET(req: NextRequest ) {
     }
 
     return NextResponse.json(response.data);
-  } catch (error: any) {
-    console.error('Error fetching potential participants:', error);
-
-    const errorMessage = error.response?.data?.message || 'Internal Server Error';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ message: error }, { status: 500 });
   }
 }

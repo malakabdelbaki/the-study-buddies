@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Module } from "@/types/Module";
-import { addQuestionToModule, deleteModuleResource, deleteQuestionFromModule, fetchModuleResources, fetchQuestionBank, getModule, updateModule, updateQuestionInModule, updateResourceMetadata } from "@/app/api/courses/instructor/moduleRoute";
+import { deleteModuleResource, deleteQuestionFromModule, fetchModuleResources, fetchQuestionBank, getModule, updateModule, updateQuestionInModule, updateResourceMetadata } from "@/app/api/courses/instructor/moduleRoute";
 import AddQuestionForm from "@/components/course/instructor/QuestionInput";
 import { Question } from "@/types/Question";
 import QuestionCard from "@/components/course/instructor/questionCard";

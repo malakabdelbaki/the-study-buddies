@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest ) {
@@ -35,7 +35,6 @@ export async function GET(req: NextRequest ) {
     return NextResponse.json(response.data);
   } catch (error: any) {
     console.error('Error fetching announcements', error);
-
     const errorMessage = error.response?.data?.message || 'Internal Server Error';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

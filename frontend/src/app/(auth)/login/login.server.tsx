@@ -3,7 +3,6 @@
 
 'use server'; //marker: server-side action
 //import axiosInstance from "@/app/utils/axiosInstance"; //send HTTP reqs to backend server
-import { redirect } from "next/navigation";
 import axios from "axios";
 import { cookies } from "next/headers"; //allows server to interact with cookies
 

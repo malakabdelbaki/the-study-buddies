@@ -40,6 +40,6 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json(data, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ message: error }, { status: 500 });
   }
 }

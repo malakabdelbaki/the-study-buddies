@@ -1,16 +1,12 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-//import axiosInstance from '@/app/utils/axiosInstance';
-const backend_url = "http://localhost:3001";
-import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator'; 
-import { extractToken } from '@/app/_lib/tokenExtract';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -19,8 +15,6 @@ export default function RegisterPage() {
   const [role, setRole] = useState('');
   const [formState, setFormState] = useState<{ message: string | null; status: 'success' | 'error' | null }>({ message: null, status: null });
   const router = useRouter();
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [userId, setUserId] = useState<any>(null);  // Add a state to store userId as well
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +41,7 @@ export default function RegisterPage() {
               const data = await loginResponse.json();
 
               // Assuming the login response contains user data and token
-              const { token, userRole, userId } = data;
+              const { token, userRole } = data;
 
               // You can store the token in a cookie or localStorage
               localStorage.setItem('token', token);
@@ -60,42 +54,18 @@ export default function RegisterPage() {
               } else {
                   router.push('/StudHome');
               }
-        // const tokenData = await extractToken();
-        
-        // if (tokenData instanceof Response) {
-        //   // If the result is a Response (Unauthorized or Invalid Token)
-        //   console.log(tokenData.statusText); // You can handle the response here
-        //   return;
-        // }
-
-        // // Otherwise, destructure userId and userRole from the returned object
-        // const { userId, userRole } = tokenData;
-        // setUserRole(userRole);
-        // setUserId(userId);
-
-        // if (userRole == "admin") {
-        //   router.push('/AdminHome');
-        // } else if (userRole == "instructor") {
-        //   router.push('/InstrHome');
-        // } else {
-        //   router.push('/StudHome');
-        // }
-
-        //----------------------
+       
         } else {
             const errorData = await response.json();
-            //console.log('Error Response:', errorData); // Debugging
             setFormState({ message: errorData.error || 'Registration failed', status: 'error' });
         }
       }
     } catch (error:any) {
-      //console.error('Catch Error:', error); // Debugging
       if (error.response.data?.message) {
         setFormState({ message: error.response.data.message, status: 'error' });
       } else {
         setFormState({ message: 'Unexpected error. Please try again.', status: 'error' });
     }
-        // setFormState({ message: 'An error occurred. Please try again.' });
     }
 };
 

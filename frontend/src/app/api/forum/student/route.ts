@@ -5,7 +5,7 @@ import { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { Role } from 'src/enums/role.enum';
 
-export async function GET(req: NextRequest ) {
+export async function GET( ) {
   try {
 
     const cookieStore = await cookies();
@@ -15,7 +15,6 @@ export async function GET(req: NextRequest ) {
       return new Response('Unauthorized', { status: 401 });
     }
     const decodedToken = jwt.decode(tokenCookie.value);
-    const userId = (decodedToken as any)?.userid;
     const userRole = (decodedToken as any)?.role;
     if(userRole !== Role.Student) {
       return new Response('Unauthorized', { status: 401 });

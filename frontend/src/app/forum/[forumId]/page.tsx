@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from "react";
 import { decodeToken } from "@/app/utils/decodeToken"; 
-import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ThreadCard  from "@/components/forum/ThreadCard";
 import { Role } from '../../../../../backend/src/enums/role.enum';
 import CreateThreadModal from "@/components/forum/CreateThreadModal";

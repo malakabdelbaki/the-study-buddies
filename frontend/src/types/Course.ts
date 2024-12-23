@@ -1,6 +1,4 @@
-import { Types } from 'mongoose';
 import { User } from './User';
-
 export type Course = {
   is_deleted?: boolean;
   _id?:string;

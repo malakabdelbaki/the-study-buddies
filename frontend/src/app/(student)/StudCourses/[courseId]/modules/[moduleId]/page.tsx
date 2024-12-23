@@ -3,12 +3,9 @@
 
 import React, { useState, useEffect } from "react";
 import { Module } from "@/types/Module";
-import { addQuestionToModule, deleteModuleResource, deleteQuestionFromModule, fetchModuleResources, fetchQuestionBank, getModule, rateModule, updateModule, updateQuestionInModule, updateResourceMetadata } from "@/app/api/courses/instructor/moduleRoute";
+import { fetchModuleResources, getModule, rateModule } from "@/app/api/courses/instructor/moduleRoute";
 import fetchCourse from "@/app/api/courses/general/getCourseDetails";
-import AddQuestionForm from "@/components/course/instructor/QuestionInput";
 import { Question } from "@/types/Question";
-import QuestionCard from "@/components/course/instructor/questionCard";
-import AddResourceForm from "@/components/course/instructor/ResourceInput";
 import ResourceCard from "@/components/course/instructor/resourceCard";
 import { Resource } from "@/types/Resource";
 import { useRouter } from "next/navigation";

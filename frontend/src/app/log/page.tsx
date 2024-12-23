@@ -1,5 +1,5 @@
 'use client';
-import React, { Component, useEffect, useState } from "react";
+import React, {  useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthorization } from "@/hooks/useAuthorization";
 //import { withAuth } from "@/lib/withAuth";
@@ -13,7 +13,6 @@ export default function LogsPage() {
   const [level, setLevel] = useState<string>('');  // For filtering logs by level
   const [limit, setLimit] = useState<number>(50);  // For limiting the number of logs fetched
 
-  const router = useRouter(); // For redirecting
   
   useEffect(() => {
     const fetchLogs = async () => {

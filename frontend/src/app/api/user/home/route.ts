@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
-import axiosInstance from '@/app/utils/axiosInstance';
 
 // Helper to decode JWT and extract user info
 const getUserFromToken = async () => {
@@ -22,9 +21,9 @@ const getUserFromToken = async () => {
 };
 
 // GET: Retrieve Enrolled Courses and their Progress
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const { userId, token, role } = await getUserFromToken();
+    const { userId, token } = await getUserFromToken();
 
     // Step 1: Fetch enrolled courses for the student or any courses if the user is an admin or instructor
     let enrolledCoursesResponse;

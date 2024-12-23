@@ -21,7 +21,7 @@ const getUserFromToken = async () => {
 };
 
 // GET: Retrieve User Details
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const { userId, token } = await getUserFromToken();
 
@@ -68,7 +68,7 @@ export async function PUT(req: Request) {
 // PATCH: Change User Password
 export async function PATCH(req: Request) {
   try {
-    const { userId, role, token } = await getUserFromToken();
+    const { userId, token } = await getUserFromToken();
 
     // Extract password change details from the request body
     const { newPassword, confirmPassword } = await req.json();
@@ -97,9 +97,9 @@ export async function PATCH(req: Request) {
 }
 
 // DELETE: Delete User Account
-export async function DELETE(req: Request) {
+export async function DELETE() {
   try {
-    const { userId, role, token } = await getUserFromToken();
+    const { userId, token } = await getUserFromToken();
 
     const response = await axios.delete(
       `http://localhost:3000/api/users/${userId}`,

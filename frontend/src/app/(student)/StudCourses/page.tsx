@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Course } from "@/types/Course";
 import CourseCard from "@/components/course/general/courseCard";
 import { fetchCourses, fetchStudent } from "../../api/courses/student/courseRoute";
-import { User } from "@/types/User";
 import { useAuthorization } from "@/hooks/useAuthorization";
 
 
@@ -15,7 +14,7 @@ const StudentCoursesPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [coursescompleted,setCoursesCompleted] = useState<Course[]>([]);
   const [coursesinprogress,setCoursesInProgress] = useState<Course[]>([]);
-  const [student,setStudent] = useState<{id:string,role:string}>();
+  const [student, setStudent] = useState<{id:string,role:string}>();
 
   useEffect(() => {
     async function loadCourses() {

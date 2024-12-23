@@ -3,8 +3,6 @@
 import { cookies } from "next/headers";
 import jwt from 'jsonwebtoken';
 import { Course } from "@/types/Course";
-import { Module } from "@/types/Module";
-import { Types } from "mongoose";
 import axiosInstance from "@/app/utils/axiosInstance";
 import { getModule } from "../instructor/moduleRoute";
 // Fetch all courses with optional filters
