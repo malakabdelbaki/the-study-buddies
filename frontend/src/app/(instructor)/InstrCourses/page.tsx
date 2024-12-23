@@ -7,6 +7,7 @@ import { Course } from "@/types/Course";
 import CourseCard from "@/components/course/general/courseCard";
 import { createCourse, fetchCourses, fetchInstructor } from "../../api/courses/instructor/courseRoute";
 import { useAuthorization } from "@/hooks/useAuthorization";
+import { Button } from "@/components/ui/button";
 
 
 // import CourseCard from "./components/courseCard";
@@ -21,7 +22,9 @@ const CoursesPage = () => {
   const [category,setCategory] = useState<string>('');
   const [user,setUser] = useState<{id?:string,role?:string}>({});
   const [formState, setFormState] = useState<{ message: string | null }>({ message: null });
-  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [enableNotes, setEnableNotes] = useState<boolean>(true);
+
   const handleSubmit = async (e:any) => {
     e.preventDefault();
 
@@ -45,6 +48,8 @@ const CoursesPage = () => {
       setTitle('');
       setCategory('');
       setDifficulty_level('');
+      setEnableNotes(true);
+      setIsModalOpen(false);
     } catch (error) {
       // Handle error
       console.error('Error creating course:', error);
@@ -108,7 +113,7 @@ const CoursesPage = () => {
 
 
 
- <div>
+ {/* <div>
     <form onSubmit={handleSubmit}>
       <h2>Create a New Course</h2>
       <input
@@ -137,7 +142,68 @@ const CoursesPage = () => {
       />
       <button type="submit">Create a New Course</button>
     </form>
-    </div>
+    </div> */}
+
+
+
+<div className="text-center mt-6">
+        <Button className="bg-blue-500 text-white px-4 py-2" onClick={() => setIsModalOpen(true)}>
+          Create New Course
+        </Button>
+      </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-md w-96">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Create New Course</h2>
+            <form onSubmit={handleSubmit}>
+              <input
+                className="w-full mb-4 p-2 border rounded-lg"
+                type="text"
+                placeholder="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+              <input
+                className="w-full mb-4 p-2 border rounded-lg"
+                type="text"
+                placeholder="Category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+              />
+              <input
+                className="w-full mb-4 p-2 border rounded-lg"
+                type="text"
+                placeholder="Difficulty Level"
+                value={difficulty_level}
+                onChange={(e) => setDifficulty_level(e.target.value)}
+                required
+              />
+              <div className="flex items-center mb-4">
+                <input
+                  type="checkbox"
+                  id="enableNotes"
+                  checked={enableNotes}
+                  onChange={() => setEnableNotes(!enableNotes)}
+                />
+                <label htmlFor="enableNotes" className="ml-2">
+                  Enable Notes
+                </label>
+              </div>
+              <div className="flex justify-end space-x-4">
+                <Button className="bg-gray-500 text-white" onClick={() => setIsModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button className="bg-blue-500 text-white" type="submit">
+                  Create
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
   </div>
   );
 };

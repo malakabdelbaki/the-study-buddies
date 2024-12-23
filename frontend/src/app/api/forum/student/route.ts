@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import axios from 'axios';
 import { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { Role } from '../../../../../../backend/src/enums/role.enum';
+import { Role } from 'src/enums/role.enum';
 
 export async function GET(req: NextRequest ) {
   try {

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Course } from "@/types/Course";
 import CourseCard from "@/components/course/general/courseCard";
 import { fetchCourses, fetchStudent } from "../../api/courses/student/courseRoute";
-import { getCompletedCoursesOfStudent } from "@/app/api/user/home/route";
 import { User } from "@/types/User";
 import { useAuthorization } from "@/hooks/useAuthorization";
 
@@ -24,7 +23,11 @@ const StudentCoursesPage = () => {
         const gett = await fetchCourses({ filters: {} });
         const std = await fetchStudent();
         setStudent(std as {id:string,role:string});
-        const complete = await getCompletedCoursesOfStudent((student as { id: string; role: string }).id);
+
+        const complete = await fetch(`/api/courses/student/${(std as any)._id}`, {
+          method: "GET",
+        }).then((res) => res.json());
+        
 
         const completedCourses = gett.filter((course: Course) =>
           complete.includes(course._id?.toString())

@@ -1,6 +1,6 @@
-import { ChatType } from '../../../backend/src/enums/chat-type.enum';
-import { ChatVisibility } from '../../../backend/src/enums/chat-visibility.enum';
-import { Role } from '../../../backend/src/enums/role.enum';
+import { ChatType } from 'src/enums/chat-type.enum';
+import { ChatVisibility } from 'src/enums/chat-visibility.enum';
+import { Role } from 'src/enums/role.enum';
 
 export interface Chat {
   _id: string;

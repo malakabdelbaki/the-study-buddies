@@ -19,7 +19,6 @@ export class MatchInstructorForCourseValidator implements ValidatorConstraintInt
     return true;
   }
     const userId = args.object['instructor_id'];
-    console.log('ooooooooo',userId)
     const course = await this.CoursesService.findOne(new Types.ObjectId(courseId));
     if (!course) {
       return false; 

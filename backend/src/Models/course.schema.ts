@@ -42,6 +42,9 @@ export class Course{
     @Prop({required:true,default:false})
     is_deleted:boolean;  
 
+    @Prop({required:true,default:true})
+    isNoteEnabled:boolean;
+
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
