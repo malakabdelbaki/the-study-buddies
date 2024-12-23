@@ -63,7 +63,7 @@ const AddQuestionForm = ({moduleId,InstructorId}:{moduleId:string,InstructorId:s
 
   const handleAddQuestion = async () => {
     console.log('New Question:', newQuestion);
-    let ques = await addQuestionToModule(newQuestion);
+    const ques = await addQuestionToModule(newQuestion);
     setNewQuestion({
       question: '',
       question_type: 'mcq',

@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Home, BookOpen, MessageSquare, ClipboardList, Users, User, LogOut } from 'lucide-react'
+
 
 type UserRole = 'student' | 'instructor' | 'admin'
 
@@ -14,9 +15,29 @@ interface NavItem {
   icon: React.ElementType
 }
 
-const Navigation = ({ userRole }: { userRole: UserRole }) => {
-  const pathname = usePathname()
-  const [profileImage, setProfileImage] = useState('/placeholder.svg')
+const Navigation = () => {
+  const pathname = usePathname();
+  const [profileImage, setProfileImage] = useState('/placeholder.svg');
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      try {
+        const response = await fetch('/api/auth/role');
+        if (response.ok) {
+          const data = await response.json();
+          setUserRole(data.role as UserRole);
+        } else {
+          console.error('Failed to fetch role');
+        }
+      } catch (error) {
+        console.error('Error fetching role:', error);
+      }
+    };
+
+    fetchRole();
+  }, []);
 
   const navItems: Record<UserRole, NavItem[]> = {
     student: [
@@ -73,7 +94,8 @@ const Navigation = ({ userRole }: { userRole: UserRole }) => {
 
       {/* Navigation Items */}
       <div className="flex-1 flex flex-col items-center gap-6">
-        {navItems[userRole].map((item) => {
+      {userRole &&
+          navItems[userRole].map((item) => {
           const Icon = item.icon
           return (
             <Link

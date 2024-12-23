@@ -4,7 +4,7 @@ import axios from 'axios';
 import { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { Role } from 'src/enums/role.enum';
-export async function GET(req: NextRequest ) {
+export async function GET( ) {
   try {
 
     // Get token from cookies

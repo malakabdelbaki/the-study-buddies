@@ -4,7 +4,7 @@ import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import { Role } from 'src/enums/role.enum';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
       const cookieStore = await cookies();
       const tokenCookie = cookieStore.get('token');  

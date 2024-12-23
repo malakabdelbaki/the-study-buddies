@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000'; // Replace with your backend's base URL
 
-export async function PATCH(req: NextRequest, res: NextResponse) {
+export async function PATCH(req: NextRequest) {
   try {
     console.log("In addMessage");
 

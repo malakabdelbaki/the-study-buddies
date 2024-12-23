@@ -3,12 +3,9 @@
 
 import React, { useState, useEffect } from "react";
 import { Module } from "@/types/Module";
-import { addQuestionToModule, deleteModuleResource, deleteQuestionFromModule, fetchModuleResources, fetchQuestionBank, getModule, rateModule, updateModule, updateQuestionInModule, updateResourceMetadata } from "@/app/api/courses/instructor/moduleRoute";
+import { fetchModuleResources, getModule, rateModule } from "@/app/api/courses/instructor/moduleRoute";
 import fetchCourse from "@/app/api/courses/general/getCourseDetails";
-import AddQuestionForm from "@/components/course/instructor/QuestionInput";
 import { Question } from "@/types/Question";
-import QuestionCard from "@/components/course/instructor/questionCard";
-import AddResourceForm from "@/components/course/instructor/ResourceInput";
 import ResourceCard from "@/components/course/instructor/resourceCard";
 import { Resource } from "@/types/Resource";
 import { useRouter } from "next/navigation";
@@ -71,9 +68,9 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseI
 
 
   async function handleRatingClick(star: number) {
-      let {moduleId} = await params
+      const {moduleId} = await params
       setModuleRating(star);
-      let response = await rateModule(moduleId,star);
+      const response = await rateModule(moduleId,star);
       console.log(response);
     
   }
@@ -181,12 +178,14 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseI
           </div>
       </div>
       <div className="mb-4 text-sm text-gray-600">
-      <button
-        className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        onClick={() => handelTakeQuiz()}
-      >
-        Take Quiz
-      </button>
+      {module.quiz_type !== "no-quiz" && (
+        <button
+          className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          onClick={() => handelTakeQuiz()}
+        >
+          Take Quiz
+        </button>
+      )}
       </div>
       
     </div>

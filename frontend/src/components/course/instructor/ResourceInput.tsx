@@ -54,7 +54,7 @@ const AddResourceForm = ({ moduleId, InstructorId }: { moduleId: string; Instruc
     formData.append('type', newResource.type || '');
     formData.append('file', newResource.file as File);
   
-    let response = await uploadModuleResource(moduleId,formData);
+    const response = await uploadModuleResource(moduleId,formData);
 
     console.log(response);
     if (response) {

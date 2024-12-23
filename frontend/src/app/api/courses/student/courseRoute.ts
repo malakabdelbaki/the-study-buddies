@@ -3,25 +3,22 @@
 import { cookies } from "next/headers";
 import jwt from 'jsonwebtoken';
 import { Course } from "@/types/Course";
-import { Module } from "@/types/Module";
-import { Types } from "mongoose";
 import axiosInstance from "@/app/utils/axiosInstance";
 import { getModule } from "../instructor/moduleRoute";
+import { Role } from "@/enums/role.enum";
 // Fetch all courses with optional filters
 export async function fetchCourses(filters = {}) {
   try {
-    const {id,role} = await fetchStudent() as {id:any,role:any};
-
-    if (role!=='student'){
-        console.log("not a student");
+    const {_id,role} = await fetch('/api/auth/me').then((res) => res.json());
+    
+    if (role!==Role.Student) {
         return new Response('Not a student', { status: 401 });
     } 
 
-    let { data } = await axiosInstance.get(`users/${id}/courses/enrolled`, {
-      params: filters,
-    });
-    console.log('go and return',data)
-    return data;
+    const queryParams = new URLSearchParams(filters).toString();
+    const response = await fetch(`/courses/student/enrolledCourses?${queryParams}`);
+    
+    return response.json();
 
   } catch (error:any) {
     console.error('Error fetching courses:', error.message);

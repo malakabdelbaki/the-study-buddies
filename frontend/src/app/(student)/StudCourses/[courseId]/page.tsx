@@ -13,8 +13,6 @@ import {
 } from "../../../api/courses/student/courseRoute";
 import ModuleCard from "../../../../components/course/general/moduleCard";
 import ForumPreview from "@/components/forum/ForumPreview";
-import { createModule } from "../../../api/courses/instructor/moduleRoute";
-import { Types } from "mongoose";
 import { useAuthorization } from "@/hooks/useAuthorization";
 import { Role } from "@/enums/role.enum";
 import { decodeToken } from "@/app/utils/decodeToken";

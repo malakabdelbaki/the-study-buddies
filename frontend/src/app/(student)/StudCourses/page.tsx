@@ -3,60 +3,65 @@
 import React, { useState, useEffect } from "react";
 import { Course } from "@/types/Course";
 import CourseCard from "@/components/course/general/courseCard";
-import { fetchCourses, fetchStudent } from "../../api/courses/student/courseRoute";
-import { User } from "@/types/User";
 import { useAuthorization } from "@/hooks/useAuthorization";
-import { getCompletedCoursesOfStudent } from "@/app/api/user/home/route";
 
+type Token = {
+  id: string;
+  role: string;
+};
 
-type token = {
-  id:string;
-  role:string;
-}
 const StudentCoursesPage = () => {
-  useAuthorization(['student'])
-  const [courses, setCourses] = useState<Course[]>([]);
+  useAuthorization(["student"]);
+
+  const [coursesInProgress, setCoursesInProgress] = useState<Course[]>([]);
+  const [coursesCompleted, setCoursesCompleted] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [coursescompleted,setCoursesCompleted] = useState<Course[]>([]);
-  const [coursesinprogress,setCoursesInProgress] = useState<Course[]>([]);
-  const [student,setStudent] = useState<token | undefined>();
 
   useEffect(() => {
     async function loadCourses() {
       try {
-        const gett = await fetchCourses({ filters: {} });
-        //console.log(gett);
-        const std = await fetchStudent()  ; // Fetch student
-      //console.log("Fetched student:", std);
+        // Fetch completed courses
+        const responseCompleted = await fetch(`/api/courses/student/completedCourses`,{
+          method: 'GET',
+        });
+        if (!responseCompleted.ok) {
+          throw new Error(
+            `Error fetching completed courses: ${responseCompleted.status} ${responseCompleted.statusText}`
+          );
+        }
+        const completedCoursesData: Course[] = await responseCompleted.json();
+        setCoursesCompleted(completedCoursesData);
 
-      // Set the student state
-      const complete = await getCompletedCoursesOfStudent((std as { id: string; role: string }).id);
-        const completedCourses = complete;
-        const notYetCompletedCourses = gett.filter(
-          (course: Course) => !complete.some((completedCourse: Course) => completedCourse._id === course._id)
+        // Fetch enrolled courses
+        const responseEnrolled = await fetch(`/api/courses/student/enrolledCourses`,{
+          method: 'GET',
+        });
+        if (!responseEnrolled.ok) {
+          throw new Error(
+            `Error fetching enrolled courses: ${responseEnrolled.status} ${responseEnrolled.statusText}`
+          );
+        }
+        const enrolledCoursesData: Course[] = await responseEnrolled.json();
+
+        // Filter "In-Progress Courses" by excluding "Completed Courses"
+        const inProgressCourses = enrolledCoursesData.filter(
+          (enrolledCourse) =>
+            !completedCoursesData.some(
+              (completedCourse) => completedCourse._id === enrolledCourse._id
+            )
         );
-       
-        setCoursesCompleted(completedCourses);
-        setCoursesInProgress(notYetCompletedCourses);
-        setCourses(gett);
-      } catch (err:any) {
-        setError("Failed to load courses."+err.message);
+
+        setCoursesInProgress(inProgressCourses);
+      } catch (err: any) {
+        console.error(err);
+        setError(`Failed to load courses. ${err.message}`);
       } finally {
         setLoading(false);
       }
     }
 
-    async function getStudent(){
-      const {id,role} = await fetchStudent() as token;
-      setStudent({id,role});
-      //onsole.log(studen);
-    }
-    
-
     loadCourses();
-    getStudent();
-
   }, []);
 
   return (
@@ -75,31 +80,53 @@ const StudentCoursesPage = () => {
         </div>
       )}
 
-
-      {!loading && courses.length === 0 && (
+      {!loading && coursesInProgress.length === 0 && coursesCompleted.length === 0 && (
         <p className="text-center text-gray-500">No courses available.</p>
       )}
+
+      {/* In-Progress Courses */}
       <div>
-        <p>In-Progress Courses :</p>
-      {!loading && coursesinprogress.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {courses.map((c) => (
-            <CourseCard key={c._id} course={c} user={{ role: "student" }} explore={false}/>
-          ))}
-        </div>
-      )}
+        <p className="text-xl font-semibold mb-4">In-Progress Courses:</p>
+        {!loading && coursesInProgress.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {coursesInProgress.map((course) => (
+              <CourseCard
+                key={course._id}
+                course={course}
+                user={{ role: "student" }}
+                explore={false}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500">No in-progress courses.</p>
+        )}
       </div>
-        <p>_______________________________________________________________</p>
-        <div>
-          <p>Completed Courses :</p>
-          {!loading && coursescompleted.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {courses.map((c) => (
-                  <CourseCard key={c._id} course={c} user={{ role: "student" }}explore={false} />
-                ))}
-              </div>
-            )}
-        </div>
+
+      <br />
+
+      {/* Completed Courses */}
+      <div>
+        <p className="text-xl font-semibold mb-4">Completed Courses:</p>
+        {!loading && coursesCompleted.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {coursesCompleted.map((course) => {
+  console.log(course._id); // Log each course ID
+  return (
+    <CourseCard
+      key={course._id}
+      course={course}
+      user={{ role: "student" }}
+      explore={false}
+    />
+  );
+})}
+
+          </div>
+        ) : (
+          <p className="text-gray-500">No completed courses.</p>
+        )}
+      </div>
     </div>
   );
 };

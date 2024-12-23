@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import axios from 'axios';
 
-export async function GET(req: Request, { params }: { params: { course_id: string } }) {
+export async function GET(req: Request) {
   try {
     console.log("Participants route");
     const url = new URL(req.url);

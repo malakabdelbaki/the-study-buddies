@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 
 export type Question = {
     _id?:string;

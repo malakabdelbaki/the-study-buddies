@@ -4,7 +4,6 @@ import { extractToken } from '@/app/_lib/tokenExtract'; // Adjust the import to 
 
 export function useAuthorization(requiredRoles: string[]) {
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [userId, setUserId] = useState<any>(null);  // Add a state to store userId as well
   const router = useRouter();
 
   useEffect(() => {
@@ -20,9 +19,8 @@ export function useAuthorization(requiredRoles: string[]) {
         }
 
         // Otherwise, destructure userId and userRole from the returned object
-        const { userId, userRole } = tokenData;
+        const { userRole } = tokenData;
         setUserRole(userRole);
-        setUserId(userId);
       } catch (error) {
         console.error('Failed to extract token or retrieve role', error);
       }

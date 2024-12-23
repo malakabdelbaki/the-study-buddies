@@ -21,8 +21,9 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
         let user = await getUser();
         const instructor = course.instructor_id;
 
-       
-        let mods: Module[] = [];
+        setCourse(course);
+        setInstructor(instructor as unknown as User);
+        const mods: Module[] = [];
         course.modules?.forEach((module) => {
           mods.push(module as unknown as Module);
         });
