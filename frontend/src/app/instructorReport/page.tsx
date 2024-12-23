@@ -205,10 +205,12 @@ import {
   Legend,
   ArcElement,
 } from 'chart.js';
+import { useAuthorization } from '@/hooks/useAuthorization';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 export default function InstructorDashboard() {
+  useAuthorization(['instructor'])
   const [analytics, setAnalytics] = useState<any[]>([]);
   const [quizResults, setQuizResults] = useState<any[]>([]);
   const [contentEffectiveness, setContentEffectiveness] = useState<any[]>([]);

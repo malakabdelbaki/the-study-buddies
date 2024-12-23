@@ -10,10 +10,12 @@ import ModuleCard from "../../../../components/course/general/moduleCard";
 import ForumPreview from "@/components/forum/ForumPreview";
 import { createModule } from "../../../api/courses/instructor/moduleRoute";
 import { Types } from "mongoose";
+import { useAuthorization } from "@/hooks/useAuthorization";
 import { Role } from "@/enums/role.enum";
 import { decodeToken } from "@/app/utils/decodeToken";
 
 const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) => {
+  useAuthorization(['student'])
   const [course, setCourse] = useState<Course>();
   const [modules, setModules] = useState<Module[]>();
   const [Instructor,setInstructor] = useState<User>();
@@ -221,8 +223,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
       )}
 
     </div>
-    </div>
-
+  </div>
 );
 };
 

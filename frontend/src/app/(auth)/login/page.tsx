@@ -8,6 +8,12 @@ import { useRouter } from "next/navigation"; //allows page to redirect after suc
 //import axiosInstance from "@/app/utils/axiosInstance"; 
 import login from "./login.server"; //handles login logic
 import { extractToken } from "@/app/_lib/tokenExtract";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+//import { mascot } from "src/media/eLearningMascot-Photoroom.png"
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
@@ -63,32 +69,77 @@ export default function LoginPage() {
         const errorData = await response.json();
         setFormState({ message: errorData.error || 'Login failed. Please try again.' });
       }
-    } catch (error) {
-      setFormState({ message: 'An error occurred. Please try again.' });
+    } catch (error:any) {
+      if (error.response.data?.message) {
+        setFormState({ message: error.response.data.message });
+    } else {
+        setFormState({ message: 'Unexpected error. Please try again.' });
+    }
+      // setFormState({ message: 'An error occurred. Please try again.' });
+      
     }
   };
   
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>Login</h1>
-      <input
-      name="email"
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <input
-      name='password'
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <p>{formState.message}</p>
-      <button type="submit">Login</button>
-    </form>
+    <div className="flex items-center justify-center h-screen bg-gradient-to-b from-blue-800 to-blue-400">
+      <Card className="w-full max-w-md p-6 space-y-6 bg-white shadow-lg rounded-md">
+        <div className="text-center">
+          <img
+            src="/path-to-your-logo/owl-logo.png"
+            alt="Logo"
+            className="w-16 h-16 mx-auto mb-3"
+          />
+          <h1 className="text-2xl font-bold text-gray-800">Welcome Back!</h1>
+          <p className="text-sm text-gray-600">
+            Let’s continue your learning journey. Login to access your account.
+          </p>
+        </div>
+        <Separator />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <div>
+              <Label htmlFor="email" className="text-sm text-gray-700">
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="text-gray-900"
+              />
+            </div>
+            <div>
+              <Label htmlFor="password" className="text-sm text-gray-700">
+                Password
+              </Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="text-gray-900"
+              />
+            </div>
+          </div>
+          <p className="text-sm text-red-500 text-center">{formState.message}</p>
+          <Button type="submit" className="w-full bg-blue-800 hover:bg-blue-900 text-white">
+            Login
+          </Button>
+        </form>
+        <p className="text-sm text-center text-gray-600">
+          Don't have an account?{" "}
+          <a href="/register" className="text-blue-700 hover:underline">
+            Sign up here
+          </a>
+        </p>
+      </Card>
+    </div>
   );
 }

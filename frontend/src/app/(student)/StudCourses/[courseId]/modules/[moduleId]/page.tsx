@@ -15,9 +15,11 @@ import { useRouter } from "next/navigation";
 import { Course } from "@/types/Course";
 import { Button } from "@/components/ui/button"; // Adjust the import path as necessary
 
+import { useAuthorization } from "@/hooks/useAuthorization";
 
 
 const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string, courseId:string }> }) => {
+  useAuthorization(['student'])
   const router = useRouter();
   const [module, setModule] = useState<Module>();
   const [course, setCourse] = useState<Course>();
