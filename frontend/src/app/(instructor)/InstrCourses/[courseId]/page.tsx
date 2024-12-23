@@ -519,6 +519,8 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
               <option value="mcq">MCQ</option>
               <option value="mixed">mixed</option>
               <option value="true/false">True/False</option>
+              <option value="no-quiz">no-Quiz</option>
+
             </select>
 
             <select

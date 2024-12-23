@@ -7,7 +7,6 @@ export class RateDto {
   // studentId: string;
 
   @IsNotEmpty()
-  @IsMongoId()
   targetId: string; // ModuleId, CourseId, or InstructorId
 
   @IsNotEmpty()

@@ -3,7 +3,9 @@
   SetMetadata,
   Query,
   UploadedFile,
-  UseInterceptors,}  from '@nestjs/common';
+  UseInterceptors,
+  HttpException,
+  HttpStatus,}  from '@nestjs/common';
   import { UserService } from './users.service';
   import { CreateUserDto } from './dtos/create-user.dto';
   import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
@@ -22,6 +24,7 @@
   import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import path from 'path';
+import { Types } from 'mongoose';
 
 
 //@SetMetadata(ROLES_KEY, [Role.Instructor, Role.Student])
@@ -536,19 +539,28 @@ import path from 'path';
   }
 
   // Rate an Instructor
-  @Post('rate/instructor')
-  @ApiOperation({ summary: 'Rate an instructor' })
-  @ApiBody({ type: RateDto })
-  @SetMetadata(ROLES_KEY, [Role.Student])
-  async rateInstructor(@Body() dto: RateDto, @Req() req: any) {
-    console.log(dto);
-    const loggedInUser = req.user.userid;
-    try {
-      return await this.userService.rateInstructor(loggedInUser,dto);
-    } catch (error) {
-      throw new InternalServerErrorException(error.message || 'Failed to rate instructor');
+  @ApiOperation({ summary: 'Rate Course' })
+    @ApiParam({ name: 'id', description: 'Course ID', type: String })
+    @Roles(Role.Student)
+    @UseGuards(authorizationGuard)
+    @Post(':id/rate')
+    async RateInstructor(@Req() request,@Param('id') id: string ,@Body() ratingbody:{rating:number}) {
+      try {
+        console.log('reached controller',ratingbody)
+        const {rating} = ratingbody;
+        const ins_id = new Types.ObjectId(id);
+        const studentid = request.user?.userid; // Extract instructorId
+        if(!studentid || !request.user){
+          throw new HttpException('Error not found a student', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        let ret = await this.userService.rateInstructor(studentid,ins_id,rating);
+        console.log(ret);
+        return ret;
+      } catch (err) {
+        console.log(err.message);
+        throw new HttpException('Error Rating a Course', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     }
-  }
 
   // Enroll in a Course
   @Post('enroll')
