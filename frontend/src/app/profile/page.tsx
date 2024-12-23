@@ -1,26 +1,20 @@
-'use client';
-
+'use client'
 import { useState, useEffect } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from '../../types/User';
+import { uploadPic } from '../api/user/profile/route';
 
-const ProfileClient = () => {
+const ProfileClient = ({ setProfilePic }: { setProfilePic: (pic: string) => void }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [pic, setPic] = useState<string | null>(null);  // For image preview
 
   // Fetch user data
   useEffect(() => {
@@ -30,7 +24,13 @@ const ProfileClient = () => {
         if (!response.ok) throw new Error('Failed to fetch user data.');
         const userData = await response.json();
         setUser(userData);
-      } catch (err) {
+        setPic(userData.profilePictureUrl);  // Set the profile picture
+
+        // Retrieve profile picture from localStorage if available
+        const savedPic = localStorage.getItem('profilePic');
+        if (savedPic) {
+          setPic(savedPic);
+        }      } catch (err) {
         console.error(err);
         setError('Failed to load user data.');
       } finally {
@@ -41,7 +41,20 @@ const ProfileClient = () => {
     fetchUserData();
   }, []);
 
-  // Handle input changes
+  const handleUpdatePP = async (file: File) => {
+    try {
+      const updatedUser = await uploadPic(file);
+      setUser((prevUser) => prevUser ? { ...prevUser, profilePic: updatedUser.profilePictureUrl } : prevUser);
+      setPic(URL.createObjectURL(file));  // Set the image preview on the client side
+      // Save the updated profile picture to localStorage
+      localStorage.setItem('profilePic', updatedUser.profilePictureUrl);
+      setProfilePic(updatedUser.profilePictureUrl);  // Update the profile picture in parent component (navbar)
+    } catch (err) {
+      console.error('Error updating profile picture:', err);
+      setError('Failed to update profile picture.');
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (user) {
@@ -49,18 +62,15 @@ const ProfileClient = () => {
     }
   };
 
-  // Handle password change
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewPassword(e.target.value);
   };
 
-  // Handle profile save
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (user) {
       try {
-        // Update user profile
         const updateResponse = await fetch('/api/user/profile', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -69,7 +79,6 @@ const ProfileClient = () => {
 
         if (!updateResponse.ok) throw new Error('Failed to update profile.');
 
-        // Update password if provided
         if (newPassword) {
           const passwordResponse = await fetch('/api/user/profile', {
             method: 'PATCH',
@@ -82,9 +91,6 @@ const ProfileClient = () => {
           alert('Password updated successfully');
           setNewPassword('');
         }
-
-        // alert('Profile updated successfully');
-        // setIsEditing(false); // Exit editing mode
       } catch (err) {
         setError('An error occurred while saving changes.');
         console.error(err);
@@ -92,7 +98,6 @@ const ProfileClient = () => {
     }
   };
 
-  // Handle delete account
   const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm(
       'Are you sure you want to delete your account? This action cannot be undone.'
@@ -102,11 +107,10 @@ const ProfileClient = () => {
 
     try {
       const response = await fetch('/api/user/profile', { method: 'DELETE' });
-      console.log(response.json);
       if (!response.ok) throw new Error('Failed to delete account.');
 
       alert('Your account has been successfully deleted.');
-      window.location.href = '/login'; // Redirect to login 
+      window.location.href = '/login';
     } catch (err) {
       console.error(err);
       setError('An error occurred while deleting your account.');
@@ -133,7 +137,7 @@ const ProfileClient = () => {
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
                 <Avatar className="w-20 h-20">
-                  <AvatarImage src={user.profilePic} alt={user.name} />
+                  <AvatarImage src={pic || '/default-avatar.png'} alt={user.name} />
                   <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 {isEditing && (
@@ -142,15 +146,7 @@ const ProfileClient = () => {
                     accept="image/*"
                     onChange={(e) => {
                       if (e.target.files && e.target.files[0]) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                          if (e.target?.result) {
-                            setUser((prevUser) =>
-                              prevUser ? { ...prevUser, profilePic: e.target?.result as string } : prevUser
-                            );
-                          }
-                        };
-                        reader.readAsDataURL(e.target.files[0]);
+                        handleUpdatePP(e.target.files[0]);
                       }
                     }}
                   />
