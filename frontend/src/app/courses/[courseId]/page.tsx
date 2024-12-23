@@ -21,7 +21,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
 
         setCourse(course);
         setInstructor(instructor as unknown as User);
-        let mods: Module[] = [];
+        const mods: Module[] = [];
         course.modules?.forEach((module) => {
           mods.push(module as unknown as Module);
         });

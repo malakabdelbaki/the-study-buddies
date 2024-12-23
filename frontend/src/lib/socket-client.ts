@@ -58,7 +58,7 @@ export const checkServerAvailability = async (): Promise<boolean> => {
  };
 
 
-export const emitSocketEvent = async <T, R = any>(event: string, data: T): Promise<R> => {
+export const emitSocketEvent = async <T, R >(event: string, data: T): Promise<R> => {
   const socket = getSocket();
 
   return new Promise<R>((resolve, reject) => {

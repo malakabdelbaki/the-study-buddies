@@ -28,7 +28,6 @@ const ThreadPage = () => {
   const { toast } = useToast();
 
   const searchParams = useSearchParams();
-  const courseId = searchParams.get('courseId');
 
   useEffect(() => {
     const token = document.cookie

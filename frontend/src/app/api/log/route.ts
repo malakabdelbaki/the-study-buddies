@@ -22,9 +22,7 @@ export async function GET(req: Request) {
       return new Response('Invalid Token', { status: 401 });
     }
 
-    const userid = (decodedToken as any)?.userId; 
-    const userRole = (decodedToken as any)?.role;
-
+   
     // // Role-based authorization check
     // if (userRole !== 'admin') {
     //   // If the user is not an admin, deny access

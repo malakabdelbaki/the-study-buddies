@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
 import axios from 'axios';
 
 
@@ -28,9 +27,8 @@ export async function POST(req: NextRequest) {
     console.log("in notes route **********",response.data); 
 
     return NextResponse.json(response.data);
-  } catch (error: any) {
-    console.error('Error sending message:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error }, { status: 500 });
   }
 }
 

@@ -25,9 +25,9 @@ const getUserFromToken = async () => {
 };
 
 // GET: Retrieve Enrolled Courses and their Progress
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const { userId, token, role } = await getUserFromToken();
+    const { userId, token } = await getUserFromToken();
 
     // Step 1: Fetch enrolled courses for the student or any courses if the user is an admin or instructor
     let enrolledCoursesResponse;

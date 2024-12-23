@@ -49,9 +49,11 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     }
   };
 
-  const checkcanDisableNotes = async () => {
+  const checkCanDisableNotes = async () => {
     try {
+      console.log("Checking if notes can be disabled...");
       const { courseId } = await params;
+      console.log(courseId);
       const response = await fetch(`/api/notes/course/${courseId}/canDisableNotes`);
       const data = await response.json();
       console.log(data);
@@ -70,7 +72,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
 
   const handleAddModule = async () => {
       const {courseId} = await params;
-      let data = await createModule({...newModule,course_id:courseId}); // Call the parent-provided function to add the module
+      const data = await createModule({...newModule,course_id:courseId}); // Call the parent-provided function to add the module
       setModules(await fetchCourseModules(courseId));
       setNewModule({title:"",content:''}); // Reset form
       setShowForm(false); // Hide the form
@@ -115,14 +117,14 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     async function loadCourse() {
       try {
         const { courseId } = await params;
-        let course = await fetchCourseById(courseId);
-        let modules = await fetchCourseModules(courseId);
-        let instructor = await fetchInstructor();
+        const course = await fetchCourseById(courseId);
+        const modules = await fetchCourseModules(courseId);
+        const instructor = await fetchInstructor();
         setInstructor(instructor as {id:string,role:string});
         setModules(modules);
         setCourse(course);
         setEditedCourse(course);
-      await checkcanDisableNotes();
+      await checkCanDisableNotes();
     } catch (err) {
         console.log(err);
       }
@@ -141,7 +143,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   }
 
   const handleDelete = async ()=>{
-    let response = await deleteCourse(course._id as string);
+    const response = await deleteCourse(course._id as string);
     alert (response);
   }
   
@@ -163,18 +165,20 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
       </h1>
 
       <div className="mt-6">
-      {course.isNoteEnabled ? (
-  canDisableNotes ? (
-    <button
-      onClick={disableNotes}
-      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-    >
-      Disable Notes
-    </button>
-  ) : (
-    <p className="text-gray-600">Notes cannot be disabled for this course.</p>
-  )
-) : (
+{course.isNoteEnabled && canDisableNotes && (
+  <button
+    onClick={disableNotes}
+    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+  >
+    Disable Notes
+  </button>
+)}
+
+{course.isNoteEnabled && !canDisableNotes && (
+  <p className="text-gray-600">Notes cannot be disabled for this course.</p>
+)}
+
+{!course.isNoteEnabled && (
   <button
     onClick={enableNotes}
     className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"

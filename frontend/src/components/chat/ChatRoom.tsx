@@ -8,11 +8,9 @@ import ChatForm from '@/components/chat/ChatForm';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ChatType } from '../../../../backend/src/enums/chat-type.enum';
-import { ChatVisibility } from '../../../../backend/src/enums/chat-visibility.enum';
 import { Role } from '../../../../backend/src/enums/role.enum';
 import { Chat } from '@/types/Chat';
 import Pusher from 'pusher-js';
-import { Message } from '@/types/Message';
 import useChat from '@/hooks/useChat';
 
 
@@ -31,13 +29,11 @@ type ChatRoomProps = {
 export default function ChatRoom({ chat_id, data, me }: ChatRoomProps) {
   const messages = useChat(chat_id);
 
-  // const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { chat, potentialParticipants } = data;
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [ SuccessMessage, setSuccessMessage] = useState<string | null>(null);
   const [ ChatRoom, setChatRoom] = useState<Chat>();
-  // const [timestamp, setTimestamp] = useState<string>(new Date().toISOString());
   const router = useRouter();
 
   useEffect(() => {

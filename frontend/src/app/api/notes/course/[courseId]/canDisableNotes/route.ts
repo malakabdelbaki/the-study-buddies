@@ -9,7 +9,7 @@ export async function GET(req: NextRequest ) {
     const { pathname } = new URL(req.url);
     const pathSegments = pathname.split('/');
     const course_id = pathSegments[pathSegments.length - 2];
-
+    console.log({ course_id });
     if (!course_id) {
       return new Response('Bad Request: Missing course ID', { status: 400 });
     }
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest ) {
     // Get token from cookies
     const cookieStore = await cookies();
     const tokenCookie = cookieStore.get('token');
-    
+    console.log({ tokenCookie });
     if (!tokenCookie) {
       return new Response('Unauthorized', { status: 401 });
     }
@@ -28,16 +28,14 @@ export async function GET(req: NextRequest ) {
         Authorization: `Bearer ${tokenCookie.value}`,
       },
     });
+    console.log({ response });
 
     if(response.status !== 200) {
       return new NextResponse('Internal Server Error', { status: 500 });
     }
 
     return NextResponse.json(response.data);
-  } catch (error: any) {
-    console.error('Error fetching potential participants:', error);
-
-    const errorMessage = error.response?.data?.message || 'Internal Server Error';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ message: error }, { status: 500 });
   }
 }

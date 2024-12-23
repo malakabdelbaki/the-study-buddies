@@ -8,7 +8,7 @@ interface SocketManagerProps {
 
 export const SocketManager: React.FC<SocketManagerProps> = ({ onReceiveMessage }) => {
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    // const token = localStorage.getItem('token');
     
     // Initialize socket connection
     initializeSocket();
