@@ -110,44 +110,6 @@ const CoursesPage = () => {
       )}
 
 
-{/* _________.___New Course Form__________________-- */}
-
-
-
-
- {/* <div>
-    <form onSubmit={handleSubmit}>
-      <h2>Create a New Course</h2>
-      <input
-        name="title"
-        type="text"
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
-      />
-      <input
-        name="category"
-        type="text"
-        placeholder="Category"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        required
-      />
-      <input
-        name="difficulty_level"
-        type="text"
-        placeholder="Difficulty Level"
-        value={difficulty_level}
-        onChange={(e) => setDifficulty_level(e.target.value)}
-        required
-      />
-      <button type="submit">Create a New Course</button>
-    </form>
-    </div> */}
-
-
-
 <div className="text-center mt-6">
         <Button className="bg-blue-500 text-white px-4 py-2" onClick={() => setIsModalOpen(true)}>
           Create New Course
