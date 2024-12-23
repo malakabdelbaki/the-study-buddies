@@ -9,6 +9,8 @@ import { User } from '@/types/User';
 import { useParams } from 'next/navigation';
 import { getUser } from "@/app/utils/GetUserId";
 import Link from "next/link";
+import { Role } from "@/enums/role.enum";
+import { decodeToken } from "@/app/utils/decodeToken";
 
 const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) => {
   const [course, setCourse] = useState<Course>();
@@ -22,7 +24,8 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   const [students, setStudents] = useState<User[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { courseId } = useParams<{ courseId: string }>();
-  
+    const [ userRole, setUserRole ] = useState<Role | null>(null);  
+
 
   useEffect(() => {
     async function loadCourse() {
@@ -43,6 +46,15 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
     loadCourse();
   }, []);
 
+  useEffect(() => {
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("token="))?.split("=")[1];
+  
+      if (token) {
+        const role = decodeToken(token)?.role;
+        setUserRole(role);
+      }}, []);
        
   const handleEnroll = async () => {
     if (!course) return;
@@ -193,6 +205,8 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
             </Link>
           </div>
         )}
+      </div>
+      )}
       </div>
     </div>
   );
