@@ -4,7 +4,7 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Course, CourseDocument } from 'src/Models/course.schema';
-import { User, UserDocument } from 'src/models/user.schema';
+import { User, UserDocument } from 'src/Models/user.schema';
 import { ModuleService } from 'src/module/module.service';
 import { CreateModuleDto } from 'src/module/dto/create-module.dto';
 import { Module } from 'src/Models/modules.schema';

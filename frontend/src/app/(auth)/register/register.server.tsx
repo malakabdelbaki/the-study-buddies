@@ -21,28 +21,36 @@ export default async function register(prevState:any,formData:FormData){
 
       }
 
-    const setCookieHeader = response.headers["set-cookie"]
-    if (setCookieHeader && Array.isArray(setCookieHeader) && setCookieHeader.length > 0) {
-      const [tokenPart, maxAgePart] = setCookieHeader[0].split(';')
-      const token = tokenPart.split('=')[1]
-      const maxAge = parseInt(maxAgePart.split('=')[1])
+      // After successful registration, attempt to log in
+    const loginResponse = await axios.post('auth/login', {
+      email: formData.get('email'),
+      password: formData.get('password')
+    });
 
-      console.log('token:', token)
-      console.log('maxAge:', maxAge)
+    // const setCookieHeader = response.headers["set-cookie"]
+    // if (setCookieHeader && Array.isArray(setCookieHeader) && setCookieHeader.length > 0) {
+    //   const [tokenPart, maxAgePart] = setCookieHeader[0].split(';')
+    //   const token = tokenPart.split('=')[1]
+    //   const maxAge = parseInt(maxAgePart.split('=')[1])
 
-      // Set the cookie
-      cookieStore.set('CookieFromServer', token, {
-        secure: true,
-        httpOnly: true,
-        sameSite: 'strict',
-        maxAge: maxAge
-      })
+    //   console.log('token:', token)
+    //   console.log('maxAge:', maxAge)
 
-      // Return success instead of redirecting
-      return { success: true, message: 'Register successful' }
-    } else {
-      return { success: false, message: 'Invalid server response' }
+    //   // Set the cookie
+    //   cookieStore.set('CookieFromServer', token, {
+    //     secure: true,
+    //     httpOnly: true,
+    //     sameSite: 'strict',
+    //     maxAge: maxAge
+    //   })
+    if (loginResponse.headers['set-cookie']){
+
     }
+      // Return success instead of redirecting
+      //return { success: true, message: 'Register successful' }
+    // } else {
+    //   return { success: false, message: 'Invalid server response' }
+    // }
     } //after sucessful login user is redirected to about
     //Error handeling: (might improve)!!
       catch(error: any){

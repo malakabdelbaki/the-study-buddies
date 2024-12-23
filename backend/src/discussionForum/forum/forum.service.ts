@@ -6,7 +6,7 @@ import { CreateForumDto } from './dto/create-forum.dto';
 import { UpdateForumDto } from './dto/update-forum.dto';
 import { Types } from 'mongoose';
 import { CoursesService } from '../../courses/courses.service';
-import { User } from 'src/models/user.schema';
+import { User } from 'src/Models/user.schema';
 import { UserService } from 'src/users/users.service';
 import { Thread, ThreadDocument } from '../../Models/thread.schema';
 import { Course } from 'src/Models/course.schema';

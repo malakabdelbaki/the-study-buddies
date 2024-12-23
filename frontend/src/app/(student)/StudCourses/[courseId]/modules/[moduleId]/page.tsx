@@ -10,9 +10,14 @@ import QuestionCard from "@/components/course/instructor/questionCard";
 import AddResourceForm from "@/components/course/instructor/ResourceInput";
 import ResourceCard from "@/components/course/instructor/resourceCard";
 import { Resource } from "@/types/Resource";
+import { useRouter } from "next/navigation";
+
+import { useAuthorization } from "@/hooks/useAuthorization";
 
 
 const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) => {
+  useAuthorization(['student'])
+  const router = useRouter();
   const [module, setModule] = useState<Module>();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
@@ -51,6 +56,37 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) =>
       let response = await rateModule(moduleId,star);
       console.log(response);
     
+  }
+
+
+  // StudCourses/675f733844d8ccdfb2bb820a/modules/675f733844d8ccdfb2bb820d
+  const handelTakeQuiz = async () => {
+    console.log("take quiz clicked")
+    console.log("module id ", module);
+    
+    try{
+      const response = await fetch(`/api/quiz`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          module_id: module?._id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Quiz error response:", errorData);
+        throw new Error(errorData.error || "Failed to submit quiz");
+      }
+    
+      const responseData = await response.json();
+    
+      // Redirect to /quiz/submit and pass data via query parameters
+      router.push(`/quiz?data=${encodeURIComponent(JSON.stringify(responseData))}`);
+    } catch (error) {
+      console.error("Error taking quiz:", error);
+    }
+
   }
 
 
@@ -125,7 +161,12 @@ const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) =>
           </div>
       </div>
       <div className="mb-4 text-sm text-gray-600">
-        <button>Take A quiz</button> 
+      <button
+        className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        onClick={() => handelTakeQuiz()}
+      >
+        Take Quiz
+      </button>
       </div>
       
     </div>

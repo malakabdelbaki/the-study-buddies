@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { Mongoose } from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Notification, NotificationSchema } from '../../models/notification.schema';
+import { Notification, NotificationSchema } from '../../Models/notification.schema';
 import { NotificationController } from './notification.controller';
 import { NotificationsGateway } from './notification.gateway';
 import { NotificationsService } from './notification.service';
@@ -27,6 +27,7 @@ import { ChatSchema } from 'src/Models/chat.schema';
 import { Message , MessageSchema} from 'src/Models/message.schema';
 import { LogsModule } from 'src/log/log.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { PusherService } from 'src/pusher/pusher.service';
 @Module({
   imports: [
   MongooseModule.forFeature([
@@ -47,7 +48,7 @@ import { AuthModule } from 'src/auth/auth.module';
   AuthModule
   ],
   controllers: [ NotificationController],
-  providers: [ NotificationsService, NotificationsGateway, ThreadsService, ForumService, CoursesService, ChatService],
+  providers: [ NotificationsService, NotificationsGateway, ThreadsService, ForumService, CoursesService, ChatService, PusherService],
   exports: [NotificationsService, NotificationsGateway, MongooseModule],
 })
 export class NotificationModule {}

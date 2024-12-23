@@ -2,14 +2,14 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import * as mongoose from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Module, ModuleDocument } from 'src/models/modules.schema';
-import { Question, QuestionDocument } from 'src/models/question.schema';
-import { Course, CourseDocument } from 'src/models/course.schema';
-import { Quiz, QuizDocument } from 'src/models/quiz.schema';
-import { Answer, AnswerDocument } from 'src/models/answer.schema';
-import { Response, ResponseDocument } from 'src/models/response.schema';
-import { User, UserDocument } from 'src/models/user.schema';
-import { Progress, ProgressDocument } from 'src/models/progress.schema';
+import { Module, ModuleDocument } from 'src/Models/modules.schema';
+import { Question, QuestionDocument } from 'src/Models/question.schema';
+import { Course, CourseDocument } from 'src/Models/course.schema';
+import { Quiz, QuizDocument } from 'src/Models/quiz.schema';
+import { Answer, AnswerDocument } from 'src/Models/answer.schema';
+import { Response, ResponseDocument } from 'src/Models/response.schema';
+import { User, UserDocument } from 'src/Models/user.schema';
+import { Progress, ProgressDocument } from 'src/Models/progress.schema';
 import { ReturnQuizDto } from './dto/return-quiz.dto.js';
 import { title } from 'process';
 import { ReturnResponseDto } from './dto/return-response.dto.js';
@@ -473,7 +473,9 @@ export class QuizzesService {
 
       const returnResponse = new ReturnResponseDto();
       returnResponse.user_id = response.user_id.toString();
+      returnResponse.user_name = student.name;
       returnResponse.quiz_id = response.quiz_id.toString();
+      returnResponse.quiz_title = quiz.title;
       returnResponse.score = response.score;
       returnResponse.answers = response.answers;
       returnResponse.questions = [];

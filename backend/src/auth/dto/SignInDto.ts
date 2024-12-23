@@ -4,13 +4,13 @@ import { sanitizeInput } from "src/common/utils/sanitise"; // Import your saniti
 
 export class SignInDto {
 
-    @IsNotEmpty()
+    @IsNotEmpty({ message: 'Email is required.' })
     @IsEmail()
     @MaxLength(50, { message: "Email must not exceed 50 characters." }) // Restrict email length
     @Transform(({ value }) => sanitizeInput(value)) // Sanitize email to prevent script injection
     email:string
 
-    @IsNotEmpty()
+    @IsNotEmpty({ message: 'Password is required.' })
     @MaxLength(128, { message: "Password must not exceed 128 characters." }) // Restrict password length
     @Transform(({ value }) => sanitizeInput(value))
     password:string

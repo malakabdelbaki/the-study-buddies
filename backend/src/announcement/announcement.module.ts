@@ -4,7 +4,7 @@ import { AnnouncementController } from './announcement.controller';
 import { AnnouncementService } from './announcement.service';
 import { Announcement, AnnouncementSchema } from '../Models/announcement.schema';
 import { CoursesService } from 'src/courses/courses.service';
-import { User } from 'src/models/user.schema';
+import { User } from 'src/Models/user.schema';
 import { UserService } from 'src/users/users.service';
 import { NotificationsGateway } from 'src/WebSockets/notification/notification.gateway';
 import { CoursesModule } from 'src/courses/courses.module';
@@ -14,6 +14,7 @@ import { forwardRef } from '@nestjs/common';
 import { AuthModule } from 'src/auth/auth.module';
 import { LogsModule } from 'src/log/log.module';
 import { ChatModule } from 'src/WebSockets/chat/chat.module';
+import { ModuleModule } from 'src/module/module.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { ChatModule } from 'src/WebSockets/chat/chat.module';
     forwardRef(() => UserModule),
     forwardRef(() => NotificationModule),
     AuthModule,
-    LogsModule
+    LogsModule,
+    ModuleModule
   ],
   controllers: [AnnouncementController],
   providers: [AnnouncementService],

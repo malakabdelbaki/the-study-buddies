@@ -12,22 +12,31 @@ import {
   fetchStudent,
 } from "../../../api/courses/student/courseRoute";
 import ModuleCard from "../../../../components/course/general/moduleCard";
+import ForumPreview from "@/components/forum/ForumPreview";
+import { createModule } from "../../../api/courses/instructor/moduleRoute";
+import { Types } from "mongoose";
+import { useAuthorization } from "@/hooks/useAuthorization";
 
-const CourseDetails = ({ params }: { params: { courseId: string } }) => {
-  
-  const [course, setCourse] = useState<Course | null>(null);
-  const [modules, setModules] = useState<Module[]>([]);
-  const [instructor, setInstructor] = useState<User | null>(null);
-  const [student, setStudent] = useState<{ id: string; role: string } | null>(null);
-  const [isEnrolled, setIsEnrolled] = useState(false);
-  const [instructorRating, setInstructorRating] = useState<number>(0);
-  const [courseRating, setCourseRating] = useState<number>(0);
+const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) => {
+  //useAuthorization(['student'])
+  const [course, setCourse] = useState<Course>();
+  const [modules, setModules] = useState<Module[]>();
+  const [Instructor,setInstructor] = useState<User>();
+  const [Student,setStudent] = useState<{id:string,role:string}>();
+  const [IsEnroll,setIsEnroll] =useState<boolean>(false);
+  const [editedCourse, setEditedCourse] = useState(() => ({
+    ...course,
+    key_words: course?.key_words || [], // Make sure key_words is always an array
+  }));  
+  const [InstructorRating, setInstructorRating] = useState<number>(0);
+  const [CourseRating, setCourseRating] = useState<number>(0);
+
 
   // Handle rating
   const handleRatingClick = async (type: "instructor" | "course", star: number) => {
-    if (type === "instructor" && instructor) {
+    if (type === "instructor" && Instructor) {
       setInstructorRating(star);
-      const response = await rateInstructor({ targetId: instructor._id, rating: star });
+      const response = await rateInstructor({ targetId: Instructor._id, rating: star });
       console.log("Instructor Rating Response:", response);
     } else if (type === "course" && course) {
       setCourseRating(star);
@@ -39,7 +48,7 @@ const CourseDetails = ({ params }: { params: { courseId: string } }) => {
   useEffect(() => {
     const loadCourseDetails = async () => {
       try {
-        // Fetch course, student, and instructor details
+        // Fetch course, student, and Instructor details
         const { courseId } = await params;
         const fetchedCourse = await fetchCourseById(courseId);
         const fetchedStudent = await fetchStudent() as {id:string,role:string};
@@ -48,12 +57,12 @@ const CourseDetails = ({ params }: { params: { courseId: string } }) => {
           setCourse(fetchedCourse);
           setStudent(fetchedStudent );
 
-          if (fetchedCourse.instructor_id) {
-            setInstructor(fetchedCourse.instructor_id);
+          if (fetchedCourse.Instructor_id) {
+            setInstructor(fetchedCourse.Instructor_id);
           }
 
           if (fetchedCourse.students.includes(fetchedStudent.id)) {
-            setIsEnrolled(true);
+            setIsEnroll(true);
             const fetchedModules = await fetchCourseModules(courseId);
             setModules(fetchedModules);
           }
@@ -114,15 +123,15 @@ const CourseDetails = ({ params }: { params: { courseId: string } }) => {
           <span className="font-semibold">Number of Students:</span> {course.students?.length}
         </div>
 
-        {instructor && (
+        {Instructor && (
           <div className="text-lg text-gray-700 mb-6">
-            <span className="font-semibold">Instructor Name:</span> {instructor.name}
+            <span className="font-semibold">Instructor Name:</span> {Instructor.name}
             <br />
-            <span className="font-semibold">Instructor Email:</span> {instructor.email}
+            <span className="font-semibold">Instructor Email:</span> {Instructor.email}
           </div>
         )}
 
-        {isEnrolled && (
+        {IsEnroll && (
           <>
             <div className="text-lg text-gray-700 mb-4">
               <span className="font-semibold">Rate this Instructor:</span>
@@ -132,7 +141,7 @@ const CourseDetails = ({ params }: { params: { courseId: string } }) => {
                     key={star}
                     onClick={() => handleRatingClick("instructor", star)}
                     className={`text-2xl ${
-                      instructorRating >= star ? "text-yellow-500" : "text-gray-400"
+                      InstructorRating >= star ? "text-yellow-500" : "text-gray-400"
                     } hover:text-yellow-500`}
                   >
                     ★
@@ -149,7 +158,7 @@ const CourseDetails = ({ params }: { params: { courseId: string } }) => {
                     key={star}
                     onClick={() => handleRatingClick("course", star)}
                     className={`text-2xl ${
-                      courseRating >= star ? "text-yellow-500" : "text-gray-400"
+                      CourseRating >= star ? "text-yellow-500" : "text-gray-400"
                     } hover:text-yellow-500`}
                   >
                     ★
@@ -161,18 +170,28 @@ const CourseDetails = ({ params }: { params: { courseId: string } }) => {
         )}
       </div>
 
-      {isEnrolled && (
-        <div className="modules-section mt-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Modules</h2>
-          <div className="grid grid-cols-1 gap-6">
-            {modules.map((module, index) => (
-              <ModuleCard key={index} module={module} />
-            ))}
-          </div>
+  {/* __________________________________ModulesPart_______________________________________ */}
+  {IsEnroll&&
+    <div className="modules-section mt-8">
+        <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Modules</h2>
+
+        <div className="grid grid-cols-1 gap-6">
+          {modules?.map((module, index) => (
+            <ModuleCard key={index} module={module} />
+          ))}
         </div>
-      )}
     </div>
-  );
+}
+
+    <div className="modules-section mt-8">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Forum</h2>
+      {course._id && course.title && (
+        <ForumPreview courseId={course._id} courseTitle={course.title} />
+      )}
+
+    </div>
+  </div>
+);
 };
 
 export default CourseDetails;

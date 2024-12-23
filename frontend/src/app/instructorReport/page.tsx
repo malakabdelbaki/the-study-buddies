@@ -205,10 +205,12 @@ import {
   Legend,
   ArcElement,
 } from 'chart.js';
+import { useAuthorization } from '@/hooks/useAuthorization';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 export default function InstructorDashboard() {
+  useAuthorization(['instructor'])
   const [analytics, setAnalytics] = useState<any[]>([]);
   const [quizResults, setQuizResults] = useState<any[]>([]);
   const [contentEffectiveness, setContentEffectiveness] = useState<any[]>([]);
@@ -239,53 +241,107 @@ export default function InstructorDashboard() {
     fetchReports();
   }, []);
 
+  // const downloadReport = async (type: string, format: 'csv' | 'json') => {
+  //   try {
+  //     const response = await fetch(`/api/instructorReports?downloadType=${type}&format=${format}`);
+  //     if (!response.ok) {
+  //       throw new Error('Failed to download report')   
+  //     }
+
+  //     // const contentType = response.headers.get('Content-Type');
+  //     // if (format === 'json' && contentType?.includes('application/json')) {
+  //     //   // Handle JSON file
+  //     //   const jsonData = await response.json();
+  //     //   const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' }); // Add indentation
+  //     //   const downloadUrl = URL.createObjectURL(blob);
+  //     //   const link = document.createElement('a');
+  //     //   link.href = downloadUrl;
+  //     //   link.download = `${type}.json`;
+  //     //   document.body.appendChild(link);
+  //     //   link.click();
+  //     //   document.body.removeChild(link);
+  //     // } else if (format === 'csv') {
+  //     //   // Handle CSV file
+  //     //   const csvData = await response.text(); // Read as plain text
+  //     //   console.log('CSV Content:', csvData); // Debug CSV content
+  //     //   // Ensure proper handling of line breaks for CSV content
+  //     //   const normalizedCSV = csvData.replace(/(?!\r)\n/g, '\r\n');
+  //     //   const blob = new Blob([normalizedCSV], { type: 'text/csv;charset=utf-8;' });
+  //     //   const downloadUrl = URL.createObjectURL(blob);
+  //     //   const link = document.createElement('a');
+  //     //   link.href = downloadUrl;
+  //     //   link.download = `${type}.csv`;
+  //     //   document.body.appendChild(link);
+  //     //   link.click();
+  //     //   document.body.removeChild(link);
+  //     // } else {
+  //     //   throw new Error('Unexpected content type');
+  //     // }
+
+  //   } catch (error) {
+  //     console.error('Error downloading report:', error);
+  //     alert('Failed to download the report. Please try again.');
+  //   }
+  // };
+
+
+
+  // const downloadReport = async (type: string, format: 'csv' | 'json') => {
+  //   try {
+  //     const response = await fetch(`/api/instructorReports?downloadType=${type}&format=${format}`);
+  //     if (!response.ok) {
+  //       throw new Error('Failed to download report');
+  //     }
+
+  //     const blob = await response.blob();
+  //     const downloadUrl = URL.createObjectURL(blob);
+  //     const link = document.createElement('a');
+  //     link.href = downloadUrl;
+  //     link.download = `${type}.${format}`;
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+  //   } catch (error) {
+  //     console.error('Error downloading report:', error);
+  //     alert('Failed to download the report. Please try again.');
+  //   }
+  // };
+
   const downloadReport = async (type: string, format: 'csv' | 'json') => {
     try {
+      console.log(`Initiating download for type: ${type}, format: ${format}`);
+      
       const response = await fetch(`/api/instructorReports?downloadType=${type}&format=${format}`);
+      
+      console.log(`Response status: ${response.status}`);
+      console.log(`Response headers:`, response.headers);
+      
       if (!response.ok) {
-        throw new Error('Failed to download report')   
+        const errorText = await response.text();
+        console.error('Backend error:', errorText);
+        throw new Error(`Failed to download report: ${response.statusText}`);
       }
-
-
-
-      const contentType = response.headers.get('Content-Type');
-      if (format === 'json' && contentType?.includes('application/json')) {
-        // Handle JSON file
-        const jsonData = await response.json();
-        const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' }); // Add indentation
-        const downloadUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `${type}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else if (format === 'csv') {
-        // Handle CSV file
-        const csvData = await response.text(); // Read as plain text
-        console.log('CSV Content:', csvData); // Debug CSV content
-        // Ensure proper handling of line breaks for CSV content
-        const normalizedCSV = csvData.replace(/(?!\r)\n/g, '\r\n');
-        const blob = new Blob([normalizedCSV], { type: 'text/csv;charset=utf-8;' });
-        const downloadUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `${type}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
-        throw new Error('Unexpected content type');
-      }
-
-
-
-
+  
+      const blob = await response.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `${type}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('Download completed successfully.');
     } catch (error) {
       console.error('Error downloading report:', error);
       alert('Failed to download the report. Please try again.');
     }
   };
+
+
+
+
+
 
   if (error) return <p>{error}</p>;
   if (!analytics.length && !quizResults.length && !contentEffectiveness.length)

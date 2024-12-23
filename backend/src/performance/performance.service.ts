@@ -2,13 +2,13 @@
 import { Injectable , NotFoundException,ForbiddenException, InternalServerErrorException, BadRequestException} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, Types } from 'mongoose';
-import { Progress, ProgressDocument } from '../models/progress.schema';
-import { Course, CourseDocument } from '../models/course.schema';
-import { Quiz, QuizDocument } from '../models/quiz.schema';
-import { User, UserDocument } from '../models/user.schema';
+import { Progress, ProgressDocument } from '../Models/progress.schema';
+import { Course, CourseDocument } from '../Models/course.schema';
+import { Quiz, QuizDocument } from '../Models/quiz.schema';
+import { User, UserDocument } from '../Models/user.schema';
 import { Module , ModuleDocument } from '../Models/modules.schema';
-import { Response, ResponseDocument } from '../models/response.schema';
-import {Answer, AnswerDocument } from '../models/answer.schema'
+import { Response, ResponseDocument } from '../Models/response.schema';
+import {Answer, AnswerDocument } from '../Models/answer.schema'
 import { StudentProgressDto } from './dto/student-progress.dto';
 import { InstructorAnalyticsDto } from './dto/instructor-analytics.dto';
 import { StudentQuizResultDto ,QuizResultDto } from './dto/quiz-result.dto';
@@ -94,52 +94,52 @@ async getStudentDashboard(studentId: string): Promise<StudentProgressDto[]> {
 
     const dashboardData = await Promise.all(progressData.map(async (progress) => {
       try {
-        // Find all modules associated with the current course
-        const modules = await this.ModuleModel.find({ course_id: progress.courseId._id }).exec();
+        // //Find all modules associated with the current course
+        // const modules = await this.ModuleModel.find({ course_id: progress.courseId._id }).exec();
 
-        if (!modules.length) {
-          return {
-            courseId: progress.courseId._id.toString(),
-            courseName: progress.courseId.title,
-            averageScore: 0,
-            completionPercentage: progress.completionPercentage,
-            lastAccessed: progress.lastAccessed,
-          };
-        }
+        // if (!modules.length) {
+        //   return {
+        //     courseId: progress.courseId._id.toString(),
+        //     courseName: progress.courseId.title,
+        //     averageScore: 0,
+        //     completionPercentage: progress.completionPercentage,
+        //     lastAccessed: progress.lastAccessed,
+        //   };
+        // }
 
-        // Get all quizzes related to the modules of the course
-        const quizzes = await this.quizModel.find({ module_id: { $in: modules.map((module) => module._id) } }).exec();
+        // // Get all quizzes related to the modules of the course
+        // const quizzes = await this.quizModel.find({ module_id: { $in: modules.map((module) => module._id) } }).exec();
 
-        if (!quizzes.length) {
-          return {
-            courseId: progress.courseId._id.toString(),
-            courseName: progress.courseId.title,
-            averageScore: 0,
-            completionPercentage: progress.completionPercentage,
-            lastAccessed: progress.lastAccessed,
-          };
-        }
+        // if (!quizzes.length) {
+        //   return {
+        //     courseId: progress.courseId._id.toString(),
+        //     courseName: progress.courseId.title,
+        //     averageScore: 0,
+        //     completionPercentage: progress.completionPercentage,
+        //     lastAccessed: progress.lastAccessed,
+        //   };
+        // }
 
-        // Get all quiz responses for the student
-        const responses = await this.responseModel.find({
-          quiz_id: { $in: quizzes.map((quiz) => quiz._id) },
-          user_id: objectIdStudentId,
-        }).exec();
+        // // Get all quiz responses for the student
+        // const responses = await this.responseModel.find({
+        //   quiz_id: { $in: quizzes.map((quiz) => quiz._id) },
+        //   user_id: objectIdStudentId,
+        // }).exec();
 
-        if (responses.length === 0) {
-          return {
-            courseId: progress.courseId._id.toString(),
-            courseName: progress.courseId.title,
-            averageScore: 0,
-            completionPercentage: progress.completionPercentage,
-            lastAccessed: progress.lastAccessed,
-          };
-        }
+        // if (responses.length === 0) {
+        //   return {
+        //     courseId: progress.courseId._id.toString(),
+        //     courseName: progress.courseId.title,
+        //     averageScore: 0,
+        //     completionPercentage: progress.completionPercentage,
+        //     lastAccessed: progress.lastAccessed,
+        //   };
+        // }
 
-        // Calculate the total score and average score for the course
-        const totalScore = responses.reduce((acc, response) => acc + response.score, 0);
-        const averageScore = totalScore / responses.length;
-
+        // // Calculate the total score and average score for the course
+        // const totalScore = responses.reduce((acc, response) => acc + response.score, 0);
+        // const averageScore = totalScore / responses.length;
+        const averageScore = progress.AverageGrade;
         return {
           courseId: progress.courseId._id.toString(),
           courseName: progress.courseId.title,

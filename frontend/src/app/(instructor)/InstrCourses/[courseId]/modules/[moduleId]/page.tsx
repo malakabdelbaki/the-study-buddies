@@ -10,9 +10,11 @@ import QuestionCard from "@/components/course/instructor/questionCard";
 import AddResourceForm from "@/components/course/instructor/ResourceInput";
 import ResourceCard from "@/components/course/instructor/resourceCard";
 import { Resource } from "@/types/Resource";
+import { useAuthorization } from "@/hooks/useAuthorization";
 
 
 const ModuleDetails = ({ params }: { params: Promise<{ moduleId: string }> }) => {
+  useAuthorization(['instructor'])
   const [module, setModule] = useState<Module>();
   const [isEditing, setIsEditing] = useState(false);
   const [editedModule, setEditedModule] = useState<Module>();
