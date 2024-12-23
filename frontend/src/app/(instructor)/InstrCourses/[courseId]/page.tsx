@@ -11,6 +11,7 @@ import { createModule } from "../../../api/courses/instructor/moduleRoute";
 import { Types } from "mongoose";
 import ForumPreview from "@/components/forum/ForumPreview";
 import { useAuthorization } from "@/hooks/useAuthorization";
+import { useRouter } from "next/navigation";
 
 const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) => {
   useAuthorization(['instructor'])
@@ -23,6 +24,7 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   const [showForm, setShowForm] = useState(false);
   const [newModule, setNewModule] = useState<Module>({title:'', content:'', quiz_type:'', quiz_length:0, module_difficulty:''});
   const [canDisableNotes, setCanDisableNotes] = useState<boolean | null>(null);
+  const router = useRouter();
 
   const enableNotes = async () => {
     try {
@@ -33,6 +35,11 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
       setCourse(updatedCourse);
     } catch (err) {
       console.error("Failed to enable notes:", err);
+    }
+  };
+  const handleAnnouncementRedirect = () => {
+    if (course?._id) {
+      router.push(`/announcement?courseId=${course._id}`);
     }
   };
 
@@ -482,6 +489,20 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
         <ForumPreview courseId={course._id} courseTitle={course?.title} />
       )}
 
+<div className="divider my-8">
+        <hr className="border-gray-300" />
+      </div>
+
+      <h1 className="text-center text-3xl font-semibold text-gray-800 my-4">Announcement</h1>
+
+      <div className="text-center">
+        <button
+          onClick={handleAnnouncementRedirect}
+          className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800"
+        >
+          Go to Announcements
+        </button>
+      </div>
        </div>
 
     </div>

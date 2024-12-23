@@ -4,12 +4,13 @@ export interface User {
   email: string;
   password?: string;
   role: 'student' | 'instructor' | 'admin';
-  profilePic?: string;
+  profilePictureUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
   enrolledCourses?: string[];
   taughtCourses?: string[];
   completedCourses?:string[];
   ratings?:Map<string, number>;
+  averageGrade?:number;
 
 }

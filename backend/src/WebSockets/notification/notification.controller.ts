@@ -18,7 +18,7 @@ export class NotificationController {
   @Get(':userId')
   @ApiTags('Notification')
   @ApiParam({ name: 'userId', type: String })
-  @SetMetadata( ROLES_KEY, [Role.Student])
+  @SetMetadata( ROLES_KEY, [Role.Student, Role.Instructor])
   async getNotificationsForUser(@Param('userId') userId: string) {
     return this.notificationService.getNotificationsForUser(userId);
   }

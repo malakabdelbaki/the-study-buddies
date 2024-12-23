@@ -96,13 +96,23 @@ const ForumPreview: React.FC<ForumPreviewProps> = ({ courseId, courseTitle }: Fo
   }
   
     return (
-      <div className="flex flex-col items-center space-y-4">
-        <h2 className="text-2xl font-bold">{forum.title}</h2>
-        <p className="text-gray-600">{forum.description}</p>
-        <Button onClick={() => router.push(`/forum/${forum._id}?courseId=${courseId}`)}>
-          Go to Forum
-        </Button>
+      <div className="forum-preview">
+      <div className="divider my-8">
+        <hr className="border-gray-300" />
       </div>
+
+      <h1 className="text-center text-3xl font-semibold text-gray-800 my-4">{forum.title}</h1>
+
+        <p className="text-gray-600">{forum.description}</p>
+        <div className="text-center">
+        <button           
+        className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800"
+        onClick={() => router.push(`/forum/${forum._id}?courseId=${courseId}`)}>
+          Go to Forum
+        </button>
+        <div className="modules-section mt-8"></div>
+      </div>
+    </div>
     );
 };
 

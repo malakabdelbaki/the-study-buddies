@@ -37,7 +37,7 @@ export class Progress {
   @Prop({ required: true ,default: 0 })
   AccumilativeGrade : number;
 
-  @Prop({ required: true ,default: 0 })
+  @Prop({ required: false ,default: 0 })
   AverageGrade : number;
 
   @Prop({required:true,enum: Object.values(Course_diff),default:'Beginner'})

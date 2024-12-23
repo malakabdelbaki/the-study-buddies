@@ -14,9 +14,11 @@ import { Thread } from 'src/Models/thread.schema';
 import { ThreadsModule } from 'src/discussionForum/threads/threads.module';
 import { AuthGuard } from 'src/auth/guards/authentication.guard';
 import { AuthModule } from 'src/auth/auth.module';
-
-
 import { LogsModule } from '../log/log.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import * as path from 'path';
+
 
 @Module({
   imports :[MongooseModule.forFeature([{ name: 'Module', schema: ModuleSchema }]),
@@ -26,7 +28,18 @@ import { LogsModule } from '../log/log.module';
   MongooseModule.forFeature([{name:'User',schema:UserSchema}]),
   forwardRef(() => AuthModule),
   LogsModule,
-  ],
+  MulterModule.register({
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, callback) => {
+        const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+        const ext = path.extname(file.originalname);
+        const filename = `${file.originalname.replace(/\s+/g, '_')}_${uniqueSuffix}${ext}`;
+        callback(null, filename);
+      },
+    }),
+  }),
+],
   controllers: [UserController],
   providers: [UserService, authorizationGuard, AuthGuard, ExistsOnDatabaseValidator ],
   exports: [UserService, MongooseModule.forFeature([{name:'user',schema:UserSchema}])], // Export the service if it's needed in other modules

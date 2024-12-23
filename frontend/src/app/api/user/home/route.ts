@@ -43,12 +43,12 @@ export async function GET() {
       return NextResponse.json({ error: 'No enrolled courses found' }, { status: 404 });
     }
 
-    console.log(enrolledCourses)
+    console.log("HERE ENR "+ enrolledCourses)
 
     // Step 2: Fetch progress for each course
-    const progressPromises = enrolledCourses.map(async (course: { id: string, title:string }) => {
+    const progressPromises = enrolledCourses.map(async (course: { _id: string, title:string }) => {
       const progressResponse = await axios.get(
-        `http://localhost:3000/api/users/courses/${course.id}/student/${userId}/progress`,
+        `http://localhost:3000/api/users/courses/${course._id}/student/${userId}/progress`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
        // Log the response data to inspect its structure
@@ -59,7 +59,7 @@ export async function GET() {
        
        console.log(completionPercentage);
        return {
-         courseId: course.id,
+         courseId: course._id,
          completionPercentage: completionPercentage ,  // Ensure fallback to 0 if no progress is available
        };
      });

@@ -6,6 +6,5 @@ export class UpdateUserInfoDto {
   name?: string;
 
   @IsOptional()
-  @IsString()
-  profilePictureUrl?: string;
+  profilePicture?: Express.Multer.File;
 }

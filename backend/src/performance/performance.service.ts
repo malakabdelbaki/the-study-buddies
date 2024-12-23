@@ -56,6 +56,32 @@ export class PerformanceService {
     
   ) {}
 
+  //just gets averaagegrade from progress
+  async getAverageGradeByUserAndCourse(
+    userId: string,
+    courseId: string,
+  ): Promise<number | null> {
+    try {
+      // Validate ObjectId format
+      if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(courseId)) {
+        throw new BadRequestException('Invalid userId or courseId format.');
+      }
+
+      const progressRecord = await this.progressModel.findOne({
+        userId: new Types.ObjectId(userId),
+        courseId: new Types.ObjectId(courseId),
+      }).exec();
+
+      if (!progressRecord) {
+        return 0;
+      }
+      console.log(progressRecord.AverageGrade)
+      return progressRecord.AverageGrade;
+    } catch (error) {
+      throw new BadRequestException(`Error fetching average grade: ${error.message}`);
+    }
+  }
+
 
 
 

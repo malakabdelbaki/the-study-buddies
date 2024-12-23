@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException, ConsoleLogger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import  mongoose,{ Model } from 'mongoose';
 import { User, UserDocument } from '../Models/user.schema';
@@ -15,6 +15,8 @@ import * as bcrypt from 'bcrypt';
 import { RateDto } from './dtos/rate-dto';
 import { EnrollInCourseDto } from './dtos/enroll-in-course-dto';
 import { CreateProgressDto } from './dtos/create-progress-dto';
+import * as path from 'path'; // Add this import
+import * as fs from 'fs'; // If you're using fs to check or delete files
 
 
 
@@ -57,6 +59,7 @@ export class UserService {
   async deleteUser(userId: string): Promise<{ message: string }> {
     try {
       const user = await this.userModel.findByIdAndDelete(userId);
+      console.log("DELETED USER"+ user)
       if (!user) throw new NotFoundException('User not found.');
 
       return { message: 'User successfully deleted.' };
@@ -324,6 +327,45 @@ export class UserService {
     }
   }
 
+  async updateProfilePic(userId: string, file: Express.Multer.File): Promise<User> {
+    if (!file) {
+      throw new BadRequestException('No file provided');
+    }
+
+    try {
+      const user = await this.userModel.findById(userId);
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      // Delete the old profile picture if it exists
+      // if (user.profilePictureUrl) {
+      //   const oldFilePath = path.join(process.cwd(), user.profilePictureUrl);
+      //   if (fs.existsSync(oldFilePath)) {
+      //     fs.unlinkSync(oldFilePath);
+      //   }
+      // }
+
+      // Update the user's profile picture URL
+      const profilePictureUrl = path.join('uploads', file.filename);
+      user.profilePictureUrl = profilePictureUrl;
+      
+
+      // Save the updated user
+      await user.save();
+
+      return user;
+    } catch (error) {
+      // If an error occurs, delete the uploaded file
+      // if (file.path) {
+      //   fs.unlinkSync(file.path);
+      // }
+      throw error;
+    }
+  }
+  
+
   // View enrolled courses of a student
   async getEnrolledCoursesOfStudent(userId: string): Promise<any> {
     try {
@@ -331,9 +373,10 @@ export class UserService {
       const studentObjectId = new mongoose.Types.ObjectId(userId);
 
       let courses = await this.courseModel.find({ students: studentObjectId }).populate('instructor_id');
-      console.log(courses);
+      console.log("Courses hereeee "+ courses);
       if (!courses.length) throw new NotFoundException('No courses found for this user.');
       courses = courses.filter((course)=>course.is_deleted === false);
+      console.log("Courses hereeee "+ courses);
       return courses;
     } catch (error) {
         throw new InternalServerErrorException('Error fetching enrolled courses', error.message);
@@ -350,18 +393,17 @@ async getCompletedCoursesOfStudent(userId: string): Promise<any> {
       .find({ userId: studentObjectId, completionPercentage: 100 })
       .populate({
         path: 'courseId', // Ensure courseId is a reference in progressModel
-       // select: 'title', // Only fetch the title field from courseModel
+        select: 'title', // Only fetch the title field from courseModel
       });
-      console.log('reeeek',completed);
 
-    if (!completed.length) return [];
+    if (!completed.length) throw new NotFoundException('No completed courses found.');
 
     // Map the data to return the required structure
     const result = completed.map((progress) => ({
       progressId: progress._id,
-      course: progress.courseId, // Use type assertion
+      title: (progress.courseId as any).title, // Use type assertion
     }));
-    console.log('reeeeee',result);
+
     return result;
   } catch (error) {
     throw new InternalServerErrorException('Error fetching completed courses', error.message);
@@ -489,7 +531,7 @@ async getCompletedCoursesOfStudent(userId: string): Promise<any> {
       // Return an array of objects containing both title and id
       return courses.map(course => ({
         title: course.title,
-        id: course._id, 
+        _id: course._id, 
       }));
     } catch (error) {
       throw new NotFoundException('Error fetching courses', error.message);
@@ -658,3 +700,7 @@ async getCompletedCoursesOfStudent(userId: string): Promise<any> {
     }
   }
 }
+function uuidv4() {
+  throw new Error('Function not implemented.');
+}
+

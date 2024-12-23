@@ -16,6 +16,7 @@ import ForumPreview from "@/components/forum/ForumPreview";
 import { useAuthorization } from "@/hooks/useAuthorization";
 import { Role } from "@/enums/role.enum";
 import { decodeToken } from "@/app/utils/decodeToken";
+import { useRouter } from "next/navigation";
 
 const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) => {
   useAuthorization(['student'])
@@ -32,9 +33,15 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
   const [CourseRating, setCourseRating] = useState<number>(0);
  const [userId, setUserId] = useState<string | null>(null);
 
+  const router = useRouter();
+  const handleAnnouncementRedirect = () => {
+    if (course?._id) {
+      router.push(`/announcement?courseId=${course._id}`);
+    }
+  };
   // Handle rating
   const handleRatingClick = async (type: "instructor" | "course", star: number) => {
-    if (type === "instructor" && Instructor) {
+    if (type === Role.Instructor && Instructor) {
       setInstructorRating(star);
       const response = await rateInstructor({ targetId: Instructor._id, rating: star });
       console.log("Instructor Rating Response:", response);
@@ -209,7 +216,22 @@ const CourseDetails = ({ params }: { params: Promise<{ courseId: string }> }) =>
         <ForumPreview courseId={course._id} courseTitle={course.title} />
       )}
 
-    </div>
+<div className="divider my-8">
+        <hr className="border-gray-300" />
+      </div>
+
+      <h1 className="text-center text-3xl font-semibold text-gray-800 my-4">Announcement</h1>
+
+      <div className="text-center">
+        <button
+          onClick={handleAnnouncementRedirect}
+          className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800"
+        >
+          Go to Announcements
+        </button>
+      </div>
+       </div>
+
   </div>
 );
 };
