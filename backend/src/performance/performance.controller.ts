@@ -1,7 +1,7 @@
-import { Controller, Get, Param, Res,Query,HttpException,HttpStatus, UseGuards,SetMetadata, UnauthorizedException, Req } from '@nestjs/common';
+import { Controller, Get, Param, Res,Query,HttpException,HttpStatus, UseGuards,SetMetadata, UnauthorizedException, Req, BadRequestException, NotFoundException } from '@nestjs/common';
 import { Response } from 'express';
 import { PerformanceService } from './performance.service';
-import { ApiTags, ApiParam, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiParam, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { StudentProgressDto } from './dto/student-progress.dto'; // Import DTO for student dashboard
 import { InstructorAnalyticsDto } from './dto/instructor-analytics.dto'; // Import DTO for instructor analytics
 import { authorizationGuard } from '../auth/guards/authorization.guard';
@@ -20,6 +20,29 @@ import { Request } from 'express';
 export class PerformanceController {
 
   constructor(private readonly performanceService: PerformanceService) {}
+
+
+  //just gets averagegrade from progress
+  @Get(':courseId/:userId/average-grade')
+  @ApiOperation({ summary: 'Get average grade by user and course ID' })
+  @ApiQuery({ name: 'userId', description: 'The ID of the user', required: true })
+  @ApiQuery({ name: 'courseId', description: 'The ID of the course', required: true })
+  async getAverageGrade(
+    @Param('userId') userId: string,
+    @Param('courseId') courseId: string,
+  ): Promise<{ averageGrade: number }> {
+    if (!userId || !courseId) {
+      throw new BadRequestException('Both userId and courseId are required.');
+    }
+
+    const averageGrade = await this.performanceService.getAverageGradeByUserAndCourse(userId, courseId);
+
+    if (averageGrade === null) {
+      throw new NotFoundException('Progress record not found for the provided userId and courseId.');
+    }
+
+    return { averageGrade };
+  }
 
 
   @Roles(Role.Student)
