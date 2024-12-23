@@ -16,10 +16,15 @@ export default function InstructorHomePage() {
         {/* Courses Card */}
         <Card className="col-span-full">
           <CardHeader>
-            <CardTitle>Your Courses</CardTitle>
+            {/* Make the title clickable */}
+            <Link href="/InstrCourses">
+              <CardTitle className="cursor-pointer text-primary hover:underline">
+                My Courses
+              </CardTitle>
+            </Link>
             <CardDescription>Courses you're currently teaching</CardDescription>
           </CardHeader>
-          <CardContent>
+          {/* <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {['Introduction to React', 'Advanced JavaScript', 'Web Development Bootcamp'].map((course, index) => (
                 <div key={index} className="flex items-center gap-4">
@@ -33,10 +38,10 @@ export default function InstructorHomePage() {
                 </div>
               ))}
             </div>
-          </CardContent>
+          </CardContent> */}
         </Card>
 
-        {/* Student Overview Card */}
+        {/* Student Overview Card
         <Card>
           <CardHeader>
             <CardTitle>Student Overview</CardTitle>
@@ -54,7 +59,7 @@ export default function InstructorHomePage() {
             </div>
           </CardContent>
         </Card>
-        <StudentProgressCard/>
+        <StudentProgressCard/> */}
       </div>
 
 
