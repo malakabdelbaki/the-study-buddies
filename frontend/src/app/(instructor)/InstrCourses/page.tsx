@@ -175,14 +175,24 @@ const CoursesPage = () => {
                 onChange={(e) => setCategory(e.target.value)}
                 required
               />
-              <input
+              {/* <input
                 className="w-full mb-4 p-2 border rounded-lg"
                 type="text"
                 placeholder="Difficulty Level"
                 value={difficulty_level}
                 onChange={(e) => setDifficulty_level(e.target.value)}
                 required
-              />
+              /> */}
+              <select
+                className="w-full mb-4 p-2 border rounded-lg"
+                value={difficulty_level}
+                onChange={(e) => setDifficulty_level(e.target.value)}
+                required
+                   >
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
               <div className="flex items-center mb-4">
                 <input
                   type="checkbox"
