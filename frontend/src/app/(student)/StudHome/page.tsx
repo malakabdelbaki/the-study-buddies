@@ -32,7 +32,14 @@ export default function StudentHomePage() {
       <h1 className="text-4xl font-bold mb-8">Welcome Back, </h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Student Performance Card */}
+
+
+        {/* Announcements Card
+        <Card>
+          <CardHeader>
+            <CardTitle>Announcements</CardTitle>
+            <CardDescription>Latest updates from your courses</CardDescription>
+          </CardHead        Student Performance Card
         <Card>
           <CardHeader>
             <CardTitle>Your Performance</CardTitle>
@@ -49,14 +56,7 @@ export default function StudentHomePage() {
               </div>
             </div>
           </CardContent>
-        </Card>
-
-        {/* Announcements Card
-        <Card>
-          <CardHeader>
-            <CardTitle>Announcements</CardTitle>
-            <CardDescription>Latest updates from your courses</CardDescription>
-          </CardHeader>
+        </Card>er>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center gap-4">
@@ -70,16 +70,16 @@ export default function StudentHomePage() {
               </div>
             </div>
           </CardContent>
-        </Card>
-        <EnrolledCoursesClient /> */}
+        </Card>*/}
+        <EnrolledCoursesClient />
       </div>
 
       {/* Link to student dashboard Page */}
-<div className="mt-8">
-  <Link href="/studentPerformance" className="text-blue-500 hover:underline text-lg font-semibold">
-    View student dashboard
-  </Link>
-</div>
+        <div className="mt-8">
+          <Link href="/studentPerformance" className="text-blue-500 hover:underline text-lg font-semibold">
+            View student dashboard
+          </Link>
+        </div>
 
     </div>
   )
