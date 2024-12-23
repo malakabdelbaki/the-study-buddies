@@ -10,6 +10,7 @@ import { NotificationProvider } from '@/context/NotificationContext';
 import NotificationToast from '@/components/Notifications/NotificationToast';
 import useNotifications from '@/hooks/useNotifications';
 import styles from '@/app/styles/NotificationToast.module.css'
+//import { getUserRoleFromToken } from './_lib/extractRole';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,14 +29,19 @@ export default function RootLayout({
   const isAuthPage = pathname === '/login' || pathname === '/register';
   const pathStart = pathname.split('/')[1];
 
-  let userRole: UserRole = 'student';
-  if (pathStart === 'AdminHome') {
-    userRole = 'admin';
-  } else if (pathStart === 'InstrHome') {
-    userRole = 'instructor';
-  } else if (pathStart === 'StudHome') {
-    userRole = 'student';
-  }
+  // let userRole: UserRole = 'student';
+  // const roleFromToken = getUserRoleFromToken();
+  // if (roleFromToken) {
+  //   userRole = roleFromToken;
+  // }
+
+  // if (pathStart === 'AdminHome') {
+  //   userRole = 'admin';
+  // } else if (pathStart === 'InstrHome') {
+  //   userRole = 'instructor';
+  // } else if (pathStart === 'StudHome') {
+  //   userRole = 'student';
+  // }
 
   const handleSearch = (searchTerm: string) => {
     if (searchTerm.trim()) {
@@ -52,7 +58,7 @@ export default function RootLayout({
           </div>
           {!isAuthPage && (
             <>
-              <Navigation userRole={userRole} />
+              <Navigation />
               <div className="flex justify-center items-center mt-4">
                 <SearchBar onSearch={handleSearch} />
               </div>
